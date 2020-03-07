@@ -1,9 +1,9 @@
 import json
 
-from BearPY.GlobalBear import *
-from BearPY.Libraries.RegularExpression import *
-from BearPY.Libraries.Data.MySQL import *
-from BearPY.Libraries.Time import *
+from PyBear.GlobalBear import *
+from PyBear.Library.RegularExpression import *
+from PyBear.Library.Data.MySQL import *
+from PyBear.Library.Time import *
 
 class TimeSequence:
     def __init__(self, TimeSequenceName, Username, Password, Ip='127.0.0.1', Port=3306):

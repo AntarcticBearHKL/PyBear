@@ -1,5 +1,5 @@
 DebugMode = False
-GlobalAvailabilityCheck = False
+GlobalAvailabilityCheck = True
 
 Results = {}
 ResultCode = {}

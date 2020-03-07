@@ -1,7 +1,7 @@
 import pymysql
 import os, sys
 
-from BearPY.GlobalBear import *
+from PyBear.GlobalBear import *
 
 DatabasesServers = {}
 def NewDatabasesServer(Name, Username, Password, Ip='127.0.0.1', Port=3306):

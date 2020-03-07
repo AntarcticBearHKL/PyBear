@@ -6,14 +6,14 @@ import pandas
 import warnings
 warnings.filterwarnings('ignore')
 
-from BearPY.GlobalBear import *
-from BearPY.Libraries.Multitasks import *
-from BearPY.Libraries.Time import *
-from BearPY.Libraries.RegularExpression import *
-from BearPY.Libraries.Data.File import *
-from BearPY.Libraries.Data.TimeSequence import *
-from BearPY.Libraries.Data.LogicSequence import *
-from BearPY.Libraries.Statistics import *
+from PyBear.GlobalBear import *
+from PyBear.Library.Multitasks import *
+from PyBear.Library.Time import *
+from PyBear.Library.RegularExpression import *
+from PyBear.Library.Data.File import *
+from PyBear.Library.Data.TimeSequence import *
+from PyBear.Library.Data.LogicSequence import *
+from PyBear.Library.Statistics import *
 
 TushareAvailiable = False
 def SetTushareToken(token):

@@ -1,8 +1,8 @@
 import os, sys
 
-from BearPY.GlobalBear import *
-from BearPY.Libraries.Time import *
-from BearPY.Libraries.Data.File import *
+from PyBear.GlobalBear import *
+from PyBear.Library.Time import *
+from PyBear.Library.Data.File import *
 
 WebDiskFileLocation = {}
 def NewWebDiskFileLocation(Name, Dir):

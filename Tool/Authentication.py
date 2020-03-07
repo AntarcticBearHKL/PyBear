@@ -2,10 +2,10 @@ import os, sys
 import json
 import uuid
 
-from BearPY.GlobalBear import *
-from BearPY.Libraries.Time import *
-from BearPY.Libraries.WebSuite import *
-from BearPY.Libraries.Data.MySQL import *
+from PyBear.GlobalBear import *
+from PyBear.Library.Time import *
+from PyBear.Library.WebSuite import *
+from PyBear.Library.Data.MySQL import *
 
 def NewAuthenticationDatabase(Password, Port=3306):
     NewDatabasesServer['AuthenticationDatabaseServer'] = ['Authentication', Password, Port]

@@ -7,8 +7,8 @@ import json
 import ssl
 import re
 
-from BearPY.GlobalBear import *
-from BearPY.Libraries.Data.File import *
+from PyBear.GlobalBear import *
+from PyBear.Library.Data.File import *
  
 def GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandler, PostHandler):
     class HTTPListener(RequestHandler):

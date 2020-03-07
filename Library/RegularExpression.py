@@ -1,6 +1,6 @@
 import re
 
-from BearPY.GlobalBear import *
+from PyBear.GlobalBear import *
 
 def ReContain(String, Pattern):
     if not re.search(Pattern, String):

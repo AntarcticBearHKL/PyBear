@@ -3,8 +3,8 @@ import threading
 import os,sys
 import time
 
-from BearPY.GlobalBear import *
-from BearPY.Libraries.Time import *
+from PyBear.GlobalBear import *
+from PyBear.Library.Time import *
 
 class ThreadPool:
     def __init__(self, Mode, Limit=None, Timer=False, Progress=False):

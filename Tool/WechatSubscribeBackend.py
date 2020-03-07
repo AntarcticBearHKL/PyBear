@@ -1,4 +1,4 @@
 import os, sys
 
-from BearPY.GlobalBear import *
-from BearPY.Libraries.WebSuite import *
+from PyBear.GlobalBear import *
+from PyBear.Libraries.WebSuite import *

@@ -1,6 +1,6 @@
 import sys,os
 
-from BearPY.GlobalBear import *
+from PyBear.GlobalBear import *
 
 def FUWrite(Path, content):
     if not os.path.exists(os.path.dirname(Path)):

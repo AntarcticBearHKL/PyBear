@@ -1,9 +1,9 @@
 import os, sys
 from wxpy import *
 
-from BearPY.GlobalBear import *
-from BearPY.Libraries.Time import *
-from BearPY.Libraries.Data.File import *
+from PyBear.GlobalBear import *
+from PyBear.Library.Time import *
+from PyBear.Library.Data.File import *
 
 WechatHistoryFileLocation = {}
 def NewWechatHistoryFileLocation(Name, Dir):

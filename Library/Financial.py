@@ -1,4 +1,4 @@
-from BearPY.GlobalBear import *
+from PyBear.GlobalBear import *
 
 def CompoundInterestPresent():
     pass

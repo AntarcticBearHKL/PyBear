@@ -3,7 +3,7 @@ import scipy
 import numpy
 import math
 
-from BearPY.GlobalBear import *
+from PyBear.GlobalBear import *
 
 def BMean(Input):
     return numpy.array(Input).mean()

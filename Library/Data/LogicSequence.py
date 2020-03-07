@@ -1,8 +1,8 @@
 import json
 
-from BearPY.GlobalBear import *
-from BearPY.Libraries.RegularExpression import *
-from BearPY.Libraries.Data.File import *
+from PyBear.GlobalBear import *
+from PyBear.Library.RegularExpression import *
+from PyBear.Library.Data.File import *
 
 class LogicSequence:
     def __init__(self, baseName, name):

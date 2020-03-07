@@ -3,7 +3,7 @@ import datetime
 import time
 import sys,os
 
-from BearPY.GlobalBear import *
+from PyBear.GlobalBear import *
 
 Style_SS = '%Y%m%d'
 Style_SL = '%Y%m%d%H%M%S'
