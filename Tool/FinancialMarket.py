@@ -8,8 +8,7 @@ warnings.filterwarnings('ignore')
 
 from PyBear.GlobalBear import *
 from PyBear.Library.Multitasks import *
-from PyBear.Library.Time import *
-from PyBear.Library.RegularExpression import *
+from PyBear.Library.Chronus import *
 from PyBear.Library.Data.File import *
 from PyBear.Library.Data.TimeSequence import *
 from PyBear.Library.Data.LogicSequence import *

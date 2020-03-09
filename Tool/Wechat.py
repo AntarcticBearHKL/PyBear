@@ -2,7 +2,7 @@ import os, sys
 from wxpy import *
 
 from PyBear.GlobalBear import *
-from PyBear.Library.Time import *
+from PyBear.Library.Chronus import *
 from PyBear.Library.Data.File import *
 
 WechatHistoryFileLocation = {}

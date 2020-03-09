@@ -3,7 +3,7 @@ import json
 import uuid
 
 from PyBear.GlobalBear import *
-from PyBear.Library.Time import *
+from PyBear.Library.Chronus import *
 from PyBear.Library.WebSuite import *
 from PyBear.Library.Data.MySQL import *
 

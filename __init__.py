@@ -1,33 +1,33 @@
-from BearPY import GlobalBear
+from PyBear import GlobalBear
 
 if GlobalBear.GlobalAvailabilityCheck:
     print('--------------- Global Availability Check Start ---------------')
-    from BearPY.Libraries.CLib import *
+    
+    from PyBear.Library.Chronus import *
+    from PyBear.Library.CLib import *
 
-    from BearPY.Libraries.Data.CSV import *
-    from BearPY.Libraries.Data.DataFrame import *
-    from BearPY.Libraries.Data.Excle import *
-    from BearPY.Libraries.Data.File import *
-    from BearPY.Libraries.Data.LogicSequence import *
-    from BearPY.Libraries.Data.MySQL import *
-    from BearPY.Libraries.Data.TimeSequence import *
-    from BearPY.Libraries.Data.WebDisk import *
-    from BearPY.Libraries.Data.Word import *
+    from PyBear.Library.Data.CSV import *
+    from PyBear.Library.Data.DataFrame import *
+    from PyBear.Library.Data.Excle import *
+    from PyBear.Library.Data.File import *
+    from PyBear.Library.Data.LogicSequence import *
+    from PyBear.Library.Data.MySQL import *
+    from PyBear.Library.Data.TimeSequence import *
+    from PyBear.Library.Data.WebDisk import *
+    from PyBear.Library.Data.Word import *
 
-    from BearPY.Libraries.DeepLearning import *
-    from BearPY.Libraries.Financial import *
-    from BearPY.Libraries.InputCheck import *
-    from BearPY.Libraries.Language import *
-    from BearPY.Libraries.MachineLearning import *
-    from BearPY.Libraries.Math import *
-    from BearPY.Libraries.Matrix import *
-    from BearPY.Libraries.Multitasks import *
-    from BearPY.Libraries.NLP import *
-    from BearPY.Libraries.RegularExpression import *
-    from BearPY.Libraries.Statistics import *
+    from PyBear.Library.DeepLearning import *
+    from PyBear.Library.Financial import *
+    from PyBear.Library.MachineLearning import *
+    from PyBear.Library.Math import *
+    from PyBear.Library.Matrix import *
+    from PyBear.Library.Multitasks import *
+    from PyBear.Library.NLP import *
+    from PyBear.Library.Statistics import *
+    from PyBear.Library.WebSuite import *
 
-    from BearPY.Tools.Authentication import *
-    from BearPY.Tools.FinancialMarket import *
-    from BearPY.Tools.Wechat import *
-    from BearPY.Tools.WechatSubscribeBackend import *
+    from PyBear.Tool.Authentication import *
+    from PyBear.Tool.FinancialMarket import *
+    from PyBear.Tool.Wechat import *
+
     print('--------------- Global Availability Check Successful ---------------')

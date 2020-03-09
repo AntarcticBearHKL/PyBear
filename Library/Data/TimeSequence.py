@@ -1,19 +1,14 @@
 import json
 
 from PyBear.GlobalBear import *
-from PyBear.Library.RegularExpression import *
 from PyBear.Library.Data.MySQL import *
-from PyBear.Library.Time import *
+from PyBear.Library.Chronus import *
 
 class TimeSequence:
     def __init__(self, TimeSequenceName, Username, Password, Ip='127.0.0.1', Port=3306):
+        self.TableName = TimeSequenceName
         NewDatabasesServer(TimeSequenceName+'_DatabaseServer', Username, Password, Ip=Ip, Port=Port)
         self.Databases = Database(TimeSequenceName+'_DatabaseServer', TimeSequenceName)
-        
-    def Feed(self, ValueDict):
-        for date in valueDict:
-            self.Lines[date] = valueDict[date]
-        self.save()
 
     def getStartDate(self):
         if len(self.Lines) == 0:
@@ -39,9 +34,12 @@ class TimeSequence:
                 ret.append(self.Lines[date])
             return ret
 
-    def __setitem__(self, item, value):
-        self.Lines[item] = value
-        self.save()
+    def __setitem__(self, Time, Value):
+        self.Databases.Insert(self.TableName, {
+            'Date': Time,
+            'TimeStamp': Date(Time),
+            'Value': Value
+        })
 
 if GlobalAvailabilityCheck:
     pass

@@ -1,7 +1,6 @@
 import json
 
 from PyBear.GlobalBear import *
-from PyBear.Library.RegularExpression import *
 from PyBear.Library.Data.File import *
 
 class LogicSequence:
