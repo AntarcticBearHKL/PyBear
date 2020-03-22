@@ -10,9 +10,8 @@ from PyBear.GlobalBear import *
 from PyBear.Library.Multitasks import *
 from PyBear.Library.Chronus import *
 from PyBear.Library.Data.File import *
-from PyBear.Library.Data.TimeSequence import *
-from PyBear.Library.Data.LogicSequence import *
 from PyBear.Library.Statistics import *
+from PyBear.Library.Data.MySQL import *
 
 TushareAvailiable = False
 def SetTushareToken(token):
@@ -29,36 +28,42 @@ class CHN:
             pass
 
     class StockMarket:
-        def __init__(self, tradeday='updated'):
-            if not TushareAvailiable:
+        def __init__(self, ServerName, UserName):
+            if TushareAvailiable:
                 raise BadBear('Tushare Cannot Use Without Token')
-            self.baseName = None
-            self.api = tushare.pro_api()
+            self.BaseName = None
+            self.API = tushare.pro_api()
 
-        def updateInfo(self):
-            print('updateInfo')
-            ts_data = self.api.stock_basic()
-            print(ts_data)
-            for item in range(len(ts_data)):
-                stock = LogicSequence(self.baseName, ts_data.loc[item]['ts_code'])
-                stock.defineProperty('name', ts_data.loc[item]['area'])
-                stock.defineProperty('area', ts_data.loc[item]['name'])
-                stock.defineProperty('industry', ts_data.loc[item]['industry'])
-                stock.defineProperty('market', ts_data.loc[item]['market'])
-                stock.defineProperty('startDate', ts_data.loc[item]['list_date'])
-                LogicSequence(self.baseName, 'AllStockCode').defineHave(ts_data.loc[item]['ts_code'])
+            self.BasicInfoTable = DatabaseTable(ServerName, UserName, 'StockMarket', 'BasicInfo')
+            self.BasicInfoTable.CheckColumn({
+                'Code': 'CHAR(10) NOT NULL',
+                'Name': 'CHAR(12) NOT NULL',
+                'Area': 'CHAR(6) NOT NULL',
+                'Industry': 'CHAR(12) NOT NULL',
+            }, Index=['Code'])
 
+            print(self.BasicInfoTable.SearchTable('ID', 3794))
 
-        def updateTradeDay(self, latest=False):
-            tradeday = self.api.trade_cal(exchange='', start_date='20000101', end_date='20181231')
+            self.TradeDayTable = DatabaseTable(ServerName, UserName, 'StockMarket', 'TradeDay')
+
+        def UpdateBasicInfo(self):
+            BasicInfo = self.API.stock_basic()
+            Values = []
+            for Item in BasicInfo.itertuples():
+                Values.append([Item.symbol, Item.name, Item.area, Item.industry])
+            self.BasicInfoTable.DeleteAll()
+            self.BasicInfoTable.Insert(['Code', 'Name', 'Area', 'Industry'], Values)
+
+        def UpdateTradeDay(self, latest=False):
+            tradeday = self.API.trade_cal(exchange='', start_date='20000101', end_date='20181231')
             print(tradeday)
             ret = {}
             for item in range(len(tradeday)):
                 ret[tradeday.loc[item]['cal_date']] = str(tradeday.loc[item]['is_open'])
-            TimeSequence(self.baseName, 'TradeDay').feed(ret)
+            TimeSequence(self.BaseName, 'TradeDay').feed(ret)
 
-        def getStockCodeList(self):
-            return LogicSequence(self.baseName, 'AllStockCode')['have']
+        def GetStockCodeList(self):
+            return LogicSequence(self.BaseName, 'AllStockCode')['have']
 
     class FutureMarket:
         def __init__(self):
@@ -80,7 +85,7 @@ class CHN:
     class Stock:
         def __init__(self, code):
             self.stockMarket = CHN.StockMarket()
-            self.baseName = Config.CNHStockHome
+            self.BaseName = Config.CNHStockHome
             self.code = code
               
         def fulldownload(self):
@@ -97,11 +102,11 @@ class CHN:
                 _high[tick.loc[item]['trade_date']] = tick.loc[item]['high']
                 _low[tick.loc[item]['trade_date']] = tick.loc[item]['low']
                 _vol[tick.loc[item]['trade_date']] = tick.loc[item]['vol']
-            TimeSequence(self.baseName, self.code + '_open').feed(_open)
-            TimeSequence(self.baseName, self.code + '_close').feed(_close)
-            TimeSequence(self.baseName, self.code + '_high').feed(_high)
-            TimeSequence(self.baseName, self.code + '_low').feed(_low)
-            TimeSequence(self.baseName, self.code + '_vol').feed(_vol)
+            TimeSequence(self.BaseName, self.code + '_open').feed(_open)
+            TimeSequence(self.BaseName, self.code + '_close').feed(_close)
+            TimeSequence(self.BaseName, self.code + '_high').feed(_high)
+            TimeSequence(self.BaseName, self.code + '_low').feed(_low)
+            TimeSequence(self.BaseName, self.code + '_vol').feed(_vol)
             print(Date() - t)
             t = Date()
             print('Finish Download Tick: ' + self.code)

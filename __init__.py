@@ -10,9 +10,7 @@ if GlobalBear.GlobalAvailabilityCheck:
     from PyBear.Library.Data.DataFrame import *
     from PyBear.Library.Data.Excle import *
     from PyBear.Library.Data.File import *
-    from PyBear.Library.Data.LogicSequence import *
     from PyBear.Library.Data.MySQL import *
-    from PyBear.Library.Data.TimeSequence import *
     from PyBear.Library.Data.WebDisk import *
     from PyBear.Library.Data.Word import *
 

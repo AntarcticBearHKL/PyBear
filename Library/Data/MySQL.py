@@ -14,7 +14,8 @@ class DatabaseTable():
         self.TableName = TableName
         self.Cursor = self.Connection.cursor()
 
-        if self.TableName not in self.__Execute('''SHOW TABLES;''')[0]:
+        Tables = [Item[0] for Item in self.__Execute('''SHOW TABLES;''')]
+        if self.TableName not in Tables:
             SQL = '''CREATE TABLE %s (ID INT AUTO_INCREMENT, PRIMARY KEY(ID)) CHARSET=utf8;''' % (self.TableName)
             self.__Execute(SQL)
 
@@ -32,17 +33,16 @@ class DatabaseTable():
         return self.__ShowResult()
 
 
-    def AddColumn(self, ColumnName, DataType, Addon='NOT NULL'):
+
+    def AddColumn(self, ColumnName, DataType):
         if ColumnName in self.Columns:
             return
 
-        SQL = '''ALTER TABLE %s ADD %s %s %s;''' % (self.TableName, ColumnName, DataType, Addon)
+        SQL = '''ALTER TABLE %s ADD %s %s;''' % (self.TableName, ColumnName, DataType)
         self.__Execute(SQL)
 
     def AddIndex(self, ColumnName, IndexName=None):
-        SQL = '''SHOW KEYS FROM %s''' % (self.TableName)
-        self.__Execute(SQL)
-        Indexs = [item[2] for item in self.__ShowResult()]
+        Indexs = [item[2] for item in self.__Execute('''SHOW KEYS FROM %s''' % (self.TableName))]
 
         if type(ColumnName) == list:
             if (IndexName) and (IndexName not in Indexs):
@@ -56,6 +56,7 @@ class DatabaseTable():
             else:
                 return
         self.__Execute(SQL)
+        self.ListColumn()
 
     def AddUniqueIndex(self):
         pass
@@ -69,6 +70,27 @@ class DatabaseTable():
         self.Columns = [Item[0] for Item in self.ColumnsDetail]
         return self.ColumnsDetail
 
+    def CheckColumn(self, Columns, Index=None, UniqueIndex=None, FulltextIndex=None):
+        for Item in Columns:
+            self.AddColumn(Item, Columns[Item])
+
+        if type(Index) == list:
+            for Item in Index:
+                self.AddIndex(Item)
+        elif type(Index) == dict:
+            for Item in Index:
+                self.AddIndex(Index[Item], Item)
+        
+        if type(UniqueIndex) == list:
+            pass
+        elif type(UniqueIndex) == dict:
+            pass
+        
+        if type(FulltextIndex) == list:
+            pass
+        elif type(FulltextIndex) == dict:
+            pass
+
     def ListIndex(self):
         SQL = '''SHOW KEYS FROM %s''' % (self.TableName)
         return self.__Execute(SQL)
@@ -76,11 +98,12 @@ class DatabaseTable():
 
 
     def Insert(self, ColumnName, Data):
-        ColumnName = ','.join(ColumnName)
-
+        print(ColumnName)
         for Item in ColumnName:
             if Item not in self.Columns:
                 return
+        
+        ColumnName = ','.join(ColumnName)
 
         for Item in Data:
             Item = ','.join(['\''+Value+'\'' for Value in Item if type(Value) == str])
@@ -95,6 +118,9 @@ class DatabaseTable():
         else:
             self.Cursor.execute('''DELETE FROM %s WHERE ID = %s;''' % (self.TableName, ID))
         self.__Commit()
+    
+    def DeleteAll(self):
+        self.Cursor.execute('''TRUNCATE TABLE %s;''' % (self.TableName))
 
     def Change(self, CColumnName, CValue, TColumnName, TValue):
         if CColumnName not in self.Columns or TColumnName not in self.Columns:
@@ -117,9 +143,9 @@ class DatabaseTable():
             return ()
 
         if type(Value) == int:
-            SQL = '''select * from %s where %s = %s ''' % (TableName, ColumnName, Value)
+            SQL = '''select * from %s where %s = %s ''' % (self.TableName, ColumnName, Value)
         else:
-            SQL = '''select * from %s where %s = '%s' ''' % (TableName, ColumnName, Value)
+            SQL = '''select * from %s where %s = '%s' ''' % (self.TableName, ColumnName, Value)
         return self.__Execute(SQL)
 
     def SearchID(self, ColumnName, Value):
