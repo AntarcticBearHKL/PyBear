@@ -13,22 +13,27 @@ Style_L = '%Y-%m-%d %H:%M:%S'
 Style_Raw = '%Y %m %d %H %M %S'
 
 TimeZoneZero = tz.gettz('Etc/GMT+0')
+TimeZoneChina = tz.gettz('Asia/Shanghai')
 
 class Date:
     def __init__(self, Load=False):
         if Load:
-            if type(Load) == datetime.datetime:
-                self.Time = str(Load)
-            elif len(str(Load)) == 10:
+            if type(Load) == datetime.datetime: # DateTime
+                self.Time = Load
+
+            elif len(str(Load)) == 10: # TimeStamp
                 self.Time = datetime.datetime.fromtimestamp(int(Load))
-            elif len(str(Load).split('-')) == 3:
+            
+            elif len(str(Load).split('-')) == 3: #YY-MM-DD
                 Load = str(Load) + ' 00:00:00'
                 self.Time = datetime.datetime.strptime(Load, '%Y-%m-%d %H:%M:%S')
-            elif len(str(Load)) == 14:
+            
+            elif len(str(Load)) == 14: # YYMMDDhhmmss
                 Load = str(Load)
                 Load = Load[0:4] + '-' + Load[4:6] + '-' + Load[6:8] + '  ' + Load[8:10] + ':' + Load[10:12] + ':' + Load[12:14]
                 self.Time = datetime.datetime.strptime(Load, '%Y-%m-%d %H:%M:%S')
-            elif len(str(Load).split('-')) == 1:
+            
+            elif len(str(Load).split('-')) == 1: # YYMMDD
                 Load = str(Load)
                 Load = Load[0:4] + '-' + Load[4:6] + '-' + Load[6:8] + ' 00:00:00'
                 self.Time = datetime.datetime.strptime(Load, '%Y-%m-%d %H:%M:%S')
@@ -42,16 +47,46 @@ class Date:
     def Timestamp(self):
         return str(int(time.mktime(self.Time.timetuple())))
 
+    def AsLocalTimeZone(self):
+        return Date(self.Time.astimezone(TimeZoneChina))
+
+    def ResetTime(self, Year=None, Month=None, Day=None, Hour=None, Minute=None, Second=None):
+        NYear = self.YearInt()
+        if Year:
+           NYear = Year 
+
+        NMonth = self.MonthInt()
+        if Month:
+           NMonth = Month
+        
+        NDay = self.DayInt()
+        if Day:
+           NDay = Day 
+        
+        NHour = self.HourInt()
+        if Hour:
+           NHour = Hour 
+        
+        NMinute = self.MinuteInt()
+        if Minute:
+           NMinute = Minute 
+
+        NSecond = self.SecondInt()
+        if Second:
+           NSecond = Second 
+
+        return Date(datetime.datetime(NYear, NMonth, NDay, NHour, NMinute, NSecond))
+
 
     def Year(self):
         return str(self.Time.date().year)
 
     def Month(self):
-        ret = self.Time.date().month
-        if ret < 10:
-            return '0' + str(ret)
+        Ret = self.Time.date().month
+        if Ret < 10:
+            return '0' + str(Ret)
         else:
-            return str(ret)
+            return str(Ret)
 
     def Day(self):
         return str(self.Time.date().day)
@@ -85,7 +120,7 @@ class Date:
         return int(self.Time.time().second)
 
 
-    def __floordiv__(self, Rhs):
+    def __floordiv__(self, Rhs): #[Y,M,D,h,m,s] (//)
         Ret = []
         Ret.append(self.YearInt()- Rhs.YearInt())
         Ret.append(self.MonthInt()- Rhs.MonthInt())
@@ -95,7 +130,7 @@ class Date:
         Ret.append(self.SecondInt()- Rhs.SecondInt())
         return Ret
 
-    def __sub__(self, Rhs):
+    def __sub__(self, Rhs): # How Much Second (-)
         Ret = 0
         TimeList = self // Rhs
         YearStart = Rhs.YearInt()
@@ -152,25 +187,32 @@ class Date:
 
 
 class Calender:
-    def __init__(self):
-        self.getDays = calendar.monthrange
-
-    def GetDay(self):
-        return DS(datetime.datetime.now())
-
-    def GetMonth(self):
-        mmonth = int(month(datetime.datetime.now()))
-        if mmonth<10:
-            mmonth = '0' + str(mmonth)
+    def __init__(self, Year = None, Month = None):
+        if Year:
+            self.Year = str(Year)
         else:
-            mmonth = str(mmonth)
-        return year(datetime.datetime.now()) + '-' + mmonth
+            self.Year = Date().Year()
 
-    def GetYear(self):
-        return year(datetime.datetime.now())
+        if Month:
+            self.Month = self.GetMonth(Month)
+        else:
+            self.Month = self.GetMonth(None)
 
-    def GetDayNum(self, year, month):
-        return calendar.monthrange(year, month)[1]
+    def GetMonth(self, Month):
+        if not Month:
+            return Date().Month()
+        else:
+            if Month < 10:
+                return '0' + str(Month)
+            else:
+                return str(Month)
+
+    def HowManyDays(self):
+        return calendar.monthrange(int(self.Year), int(self.Month))[1]
+
+    def DayRange(self):
+        Days = self.HowManyDays()
+        return [Date().ResetTime(Day=1).String(Style=Style_SS), Date().ResetTime(Day=Days).String(Style=Style_SS)]
 
 
 class Chronus:

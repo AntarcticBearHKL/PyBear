@@ -32,20 +32,23 @@ class CHN:
             if TushareAvailiable:
                 raise BadBear('Tushare Cannot Use Without Token')
             self.API = tushare.pro_api()
+            self.ServerName = ServerName
+            self.UserName = UserName
+            self.UpdateManager = None
 
             self.BasicInfoTable = DatabaseTable(ServerName, UserName, 'CHNStockMarket', 'BasicInfo', Reload=False)
             self.TradeDayTable = DatabaseTable(ServerName, UserName, 'CHNStockMarket', 'TradeDay')
 
         def UpdateBasicInfo(self):
             self.BasicInfoTable.CheckColumn({
-                'CodeIDX': 'INT NOT NULL',
+                'CodeIDX': 'BIGINT NOT NULL',
                 'Code': 'CHAR(16) NOT NULL',
                 'Name': 'CHAR(16) NOT NULL',
                 'Area': 'CHAR(8) NOT NULL',
                 'Industry': 'CHAR(16) NOT NULL',
-            }, Index=[['CodeIDX', 'Code']])
+            }, Index=['CodeIDX'])
 
-            self.UpdateManager = UpdateManager(DatabaseTable(ServerName, UserName, 'CHNStockMarket', 'UpdateInfo', Reload=False)) 
+            self.UpdateManager = UpdateManager(DatabaseTable(self.ServerName, self.UserName, 'CHNStockMarket', 'UpdateInfo',))
 
             BasicInfo = self.API.stock_basic()
 
@@ -65,7 +68,7 @@ class CHN:
                 'Open': 'INT NOT NULL',
             }, Index=['Date'])
 
-            self.UpdateManager = UpdateManager(DatabaseTable(ServerName, UserName, 'CHNStockMarket', 'UpdateInfo', Reload=False)) 
+            self.UpdateManager = UpdateManager(DatabaseTable(self.ServerName, self.UserName, 'CHNStockMarket', 'UpdateInfo', Reload=False)) 
 
             TradeDay = self.API.trade_cal(exchange='', start_date='20000101', end_date='20181231')
 
@@ -78,8 +81,36 @@ class CHN:
 
             self.UpdateManager.Update('TradeDay')
 
-        def GetStockCodeList(self):
-            return LogicSequence(self.BaseName, 'AllStockCode')['have']
+        def SZStock(self):
+            if not self.UpdateManager:
+                self.UpdateManager = UpdateManager(DatabaseTable(self.ServerName, self.UserName, 'CHNStockMarket', 'UpdateInfo')) 
+            
+            if not self.UpdateManager.TableUpdateTime('BasicInfo'):
+                self.UpdateBasicInfo()
+            return [Item[2]+'.SZ' for Item in self.BasicInfoTable.SearchTable('WHERE CodeIDX<300000')]
+
+        def ZXStock(self):
+            if not self.UpdateManager:
+                self.UpdateManager = UpdateManager(DatabaseTable(self.ServerName, self.UserName, 'CHNStockMarket', 'UpdateInfo')) 
+            
+            if not self.UpdateManager.TableUpdateTime('BasicInfo'):
+                self.UpdateBasicInfo()
+            return [Item[2]+'.SZ' for Item in self.BasicInfoTable.SearchTable('WHERE CodeIDX<600000 AND CodeIDX>300000')]
+
+        def SHStock(self):
+            if not self.UpdateManager:
+                self.UpdateManager = UpdateManager(DatabaseTable(self.ServerName, self.UserName, 'CHNStockMarket', 'UpdateInfo')) 
+            
+            if not self.UpdateManager.TableUpdateTime('BasicInfo'):
+                self.UpdateBasicInfo()
+            return [Item[2]+'.SH' for Item in self.BasicInfoTable.SearchTable('WHERE CodeIDX<680000 AND CodeIDX>600000')]
+        def KCStock(self):
+            if not self.UpdateManager:
+                self.UpdateManager = UpdateManager(DatabaseTable(self.ServerName, self.UserName, 'CHNStockMarket', 'UpdateInfo')) 
+            
+            if not self.UpdateManager.TableUpdateTime('BasicInfo'):
+                self.UpdateBasicInfo()
+            return [Item[2]+'.SH' for Item in self.BasicInfoTable.SearchTable('WHERE CodeIDX>680000')]
 
     class FundMarket:
         def __init__(self):
@@ -100,38 +131,70 @@ class CHN:
 
     class Stock:
         def __init__(self, ServerName, UserName, Code):
-            self.StockMarket = CHN.StockMarket(ServerName, UserName)
+            self.StockMarket = None
             self.Code = Code
+            self.ServerName = ServerName
+            self.UserName = UserName
+            self.UpdateManager = None
             
             self.TickTable = DatabaseTable(ServerName, UserName, 'CHNStockMarket', self.Code[:6]+'_Price', Reload=False)
-            return
               
         def FullDownload(self):
             self.TickTable.CheckColumn({
-                'CodeIDX':          'INT NOT NULL',
-                'Code':             'CHAR(16) NOT NULL',
                 'Date':             'INT NOT NULL',
                 'Open':             'DECIMAL(6,4) NOT NULL',
                 'High':             'DECIMAL(6,4) NOT NULL',
                 'Low':              'DECIMAL(6,4) NOT NULL',
                 'Close':            'DECIMAL(6,4) NOT NULL',
-                'Change':           'DECIMAL(6,4) NOT NULL',
-                'ChangePercent':    'DECIMAL(6,4) NOT NULL',
+                'ChangedPrice':     'DECIMAL(6,4) NOT NULL',
+                'ChangedPercent':   'DECIMAL(6,4) NOT NULL',
                 'Volume':           'DECIMAL(13,4) NOT NULL',
                 'Amount':           'DECIMAL(13,4) NOT NULL',
-            }, Index=[['CodeIDX', 'Code']])
-            self.UpdateManager = UpdateManager(DatabaseTable(ServerName, UserName, 'CHNStockMarket', 'UpdateInfo', Reload=False)) 
+            }, Index=['Date'])
+            if not self.UpdateManager:
+                self.UpdateManager = UpdateManager(DatabaseTable(self.ServerName, self.UserName, 'CHNStockMarket', 'UpdateInfo')) 
 
             Tick = tushare.pro_bar(ts_code = self.Code, adj='qfq', start_date='20050101', end_date=Date().String(Style='SS'))
+
+            Values = []
+            for Item in Tick.itertuples():
+                Values.append([
+                    int(Item.trade_date),
+                    float(Item.open),
+                    float(Item.high),
+                    float(Item.low),
+                    float(Item.close),
+                    float(Item.change),
+                    float(Item.pct_chg),
+                    float(Item.vol),
+                    float(Item.amount),
+                    ])
+            Values.reverse()
             
-            print(Tick)
-            print(Tick.amount[0])
+            self.TickTable.DeleteAll()
+            self.TickTable.Insert(['Date', 'Open', 'High', 'Low', 'Close', 'ChangedPrice', 'ChangedPercent', 'Volume', 'Amount'], Values)
+
+            self.UpdateManager.Update(self.Code[:6]+'_Price')
+            print(self.Code+' Full Download Finished')
             
-        def update(self):
+        def Update(self):
             pass
 
-        def updated(self):
-            pass
+        def Sync(self):
+            if not self.UpdateManager:
+                self.UpdateManager = UpdateManager(DatabaseTable(self.ServerName, self.UserName, 'CHNStockMarket', 'UpdateInfo')) 
+            
+            Exist = self.UpdateManager.TableUpdateTime(self.Code+'_Price')
+
+            if not Exist:
+                self.FullDownload() 
+                return
+
+            if not self.StockMarket:
+                self.StockMarket = CHN.StockMarket(self.ServerName, self.UserName)
+            self.StockMarket
+
+            Date().String()
 
         def getOpen(self):
             pass

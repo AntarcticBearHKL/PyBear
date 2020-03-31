@@ -117,7 +117,7 @@ class DatabaseTable():
             for Member in Item:
                 if type(Member) == str:
                     ValueInserted += '\'' + Member + '\','
-                elif type(Member) == int:
+                elif type(Member) == int or type(Member) == float:
                     ValueInserted += str(Member) + ','
                 elif type(Member) == list:
                     ValueInserted += str(Member[0]) + ','
@@ -169,15 +169,15 @@ class UpdateManager:
     def __init__(self, DatabaseTable):
         self.DatabaseTable = DatabaseTable
         self.DatabaseTable.CheckColumn({
-            'ItemIDX': 'INT NOT NULL',
+            'ItemIDX': 'BIGINT NOT NULL',
             'ItemName': 'CHAR(64) NOT NULL',
             'UpdateTime': 'CHAR(16) NOT NULL',
-        }, Index=[['ItemIDX', 'ItemName']])
+        }, Index={'ItemIndex':['ItemIDX', 'ItemName']})
 
 
     def Update(self, Name):
         Recode = self.DatabaseTable.SearchID('''WHERE ItemIDX=CRC32('%s') AND ItemName='%s' ''' % (Name, Name))
-        if len(Recode) == 1:
+        if len(Recode) == 1: 
             self.DatabaseTable.Change(Recode[0], 'UpdateTime', Date().String())
         elif len(Recode) == 0:
             self.DatabaseTable.Insert( 
@@ -189,4 +189,8 @@ class UpdateManager:
             ],])
 
     def TableUpdateTime(self, Name):
-        return Date((self.DatabaseTable.SearchTable('''WHERE ItemIDX=CRC32('%s') AND ItemName='%s' ''' % (Name, Name)))[0][3])
+        Result = self.DatabaseTable.SearchTable('''WHERE ItemIDX=CRC32('%s') AND ItemName='%s' ''' % (Name, Name))
+        if len(Result) == 0:
+            return None
+        else:
+            return Date(Result[0][3])
