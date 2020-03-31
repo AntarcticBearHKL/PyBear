@@ -31,49 +31,65 @@ class CHN:
         def __init__(self, ServerName, UserName):
             if TushareAvailiable:
                 raise BadBear('Tushare Cannot Use Without Token')
-            self.BaseName = None
             self.API = tushare.pro_api()
 
-            self.BasicInfoTable = DatabaseTable(ServerName, UserName, 'StockMarket', 'BasicInfo')
-            self.BasicInfoTable.CheckColumn({
-                'Code': 'CHAR(10) NOT NULL',
-                'Name': 'CHAR(12) NOT NULL',
-                'Area': 'CHAR(6) NOT NULL',
-                'Industry': 'CHAR(12) NOT NULL',
-            }, Index=['Code'])
-
-            print(self.BasicInfoTable.SearchTable('ID', 3794))
-
-            self.TradeDayTable = DatabaseTable(ServerName, UserName, 'StockMarket', 'TradeDay')
+            self.BasicInfoTable = DatabaseTable(ServerName, UserName, 'CHNStockMarket', 'BasicInfo', Reload=False)
+            self.TradeDayTable = DatabaseTable(ServerName, UserName, 'CHNStockMarket', 'TradeDay')
 
         def UpdateBasicInfo(self):
+            self.BasicInfoTable.CheckColumn({
+                'CodeIDX': 'INT NOT NULL',
+                'Code': 'CHAR(16) NOT NULL',
+                'Name': 'CHAR(16) NOT NULL',
+                'Area': 'CHAR(8) NOT NULL',
+                'Industry': 'CHAR(16) NOT NULL',
+            }, Index=[['CodeIDX', 'Code']])
+
+            self.UpdateManager = UpdateManager(DatabaseTable(ServerName, UserName, 'CHNStockMarket', 'UpdateInfo', Reload=False)) 
+
             BasicInfo = self.API.stock_basic()
+
             Values = []
             for Item in BasicInfo.itertuples():
-                Values.append([Item.symbol, Item.name, Item.area, Item.industry])
+                Values.append([int(Item.symbol), Item.symbol, Item.name, Item.area, Item.industry])
+            
             self.BasicInfoTable.DeleteAll()
-            self.BasicInfoTable.Insert(['Code', 'Name', 'Area', 'Industry'], Values)
+            self.BasicInfoTable.Insert(['CodeIDX', 'Code', 'Name', 'Area', 'Industry'], Values)
+
+            self.UpdateManager.Update('BasicInfo')
+
 
         def UpdateTradeDay(self, latest=False):
-            tradeday = self.API.trade_cal(exchange='', start_date='20000101', end_date='20181231')
-            print(tradeday)
-            ret = {}
-            for item in range(len(tradeday)):
-                ret[tradeday.loc[item]['cal_date']] = str(tradeday.loc[item]['is_open'])
-            TimeSequence(self.BaseName, 'TradeDay').feed(ret)
+            self.TradeDayTable.CheckColumn({
+                'Date': 'INT NOT NULL',
+                'Open': 'INT NOT NULL',
+            }, Index=['Date'])
+
+            self.UpdateManager = UpdateManager(DatabaseTable(ServerName, UserName, 'CHNStockMarket', 'UpdateInfo', Reload=False)) 
+
+            TradeDay = self.API.trade_cal(exchange='', start_date='20000101', end_date='20181231')
+
+            Values = []
+            for Item in TradeDay.itertuples():
+                Values.append([int(Item.cal_date), int(Item.is_open)])
+            
+            self.TradeDayTable.DeleteAll()
+            self.TradeDayTable.Insert(['Date', 'Open'], Values)
+
+            self.UpdateManager.Update('TradeDay')
 
         def GetStockCodeList(self):
             return LogicSequence(self.BaseName, 'AllStockCode')['have']
 
-    class FutureMarket:
-        def __init__(self):
-            pass
-
-    class OptionMarket:
-        def __init__(self):
-            pass
-
     class FundMarket:
+        def __init__(self):
+            pass
+
+    class CommodityMarket:
+        def __init__(self):
+            pass
+
+    class RealEstateMarket:
         def __init__(self):
             pass
 
@@ -83,34 +99,34 @@ class CHN:
             pass
 
     class Stock:
-        def __init__(self, code):
-            self.stockMarket = CHN.StockMarket()
-            self.BaseName = Config.CNHStockHome
-            self.code = code
-              
-        def fulldownload(self):
-            tick = tushare.pro_bar(ts_code = self.code, adj='qfq', start_date='20010101', end_date=Date().to_string(style='S1'))
+        def __init__(self, ServerName, UserName, Code):
+            self.StockMarket = CHN.StockMarket(ServerName, UserName)
+            self.Code = Code
             
-            _open = {}
-            _close = {}
-            _high = {}
-            _low = {}
-            _vol = {}
-            for item in range(len(tick)):
-                _open[tick.loc[item]['trade_date']] = tick.loc[item]['open']
-                _close[tick.loc[item]['trade_date']] = tick.loc[item]['close']
-                _high[tick.loc[item]['trade_date']] = tick.loc[item]['high']
-                _low[tick.loc[item]['trade_date']] = tick.loc[item]['low']
-                _vol[tick.loc[item]['trade_date']] = tick.loc[item]['vol']
-            TimeSequence(self.BaseName, self.code + '_open').feed(_open)
-            TimeSequence(self.BaseName, self.code + '_close').feed(_close)
-            TimeSequence(self.BaseName, self.code + '_high').feed(_high)
-            TimeSequence(self.BaseName, self.code + '_low').feed(_low)
-            TimeSequence(self.BaseName, self.code + '_vol').feed(_vol)
-            print(Date() - t)
-            t = Date()
-            print('Finish Download Tick: ' + self.code)
+            self.TickTable = DatabaseTable(ServerName, UserName, 'CHNStockMarket', self.Code[:6]+'_Price', Reload=False)
+            return
+              
+        def FullDownload(self):
+            self.TickTable.CheckColumn({
+                'CodeIDX':          'INT NOT NULL',
+                'Code':             'CHAR(16) NOT NULL',
+                'Date':             'INT NOT NULL',
+                'Open':             'DECIMAL(6,4) NOT NULL',
+                'High':             'DECIMAL(6,4) NOT NULL',
+                'Low':              'DECIMAL(6,4) NOT NULL',
+                'Close':            'DECIMAL(6,4) NOT NULL',
+                'Change':           'DECIMAL(6,4) NOT NULL',
+                'ChangePercent':    'DECIMAL(6,4) NOT NULL',
+                'Volume':           'DECIMAL(13,4) NOT NULL',
+                'Amount':           'DECIMAL(13,4) NOT NULL',
+            }, Index=[['CodeIDX', 'Code']])
+            self.UpdateManager = UpdateManager(DatabaseTable(ServerName, UserName, 'CHNStockMarket', 'UpdateInfo', Reload=False)) 
 
+            Tick = tushare.pro_bar(ts_code = self.Code, adj='qfq', start_date='20050101', end_date=Date().String(Style='SS'))
+            
+            print(Tick)
+            print(Tick.amount[0])
+            
         def update(self):
             pass
 
@@ -129,16 +145,15 @@ class CHN:
         def getLow(self):
             pass
 
-     
-    class Future:
-        def __init__(self):
-            pass
-
-    class Option:
-        def __init__(self):
-            pass
-
     class Fund:
+        def __init__(self):
+            pass
+     
+    class Commodity:
+        def __init__(self):
+            pass
+
+    class RealEstate:
         def __init__(self):
             pass
 

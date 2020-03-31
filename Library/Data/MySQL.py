@@ -2,9 +2,10 @@ import pymysql
 import os, sys
 
 from PyBear.GlobalBear import *
+from PyBear.Library.Chronus import *
 
 class DatabaseTable():
-    def __init__(self, ServerName, UserName, DatabaseName, TableName):
+    def __init__(self, ServerName, UserName, DatabaseName, TableName, Reload = False):
         self.Connection = pymysql.connect(
             host=GetServer(ServerName).IP,
             port=GetServer(ServerName).Port,
@@ -18,8 +19,12 @@ class DatabaseTable():
         if self.TableName not in Tables:
             SQL = '''CREATE TABLE %s (ID INT AUTO_INCREMENT, PRIMARY KEY(ID)) CHARSET=utf8;''' % (self.TableName)
             self.__Execute(SQL)
+        elif Reload:
+            self.__Execute('''DROP TABLE %s''' % (self.TableName))
+            SQL = '''CREATE TABLE %s (ID INT AUTO_INCREMENT, PRIMARY KEY(ID)) CHARSET=utf8;''' % (self.TableName)
+            self.__Execute(SQL)
 
-        self.ListColumn()
+        self.ListColumns()
     
     def __ShowResult(self):
         return self.Cursor.fetchall()
@@ -56,7 +61,7 @@ class DatabaseTable():
             else:
                 return
         self.__Execute(SQL)
-        self.ListColumn()
+        self.ListColumns()
 
     def AddUniqueIndex(self):
         pass
@@ -64,7 +69,11 @@ class DatabaseTable():
     def AddFulltextIndex(self):
         pass
 
-    def ListColumn(self):
+    def ListColumn(self, ColumnName):
+        SQL = '''SELECT %s FROM %s''' % (ColumnName, self.TableName)
+        return self.__Execute(SQL)
+
+    def ListColumns(self):
         SQL = '''SHOW COLUMNS FROM %s''' % (self.TableName)
         self.ColumnsDetail = self.__Execute(SQL)
         self.Columns = [Item[0] for Item in self.ColumnsDetail]
@@ -98,16 +107,22 @@ class DatabaseTable():
 
 
     def Insert(self, ColumnName, Data):
-        print(ColumnName)
         for Item in ColumnName:
             if Item not in self.Columns:
-                return
-        
+                return        
         ColumnName = ','.join(ColumnName)
 
         for Item in Data:
-            Item = ','.join(['\''+Value+'\'' for Value in Item if type(Value) == str])
-            SQL = '''INSERT INTO %s (%s) VALUES (%s);''' % (self.TableName, ColumnName, Item)
+            ValueInserted = ''
+            for Member in Item:
+                if type(Member) == str:
+                    ValueInserted += '\'' + Member + '\','
+                elif type(Member) == int:
+                    ValueInserted += str(Member) + ','
+                elif type(Member) == list:
+                    ValueInserted += str(Member[0]) + ','
+            ValueInserted = ValueInserted[:-1]
+            SQL = '''INSERT INTO %s (%s) VALUES (%s);''' % (self.TableName, ColumnName, ValueInserted)
             self.Cursor.execute(SQL) 
         self.__Commit()
     
@@ -122,15 +137,11 @@ class DatabaseTable():
     def DeleteAll(self):
         self.Cursor.execute('''TRUNCATE TABLE %s;''' % (self.TableName))
 
-    def Change(self, CColumnName, CValue, TColumnName, TValue):
-        if CColumnName not in self.Columns or TColumnName not in self.Columns:
+    def Change(self, ID, ColumnName, Value):
+        if ColumnName not in self.Columns:
             return
 
-        if type(CValue) == str:
-            CValue = '\'' + CValue + '\''
-        if type(TValue) == str:
-            TValue = '\'' + TValue + '\''
-        SQL = '''UPDATE %s SET %s = %s WHERE %s = %s;''' % (TableName, TColumnName, TValue, CColumnName, CValue)
+        SQL = '''UPDATE %s SET %s = %s WHERE ID = %s;''' % (self.TableName, ColumnName, Value, ID)
         self.__Execute(SQL)
 
 
@@ -138,20 +149,44 @@ class DatabaseTable():
     def ListTable(self): 
         return self.__Execute('''SELECT * FROM %s''' % (self.TableName))
 
-    def SearchTable(self, ColumnName, Value):
-        if ColumnName not in self.Columns:
-            return ()
+    def SearchTable(self, Condition):
+        return self.__Execute('''SELECT * FROM %s %s''' % (self.TableName, Condition))
 
-        if type(Value) == int:
-            SQL = '''select * from %s where %s = %s ''' % (self.TableName, ColumnName, Value)
-        else:
-            SQL = '''select * from %s where %s = '%s' ''' % (self.TableName, ColumnName, Value)
-        return self.__Execute(SQL)
-
-    def SearchID(self, ColumnName, Value):
-        return [Item[0] for Item in self.SearchTable(ColumnName, Value)]
+    def SearchID(self, Condition):
+        return [Item[0] for Item in self.SearchTable(Condition)]
 
 
     def Distinct(self, ColumnName):
         SQL = '''DELETE %s FROM %s, (SELECT min(id) AS mid, %s FROM %s GROUP BY %s) AS t2 WHERE %s.id != t2.mid;''' % (self.TableName, self.TableName, ColumnName, self.TableName, ColumnName, self.TableName)
         self.__Execute(SQL)
+
+
+def SQLString(String):
+    return '\'' + String + '\''
+
+
+class UpdateManager:
+    def __init__(self, DatabaseTable):
+        self.DatabaseTable = DatabaseTable
+        self.DatabaseTable.CheckColumn({
+            'ItemIDX': 'INT NOT NULL',
+            'ItemName': 'CHAR(64) NOT NULL',
+            'UpdateTime': 'CHAR(16) NOT NULL',
+        }, Index=[['ItemIDX', 'ItemName']])
+
+
+    def Update(self, Name):
+        Recode = self.DatabaseTable.SearchID('''WHERE ItemIDX=CRC32('%s') AND ItemName='%s' ''' % (Name, Name))
+        if len(Recode) == 1:
+            self.DatabaseTable.Change(Recode[0], 'UpdateTime', Date().String())
+        elif len(Recode) == 0:
+            self.DatabaseTable.Insert( 
+            ['ItemIDX', 'ItemName', 'UpdateTime'], 
+            [[
+                ['''CRC32('%s')''' % (Name)], 
+                Name, 
+                Date().String(),
+            ],])
+
+    def TableUpdateTime(self, Name):
+        return Date((self.DatabaseTable.SearchTable('''WHERE ItemIDX=CRC32('%s') AND ItemName='%s' ''' % (Name, Name)))[0][3])

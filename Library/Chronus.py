@@ -2,6 +2,7 @@ import calendar
 import datetime
 import time
 import sys,os
+from dateutil import tz, zoneinfo
 
 from PyBear.GlobalBear import *
 
@@ -11,13 +12,15 @@ Style_M = '%Y-%m-%d'
 Style_L = '%Y-%m-%d %H:%M:%S'
 Style_Raw = '%Y %m %d %H %M %S'
 
+TimeZoneZero = tz.gettz('Etc/GMT+0')
+
 class Date:
     def __init__(self, Load=False):
         if Load:
             if type(Load) == datetime.datetime:
                 self.Time = str(Load)
-            elif len(str(Load).split('.')) == 2:
-                self.Time = datetime.datetime.fromtimestamp(Load)
+            elif len(str(Load)) == 10:
+                self.Time = datetime.datetime.fromtimestamp(int(Load))
             elif len(str(Load).split('-')) == 3:
                 Load = str(Load) + ' 00:00:00'
                 self.Time = datetime.datetime.strptime(Load, '%Y-%m-%d %H:%M:%S')
@@ -30,16 +33,14 @@ class Date:
                 Load = Load[0:4] + '-' + Load[4:6] + '-' + Load[6:8] + ' 00:00:00'
                 self.Time = datetime.datetime.strptime(Load, '%Y-%m-%d %H:%M:%S')
         else:
-            self.Time = datetime.datetime.now()
+            self.Time = datetime.datetime.now(tz=TimeZoneZero)
 
 
     def String(self, Style = Style_SL):
         return self.Time.strftime(Style)
 
     def Timestamp(self):
-        return time.mktime(self.Time.timetuple()), int(time.mktime(self.Time.timetuple()))
-
-        return int(time.mktime(self.Time.timetuple()))
+        return str(int(time.mktime(self.Time.timetuple())))
 
 
     def Year(self):
@@ -191,13 +192,13 @@ class Chronus:
         time.sleep(sec)
 
     def Alarm(day = 0, hour = 0, minute = 0, second = 0):
-        print ('\t----------START AT: ' + str(now()) + '----------')
+        print ('\t----------START AT: ' + Chronus.Clock() + '----------')
         if day != 0 or hour != 0 or minute != 0 or second != 0:
             _interval = day*60*60*24 + hour*60*60 + minute*60 + second
             time.sleep(_interval)
         else:
             return -1
-        print ('\t---------- END  AT: ' + str(now()) + '----------')
+        print ('\t---------- END  AT: ' + Chronus.Clock() + '----------')
 
     def IntervalSchedule(fn, hour=0, minute=0, second=0):
         if hour==0 and minute==0 and second==0:
@@ -205,9 +206,9 @@ class Chronus:
             exit()
         waitSecond = hour*3600 + minute*60 + second
         while(True):
-            print('\nSchedule start at : ' + Chronus.clock() + ' : call function: ' + fn.__name__ + ' : and return :')
+            print('\nSchedule start at : ' + Chronus.Clock() + ' : call function: ' + fn.__name__ + ' : and return :')
             fn()
-            print('Schedule end at : ' + Chronus.clock())
+            print('Schedule end at : ' + Chronus.Clock())
             Sleep(waitSecond)
 
     def TimedSchedule(fn, timer):
