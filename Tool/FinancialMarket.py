@@ -91,9 +91,9 @@ class CHN:
             return Ret
 
         def LastTradeDay(self, TestedDay):
-            if type(TestedDay) == Date:
-                TestedDay = TestedDay.String(Style=Style_SS)
-            Ret = self.TradeDayTable.SearchTable('''WHERE Date<=%s'''%(TestedDay), Columns='''MAX(Date)''')
+            if TestedDay.HourInt() < 16:
+                TestedDay = Date().ResetTime(Day=-1)
+            Ret = self.TradeDayTable.SearchTable('''WHERE Date<=%s'''%(TestedDay.String(Style=Style_SS)), Columns='''MAX(Date)''')
             return Ret
 
 
