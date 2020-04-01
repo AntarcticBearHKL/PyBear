@@ -71,7 +71,7 @@ class CHN:
             if not self.UpdateManager:
                 self.UpdateManager = UpdateManager(DatabaseTable(self.ServerName, self.UserName, 'CHNStockMarket', 'UpdateInfo')) 
 
-            TradeDay = self.API.trade_cal(exchange='', start_date='20000101', end_date=Date().ResetTime(Month=12, Day=999).String(Style=Style_SS))
+            TradeDay = self.API.trade_cal(exchange='', start_date='20000101', end_date=Date().SetTime(Month=12, Day=999).String(Style=Style_SS))
 
             Values = []
             for Item in TradeDay.itertuples():
@@ -88,13 +88,17 @@ class CHN:
             if type(TestedDay) == Date:
                 TestedDay = TestedDay.String(Style=Style_SS)
             Ret = self.TradeDayTable.SearchTable('''WHERE Date=%s'''%(TestedDay))
-            return Ret
+            if len(Ret) > 0:
+                return True
+            return False
 
-        def LastTradeDay(self, TestedDay):
+        def LastTradeDay(self, TestedDay = None):
+            if not TestedDay:
+                TestedDay = Date()
             if TestedDay.HourInt() < 16:
                 TestedDay = Date().ResetTime(Day=-1)
             Ret = self.TradeDayTable.SearchTable('''WHERE Date<=%s'''%(TestedDay.String(Style=Style_SS)), Columns='''MAX(Date)''')
-            return Ret
+            return Ret[0][0]
 
 
         def SZStock(self):
@@ -156,6 +160,7 @@ class CHN:
             self.TickTable = DatabaseTable(ServerName, UserName, 'CHNStockMarket', self.Code[:6]+'_Price', Reload=False)
               
         def FullDownload(self):
+            print(self.Code+' Full Download Start')
             self.TickTable.CheckColumn({
                 'Date':             'INT NOT NULL',
                 'Open':             'DECIMAL(6,4) NOT NULL',
@@ -196,19 +201,26 @@ class CHN:
         def Sync(self):
             if not self.UpdateManager:
                 self.UpdateManager = UpdateManager(DatabaseTable(self.ServerName, self.UserName, 'CHNStockMarket', 'UpdateInfo')) 
-            
-            UpdateTime = self.UpdateManager.TableUpdateTime(self.Code+'_Price')
 
-            if not UpdateTime:
+            if not self.UpdateManager.TableUpdateTime(self.Code[:6]+'_Price'):
                 self.FullDownload() 
                 return
 
             if not self.StockMarket:
                 self.StockMarket = CHN.StockMarket(self.ServerName, self.UserName)
 
-            Date().String()
+            LastTradeDay = self.StockMarket.LastTradeDay()
+            CurrentTradeDay = self.TickTable.SearchTable('', Columns='MAX(Date)')[0][0]
 
-            self.UpdateManager.Update(self.Code[:6]+'_Price')
+            if CurrentTradeDay < LastTradeDay or 1:
+                RequestStart = Date(CurrentTradeDay).ResetTime(Day=1).String(Style=Style_SS)
+                Tick = tushare.pro_bar(ts_code = self.Code, adj='qfq', start_date=str(RequestStart), end_date=str(LastTradeDay))
+                print(Tick)
+                return
+
+                self.UpdateManager.Update(self.Code[:6]+'_Price')
+
+            print(self.Code+' Synchronize Finished')
 
         def getOpen(self):
             pass
