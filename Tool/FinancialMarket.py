@@ -158,6 +158,9 @@ class CHN:
             self.UpdateManager = None
             
             self.TickTable = DatabaseTable(ServerName, UserName, 'CHNStockMarket', self.Code[:6]+'_Price', Reload=False)
+
+        def GetSize(self):
+            return self.TickTable.TableSize()
               
         def FullDownload(self):
             print(self.Code+' Full Download Start')
@@ -212,7 +215,7 @@ class CHN:
             LastTradeDay = self.StockMarket.LastTradeDay()
             CurrentTradeDay = self.TickTable.SearchTable('', Columns='MAX(Date)')[0][0]
 
-            if CurrentTradeDay < LastTradeDay or 1:
+            if CurrentTradeDay < LastTradeDay:
                 RequestStart = Date(CurrentTradeDay).ResetTime(Day=1).String(Style=Style_SS)
                 Tick = tushare.pro_bar(ts_code = self.Code, adj='qfq', start_date=str(RequestStart), end_date=str(LastTradeDay))
                 print(Tick)

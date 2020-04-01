@@ -51,50 +51,86 @@ class Date:
         return Date(self.Time.astimezone(TimeZoneZero))
 
     def SetTime(self, Year=None, Month=None, Day=None, Hour=None, Minute=None, Second=None):
-        pass
-
-    def ResetTime(self, Year=None, Month=None, Day=None, Hour=None, Minute=None, Second=None):
         if Year:
-            if Year > 0:
-                NYear = Year 
-            else:
-                NYear = self.YearInt() + Year
+            NYear = Year
         else:
             NYear = self.YearInt()
 
         if Month:
-            if Month > 0:
-                NMonth = Month
-            else:
-                NMonth = self.MonthInt() + Month
-                if NMonth <= 0:
-                    NMonth = 12
-                    NYear -= 1
+            NMonth = Month
         else:
             NMonth = self.MonthInt()
         
         if Day:
-            if Day > 0:
-                if Day == 999:
-                    NDay = Calender(Year=NYear, Month=NMonth).HowManyDays()
-                else:
-                    NDay = Day 
+            if Day == 999:
+                NDay = Calender(Year=NYear, Month=NMonth).HowManyDays()
             else:
-                NDay = self.DayInt() + Day
-                if NDay <= 0:
+                NDay = Day
+        else:
+            NDay = self.DayInt()
+        
+        if Hour:
+            NHour = Hour
+        else:
+            NHour = self.HourInt()
+
+        if Minute:
+            NMinute = Minute
+        else:
+            NMinute = self.MinuteInt()
+
+        if Second:
+            NSecond = Second
+        else:
+            NSecond = self.SecondInt()
+
+        return Date(datetime.datetime(NYear, NMonth, NDay, NHour, NMinute, NSecond))
+            
+
+    def ResetTime(self, Year=None, Month=None, Day=None, Hour=None, Minute=None, Second=None):
+        if Year:
+            NYear = self.YearInt() + Year
+        else:
+            NYear = self.YearInt()
+
+        if Month:
+            NMonth = self.MonthInt() + Month
+            if NMonth <= 0:
+                NMonth = 12
+                NYear -= 1
+        else:
+            NMonth = self.MonthInt()
+        
+        if Day:
+            NDay = self.DayInt() + Day
+            if NDay <= 0:
+                NMonth -= 1
+                if NMonth == 0:
+                    NMonth = 12
+                    NYear -= 1
+                NDay = Calender(Year=NYear, Month=NMonth).HowManyDays()
+        else:
+            NDay = self.DayInt()
+        
+        if Hour:
+            NHour = self.HourInt() + Hour
+            if NHour < 0:
+                NHour = 23
+                NDay -= 1
+                if NDay == 0:
                     NMonth -= 1
                     if NMonth == 0:
                         NMonth = 12
                         NYear -= 1
                     NDay = Calender(Year=NYear, Month=NMonth).HowManyDays()
         else:
-            NDay = self.DayInt()
-        
-        if type(Hour) == int:
-            if Hour >= 0:
-                NHour = Hour 
-            else:
-                NHour = self.HourInt() + Hour
+            NHour = self.HourInt()
+
+        if Minute:
+            NMinute = self.MinuteInt() + Minute
+            if NMinute < 0:
+                NMinute = 59
+                NHour -= 1
                 if NHour < 0:
                     NHour = 23
                     NDay -= 1
@@ -105,13 +141,13 @@ class Date:
                             NYear -= 1
                         NDay = Calender(Year=NYear, Month=NMonth).HowManyDays()
         else:
-            NHour = self.HourInt()
+            NMinute = self.MinuteInt()
 
-        if type(Minute) == int:
-            if Minute >= 0:
-                NMinute = Minute 
-            else:
-                NMinute = self.MinuteInt() + Minute
+        if Second:
+            NSecond = self.SecondInt() + Second
+            if NSecond < 0:
+                NSecond = 59
+                NMinute -= 1
                 if NMinute < 0:
                     NMinute = 59
                     NHour -= 1
@@ -124,29 +160,6 @@ class Date:
                                 NMonth = 12
                                 NYear -= 1
                             NDay = Calender(Year=NYear, Month=NMonth).HowManyDays()
-        else:
-            NMinute = self.MinuteInt()
-
-        if type(Second) == int:
-            if Second >= 0:
-                NSecond = Second 
-            else:
-                NSecond = self.SecondInt() + Second
-                if NSecond < 0:
-                    NSecond = 59
-                    NMinute -= 1
-                    if NMinute < 0:
-                        NMinute = 59
-                        NHour -= 1
-                        if NHour < 0:
-                            NHour = 23
-                            NDay -= 1
-                            if NDay == 0:
-                                NMonth -= 1
-                                if NMonth == 0:
-                                    NMonth = 12
-                                    NYear -= 1
-                                NDay = Calender(Year=NYear, Month=NMonth).HowManyDays()
         else:
             NSecond = self.SecondInt()
 

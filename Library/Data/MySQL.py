@@ -12,6 +12,7 @@ class DatabaseTable():
             user=GetUser(UserName).UserName,
             passwd=GetUser(UserName).Password,
             db=DatabaseName,)
+        self.DatabaseName = DatabaseName
         self.TableName = TableName
         self.Cursor = self.Connection.cursor()
 
@@ -159,6 +160,10 @@ class DatabaseTable():
     def Distinct(self, ColumnName):
         SQL = '''DELETE %s FROM %s, (SELECT min(id) AS mid, %s FROM %s GROUP BY %s) AS t2 WHERE %s.id != t2.mid;''' % (self.TableName, self.TableName, ColumnName, self.TableName, ColumnName, self.TableName)
         self.__Execute(SQL)
+
+    def TableSize(self):
+        SQL = ''' SELECT CONCAT(ROUND(SUM(DATA_LENGTH/1024/1024),2),'MB') as data from information_schema.TABLES where table_schema='%s' and table_name='%s'; ''' % (self.DatabaseName, self.TableName)
+        return self.__Execute(SQL)[0][0]
 
 
 def SQLString(String):
