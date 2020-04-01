@@ -149,8 +149,8 @@ class DatabaseTable():
     def ListTable(self): 
         return self.__Execute('''SELECT * FROM %s''' % (self.TableName))
 
-    def SearchTable(self, Condition):
-        return self.__Execute('''SELECT * FROM %s %s''' % (self.TableName, Condition))
+    def SearchTable(self, Condition, Columns='*'):
+        return self.__Execute('''SELECT %s FROM %s %s''' % (Columns, self.TableName, Condition))
 
     def SearchID(self, Condition):
         return [Item[0] for Item in self.SearchTable(Condition)]

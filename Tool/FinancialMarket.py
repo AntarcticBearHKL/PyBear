@@ -48,7 +48,8 @@ class CHN:
                 'Industry': 'CHAR(16) NOT NULL',
             }, Index=['CodeIDX'])
 
-            self.UpdateManager = UpdateManager(DatabaseTable(self.ServerName, self.UserName, 'CHNStockMarket', 'UpdateInfo',))
+            if not self.UpdateManager:
+                self.UpdateManager = UpdateManager(DatabaseTable(self.ServerName, self.UserName, 'CHNStockMarket', 'UpdateInfo')) 
 
             BasicInfo = self.API.stock_basic()
 
@@ -61,16 +62,16 @@ class CHN:
 
             self.UpdateManager.Update('BasicInfo')
 
-
         def UpdateTradeDay(self, latest=False):
             self.TradeDayTable.CheckColumn({
                 'Date': 'INT NOT NULL',
                 'Open': 'INT NOT NULL',
             }, Index=['Date'])
 
-            self.UpdateManager = UpdateManager(DatabaseTable(self.ServerName, self.UserName, 'CHNStockMarket', 'UpdateInfo', Reload=False)) 
+            if not self.UpdateManager:
+                self.UpdateManager = UpdateManager(DatabaseTable(self.ServerName, self.UserName, 'CHNStockMarket', 'UpdateInfo')) 
 
-            TradeDay = self.API.trade_cal(exchange='', start_date='20000101', end_date='20181231')
+            TradeDay = self.API.trade_cal(exchange='', start_date='20000101', end_date=Date().ResetTime(Month=12, Day=999).String(Style=Style_SS))
 
             Values = []
             for Item in TradeDay.itertuples():
@@ -80,6 +81,21 @@ class CHN:
             self.TradeDayTable.Insert(['Date', 'Open'], Values)
 
             self.UpdateManager.Update('TradeDay')
+            print('TradeDay Updated')
+
+
+        def IsTradeDay(self, TestedDay):
+            if type(TestedDay) == Date:
+                TestedDay = TestedDay.String(Style=Style_SS)
+            Ret = self.TradeDayTable.SearchTable('''WHERE Date=%s'''%(TestedDay))
+            return Ret
+
+        def LastTradeDay(self, TestedDay):
+            if type(TestedDay) == Date:
+                TestedDay = TestedDay.String(Style=Style_SS)
+            Ret = self.TradeDayTable.SearchTable('''WHERE Date<=%s'''%(TestedDay), Columns='''MAX(Date)''')
+            return Ret
+
 
         def SZStock(self):
             if not self.UpdateManager:
@@ -176,25 +192,23 @@ class CHN:
 
             self.UpdateManager.Update(self.Code[:6]+'_Price')
             print(self.Code+' Full Download Finished')
-            
-        def Update(self):
-            pass
 
         def Sync(self):
             if not self.UpdateManager:
                 self.UpdateManager = UpdateManager(DatabaseTable(self.ServerName, self.UserName, 'CHNStockMarket', 'UpdateInfo')) 
             
-            Exist = self.UpdateManager.TableUpdateTime(self.Code+'_Price')
+            UpdateTime = self.UpdateManager.TableUpdateTime(self.Code+'_Price')
 
-            if not Exist:
+            if not UpdateTime:
                 self.FullDownload() 
                 return
 
             if not self.StockMarket:
                 self.StockMarket = CHN.StockMarket(self.ServerName, self.UserName)
-            self.StockMarket
 
             Date().String()
+
+            self.UpdateManager.Update(self.Code[:6]+'_Price')
 
         def getOpen(self):
             pass

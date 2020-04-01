@@ -52,28 +52,43 @@ class Date:
 
     def ResetTime(self, Year=None, Month=None, Day=None, Hour=None, Minute=None, Second=None):
         NYear = self.YearInt()
-        if Year:
-           NYear = Year 
+        if Year > 0:
+            NYear = Year 
+        else:
+            NYear = NYear - Year
 
         NMonth = self.MonthInt()
-        if Month:
-           NMonth = Month
+        if Month > 0:
+            NMonth = Month
+        else:
+            NMonth = NMonth - Month
         
         NDay = self.DayInt()
-        if Day:
-           NDay = Day 
+        if Day > 0:
+            if Day == 999:
+                NDay = Calender(Year=NYear, Month=NMonth).HowManyDays()
+            else:
+                NDay = Day 
+        else:
+            NDay = NDay - Day
         
         NHour = self.HourInt()
-        if Hour:
-           NHour = Hour 
+        if Hour > 0:
+            NHour = Hour 
+        else:
+            NHour = NHour - Hour
         
         NMinute = self.MinuteInt()
-        if Minute:
-           NMinute = Minute 
+        if Minute > 0:
+            NMinute = Minute 
+        else:
+            NMinute = NMinute - Minute
 
         NSecond = self.SecondInt()
-        if Second:
-           NSecond = Second 
+        if Second > 0:
+            NSecond = Second 
+        else:
+            NSecond = NSecond - Second
 
         return Date(datetime.datetime(NYear, NMonth, NDay, NHour, NMinute, NSecond))
 
@@ -209,7 +224,7 @@ class Calender:
 
     def HowManyDays(self):
         return calendar.monthrange(int(self.Year), int(self.Month))[1]
-
+ 
     def DayRange(self):
         Days = self.HowManyDays()
         return [Date().ResetTime(Day=1).String(Style=Style_SS), Date().ResetTime(Day=Days).String(Style=Style_SS)]
