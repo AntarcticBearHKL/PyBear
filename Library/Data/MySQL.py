@@ -4,7 +4,40 @@ import os, sys
 from PyBear.GlobalBear import *
 from PyBear.Library.Chronus import *
 
-class DatabaseTable():
+class Database:
+    def __init__(self, ServerName, UserName, DatabaseName):
+        self.Connection = pymysql.connect(
+            host=GetServer(ServerName).IP,
+            port=GetServer(ServerName).Port,
+            user=GetUser(UserName).UserName,
+            passwd=GetUser(UserName).Password,
+            db=DatabaseName,)
+        self.DatabaseName = DatabaseName
+        self.Cursor = self.Connection.cursor()
+    
+    def __ShowResult(self):
+        return self.Cursor.fetchall()
+
+    def __Commit(self):
+        self.Connection.commit()
+
+    def __Execute(self, SQL):
+        self.Cursor.execute(SQL)
+        self.__Commit()
+        return self.__ShowResult()
+
+    def ListTables(self):
+        SQL = '''SHOW TABLES;'''
+        return [Item[0] for Item in self.__Execute(SQL)]
+    
+    def DeleteTables(self, Condition):
+        SQL = '''select concat('drop table ', table_name, ';') from information_schema.tables where table_name like '%s';''' % (Condition)
+        for SQL in self.__Execute(SQL):
+            print(SQL)
+            self.__Execute(SQL[0])
+
+
+class DatabaseTable:
     def __init__(self, ServerName, UserName, DatabaseName, TableName, Reload = False):
         self.Connection = pymysql.connect(
             host=GetServer(ServerName).IP,
@@ -165,6 +198,10 @@ class DatabaseTable():
         SQL = ''' SELECT CONCAT(ROUND(SUM(DATA_LENGTH/1024/1024),2),'MB') as data from information_schema.TABLES where table_schema='%s' and table_name='%s'; ''' % (self.DatabaseName, self.TableName)
         return self.__Execute(SQL)[0][0]
 
+    def RowNumber(self):
+        SQL = '''SELECT COUNT(*) FROM %s;''' % (self.TableName)
+        return self.__Execute(SQL)[0][0]
+
 
 def SQLString(String):
     return '\'' + String + '\''
@@ -192,6 +229,7 @@ class UpdateManager:
                 Name, 
                 Date().String(),
             ],])
+        print('''Update %s At %s''' % (Name, Date().String(Style=Style_L)))
 
     def TableUpdateTime(self, Name):
         Result = self.DatabaseTable.SearchTable('''WHERE ItemIDX=CRC32('%s') AND ItemName='%s' ''' % (Name, Name))
