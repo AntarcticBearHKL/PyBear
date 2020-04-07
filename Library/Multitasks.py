@@ -43,9 +43,9 @@ class ThreadPool:
             CONTINUE = True
             AvailableThread = None
 
-            LimitCounter += 1
-
             if self.Limit:
+                print('nnn')
+                LimitCounter += 1
                 while(LimitCounter > self.Limit):
                     if Date() - LimitTimer > 60:
                         LimitCounter = 1
@@ -120,6 +120,7 @@ class ThreadMatix:
         TP.TaskList = self.TaskList[Core]
         TP.Start(self.Thread)
 
+
     def Start(self):
         TaskPointer = 0
         Corepointer = 0
@@ -130,17 +131,27 @@ class ThreadMatix:
             Corepointer += 1
             if Corepointer == self.Core:
                 Corepointer = 0
+
         TP = ThreadPool('Process')
         TP.NewTasks(range(self.Core), self.NewProcess, [])
+
         TP.Start(self.Core)
 
     
     def GetList(self):
         return multiprocessing.Manager().list() 
 
-def MultTasks(Core, Thread, Group, Args, Limit=False):
+
+def MultCoreTasks(Core, Thread, Group, Args, Limit=False):
     def RetFunc(Fn):
         TM = ThreadMatix(Core, Thread, Limit=Limit)
         TM.NewTasksAutoArrange(Group, Fn, Args)
         TM.Start()
+    return RetFunc
+
+def MultThreadTasks(Thread, Group, Args, Limit=False):
+    def RetFunc(Fn):
+        TM = ThreadPool('Thread', Limit=Limit)
+        TM.NewTasks(Group, Fn, Args)
+        TM.Start(Thread)
     return RetFunc

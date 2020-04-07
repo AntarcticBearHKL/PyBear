@@ -36,7 +36,8 @@ class CHN:
             self.UserName = UserName
             self.UpdateManager = None
 
-            self.BasicInfoTable = DatabaseTable(ServerName, UserName, 'CHNStockMarket', 'BasicInfo', Reload=False)
+            self.DB = Database(ServerName, UserName, 'CHNStockMarket')
+            self.BasicInfoTable = DatabaseTable(ServerName, UserName, 'CHNStockMarket', 'BasicInfo')
             self.TradeDayTable = DatabaseTable(ServerName, UserName, 'CHNStockMarket', 'TradeDay')
 
         def UpdateBasicInfo(self):
@@ -83,6 +84,9 @@ class CHN:
             self.UpdateManager.Update('TradeDay')
             print('TradeDay Updated')
 
+        def UpdateStockTable(self):
+            self.DB.CheckTable([Item[:6]+'_Price' for Item in self.AllStock()])
+
 
         def IsTradeDay(self, TestedDay):
             if type(TestedDay) == Date:
@@ -119,6 +123,7 @@ class CHN:
             if RawCode:
                 return self.SZStock(RawCode=True) + self.ZXStock(RawCode=True) + self.SHStock(RawCode=True) + self.KCStock(RawCode=True)
             return self.SZStock() + self.ZXStock() + self.SHStock() + self.KCStock()
+            print('Get All Stock Code')
 
         def SZStock(self, RawCode=False):
             if not self.UpdateManager:
@@ -164,6 +169,7 @@ class CHN:
                 return [Item[2] for Item in self.BasicInfoTable.SearchTable(Condition='WHERE CodeIDX>680000')]
             return [Item[2]+'.SH' for Item in self.BasicInfoTable.SearchTable(Condition='WHERE CodeIDX>680000')]
 
+
     class FundMarket:
         def __init__(self):
             pass
@@ -176,7 +182,6 @@ class CHN:
         def __init__(self):
             pass
 
-    
     class Bond:
         def __init__(self):
             pass
@@ -188,8 +193,8 @@ class CHN:
             self.ServerName = ServerName
             self.UserName = UserName
             self.UpdateManager = None
-            
-            self.TickTable = DatabaseTable(ServerName, UserName, 'CHNStockMarket', self.Code[:6]+'_Price', Reload=False)
+             
+            self.TickTable = DatabaseTable(ServerName, UserName, 'CHNStockMarket', self.Code[:6]+'_Price')
 
         def GetSize(self):
             return self.TickTable.TableSize()
@@ -212,34 +217,28 @@ class CHN:
 
             Tick = tushare.pro_bar(ts_code = self.Code, adj='qfq', start_date='20050101', end_date=Date().String(Style='SS'))
 
-            print(self.Code+' Full Download Data Get')
             Values = []
             for Item in Tick.itertuples():
                 Values.append([
                     int(Item.trade_date),
-                    float(Item.open),
-                    float(Item.high),
-                    float(Item.low),
-                    float(Item.close),
-                    float(Item.change),
-                    float(Item.pct_chg),
-                    float(Item.vol),
-                    float(Item.amount),
+                    round(float(Item.open), 6),
+                    round(float(Item.high), 6),
+                    round(float(Item.low), 6),
+                    round(float(Item.close), 6),
+                    round(float(Item.change), 6),
+                    round(float(Item.pct_chg), 6),
+                    round(float(Item.vol), 6),
+                    round(float(Item.amount), 6),
                     ])
             Values.reverse()
 
-            print(self.Code+' Full Download Prepared')
-            
             self.TickTable.DeleteAll()
             self.TickTable.Insert(['Date', 'Open', 'High', 'Low', 'Close', 'ChangedPrice', 'ChangedPercent', 'Volume', 'Amount'], Values)
-
-            print(self.Code+' Full Download Inserted')
 
             self.UpdateManager.Update(self.Code[:6]+'_Price')
             print(self.Code+' Full Download Finished')
 
         def Sync(self):
-            print(self.Code+' Sync Start')
             if not self.UpdateManager:
                 self.UpdateManager = UpdateManager(DatabaseTable(self.ServerName, self.UserName, 'CHNStockMarket', 'UpdateInfo')) 
 
@@ -265,21 +264,18 @@ class CHN:
                 for Item in Tick.itertuples():
                     Values.append([
                         int(Item.trade_date),
-                        float(Item.open),
-                        float(Item.high),
-                        float(Item.low),
-                        float(Item.close),
-                        float(Item.change),
-                        float(Item.pct_chg),
-                        float(Item.vol),
-                        float(Item.amount),
+                        round(float(Item.open), 6),
+                        round(float(Item.high), 6),
+                        round(float(Item.low), 6),
+                        round(float(Item.close), 6),
+                        round(float(Item.change), 6),
+                        round(float(Item.pct_chg), 6),
+                        round(float(Item.vol), 6),
+                        round(float(Item.amount), 6),
                         ])
                 Values.reverse()
 
                 self.TickTable.Insert(['Date', 'Open', 'High', 'Low', 'Close', 'ChangedPrice', 'ChangedPercent', 'Volume', 'Amount'], Values)
-
-                self.UpdateManager.Update(self.Code[:6]+'_Price')
-                print(self.Code+' Sync Update Finished')
 
             print(self.Code+' Synchronize Finished')
 

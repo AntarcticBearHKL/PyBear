@@ -26,9 +26,16 @@ class Database:
         self.__Commit()
         return self.__ShowResult()
 
+
     def ListTables(self):
-        SQL = '''SHOW TABLES;'''
-        return [Item[0] for Item in self.__Execute(SQL)]
+        return [Item[0] for Item in self.__Execute('''SHOW TABLES;''')]
+
+    def CheckTable(self, TableList):
+        ServerTableList = self.ListTables()
+        for Item in TableList:
+            if Item not in ServerTableList:
+                SQL = '''CREATE TABLE %s (ID INT AUTO_INCREMENT, PRIMARY KEY(ID)) CHARSET=utf8;''' % (Item)
+                self.__Execute(SQL)
     
     def DeleteTables(self, Condition):
         SQL = '''select concat('drop table ', table_name, ';') from information_schema.tables where table_name like '%s';''' % (Condition)
@@ -38,7 +45,7 @@ class Database:
 
 
 class DatabaseTable:
-    def __init__(self, ServerName, UserName, DatabaseName, TableName, Reload = False):
+    def __init__(self, ServerName, UserName, DatabaseName, TableName):
         self.DatabaseName = DatabaseName
         self.TableName = TableName
 
@@ -49,14 +56,6 @@ class DatabaseTable:
             passwd=GetUser(UserName).Password,
             db=DatabaseName,)
         self.Cursor = self.Connection.cursor()
-
-        Tables = [Item[0] for Item in self.__Execute('''SHOW TABLES;''')]
-        if self.TableName not in Tables:
-            SQL = '''CREATE TABLE %s (ID INT AUTO_INCREMENT, PRIMARY KEY(ID)) CHARSET=utf8;''' % (self.TableName)
-            self.__Execute(SQL)
-
-        self.Columns = self.ListColumn()
-        self.Indexs = self.ListIndex()
     
     def __ShowResult(self):
         return self.Cursor.fetchall()
@@ -70,31 +69,20 @@ class DatabaseTable:
         return self.__ShowResult()
 
 
-
     def NewColumn(self, ColumnName, DataType):
-        if ColumnName in self.Columns:
-            return
-
         SQL = '''ALTER TABLE %s ADD %s %s;''' % (self.TableName, ColumnName, DataType)
         self.__Execute(SQL)
         self.Columns = self.ListColumn()
 
     def ChangeColumn(self, ColumnName, DataType):
-        if ColumnName in self.Columns:
-            return
-
         SQL = '''ALTER TABLE %s MODIFY %s %s;''' % (self.TableName, ColumnName, DataType)
         self.__Execute(SQL)
         self.Columns = self.ListColumn()
 
     def DeleteColumn(self, ColumnName):
-        if ColumnName in self.Columns:
-            return
-
         SQL = '''ALTER TABLE %s DROP %s %s;''' % (self.TableName, ColumnName)
         self.__Execute(SQL)
         self.Columns = self.ListColumn()
-
 
     def ListColumn(self):
         SQL = '''SHOW COLUMNS FROM %s''' % (self.TableName)
@@ -103,8 +91,10 @@ class DatabaseTable:
             Ret[Item[0]] = Item[1].upper()
         return Ret
 
-
     def CheckColumn(self, Columns, Index=None, UniqueIndex=None, FulltextIndex=None):
+        self.Columns = self.ListColumn()
+        self.Indexs = self.ListIndex()
+
         for Item in Columns:
             if Item in self.Columns:
                 if Columns[Item].split(' ')[0] != self.Columns[Item]:
@@ -128,7 +118,6 @@ class DatabaseTable:
             pass
         elif type(FulltextIndex) == dict:
             pass
-
 
 
     def NewIndex(self, ColumnName, IndexName=None):
@@ -169,11 +158,7 @@ class DatabaseTable:
         return Ret
 
 
-
-    def Insert(self, ColumnName, Data):
-        for Item in ColumnName:
-            if Item not in self.Columns:
-                return        
+    def Insert(self, ColumnName, Data):    
         ColumnName = ','.join(ColumnName)
 
         for Item in Data:
@@ -188,7 +173,6 @@ class DatabaseTable:
             ValueInserted = ValueInserted[:-1]
             SQL = '''INSERT INTO %s (%s) VALUES (%s);''' % (self.TableName, ColumnName, ValueInserted)
             self.Cursor.execute(SQL) 
-            print(SQL)
         self.__Commit()
     
     def Delete(self, ID):
@@ -203,17 +187,13 @@ class DatabaseTable:
         self.Cursor.execute('''TRUNCATE TABLE %s;''' % (self.TableName))
 
     def Change(self, ID, ColumnName, Value):
-        if ColumnName not in self.Columns:
-            return
-
         SQL = '''UPDATE %s SET %s = %s WHERE ID = %s;''' % (self.TableName, ColumnName, Value, ID)
+        print(SQL)
         self.__Execute(SQL)
-
 
 
     def SearchTable(self, Column='*', Condition=''):
         return self.__Execute('''SELECT %s FROM %s %s''' % (Column, self.TableName, Condition))
-
 
 
     def Distinct(self, ColumnName):
@@ -221,13 +201,12 @@ class DatabaseTable:
         self.__Execute(SQL)
 
     def GetTableSize(self):
-        SQL = ''' SELECT CONCAT(ROUND(SUM(DATA_LENGTH/1024/1024),2),'MB') as data from information_schema.TABLES where table_schema='%s' and table_name='%s'; ''' % (self.DatabaseName, self.TableName)
+        SQL = ''' SELECT DATA_LENGTH as data from information_schema.TABLES where table_schema='%s' and table_name='%s'; ''' % (self.DatabaseName, self.TableName)
         return self.__Execute(SQL)[0][0]
 
     def GetRowNumber(self):
         SQL = '''SELECT COUNT(*) FROM %s;''' % (self.TableName)
         return self.__Execute(SQL)[0][0]
-
 
 
 class UpdateManager:
@@ -238,7 +217,6 @@ class UpdateManager:
             'ItemName': 'CHAR(64) NOT NULL',
             'UpdateTime': 'CHAR(16) NOT NULL',
         }, Index={'ItemIndex':['ItemIDX', 'ItemName']})
-
 
     def Update(self, Name):
         Recode = self.DatabaseTable.SearchTable(Column='ID', Condition='''WHERE ItemIDX=CRC32('%s') AND ItemName='%s' ''' % (Name, Name))
