@@ -303,7 +303,14 @@ class Calender:
         return [Date().ResetTime(Day=1).String(Style=Style_SS), Date().ResetTime(Day=Days).String(Style=Style_SS)]
 
 
+Timer = {}
 class Chronus:
+    def Timer(Name):
+        if Name not in Timer:
+            Timer[Name] = datetime.datetime.now()
+        else:
+            print(datetime.datetime.now() - Timer[Name])
+
     def Clock():
         return Date().to_string()
 

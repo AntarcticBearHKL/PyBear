@@ -25,3 +25,12 @@ class NewServer:
         ServerList[ServerName] = self
 def GetServer(ServerName):
     return ServerList[ServerName]
+
+
+def CatchBadBear(Fn, *args, **kwargs):
+    def Ret(*args, **kwargs):
+        try:
+            Fn(*args, **kwargs)
+        except BadBear as Error:
+            print(Error)
+    return Ret

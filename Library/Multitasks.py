@@ -116,7 +116,7 @@ class ThreadMatix:
 
 
     def NewProcess(self, Core):
-        TP = ThreadPool('Thread', Limit = self.Limit, Progress=True)
+        TP = ThreadPool('Thread', Limit = self.Limit)
         TP.TaskList = self.TaskList[Core]
         TP.Start(self.Thread)
 
@@ -130,10 +130,17 @@ class ThreadMatix:
             Corepointer += 1
             if Corepointer == self.Core:
                 Corepointer = 0
-        TP = ThreadPool('Process', Timer=True, Progress=False)
+        TP = ThreadPool('Process')
         TP.NewTasks(range(self.Core), self.NewProcess, [])
         TP.Start(self.Core)
 
     
     def GetList(self):
         return multiprocessing.Manager().list() 
+
+def MultTasks(Core, Thread, Group, Args, Limit=False):
+    def RetFunc(Fn):
+        TM = ThreadMatix(Core, Thread, Limit=Limit)
+        TM.NewTasksAutoArrange(Group, Fn, Args)
+        TM.Start()
+    return RetFunc

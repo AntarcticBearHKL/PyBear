@@ -93,7 +93,7 @@ class CHN:
             if not self.UpdateManager:
                 self.UpdateManager = UpdateManager(DatabaseTable(self.ServerName, self.UserName, 'CHNStockMarket', 'UpdateInfo')) 
 
-            Ret = self.TradeDayTable.SearchTable('''WHERE Date=%s'''%(TestedDay))
+            Ret = self.TradeDayTable.SearchTable(Condition='''WHERE Date=%s'''%(TestedDay))
 
             if len(Ret) > 0:
                 return True
@@ -111,8 +111,9 @@ class CHN:
             if not self.UpdateManager.TableUpdateTime('TradeDay'):
                 self.UpdateTradeDay()
 
-            Ret = self.TradeDayTable.SearchTable('''WHERE Date<=%s'''%(TestedDay.String(Style=Style_SS)), Columns='''MAX(Date)''')
+            Ret = self.TradeDayTable.SearchTable(Condition='''WHERE Date<=%s AND Open = 1'''%(TestedDay.String(Style=Style_SS)), Column='''MAX(Date)''')
             return Ret[0][0]
+
 
         def AllStock(self, RawCode=False):
             if RawCode:
@@ -127,8 +128,8 @@ class CHN:
                 self.UpdateBasicInfo()
             
             if RawCode:
-                return [Item[2] for Item in self.BasicInfoTable.SearchTable('WHERE CodeIDX<300000')]
-            return [Item[2]+'.SZ' for Item in self.BasicInfoTable.SearchTable('WHERE CodeIDX<300000')]
+                return [Item[2] for Item in self.BasicInfoTable.SearchTable(Condition='WHERE CodeIDX<300000')]
+            return [Item[2]+'.SZ' for Item in self.BasicInfoTable.SearchTable(Condition='WHERE CodeIDX<300000')]
 
         def ZXStock(self, RawCode=False):
             if not self.UpdateManager:
@@ -138,8 +139,8 @@ class CHN:
                 self.UpdateBasicInfo()
             
             if RawCode:
-                return [Item[2] for Item in self.BasicInfoTable.SearchTable('WHERE CodeIDX<600000 AND CodeIDX>=300000')]
-            return [Item[2]+'.SZ' for Item in self.BasicInfoTable.SearchTable('WHERE CodeIDX<600000 AND CodeIDX>=300000')]
+                return [Item[2] for Item in self.BasicInfoTable.SearchTable(Condition='WHERE CodeIDX<600000 AND CodeIDX>=300000')]
+            return [Item[2]+'.SZ' for Item in self.BasicInfoTable.SearchTable(Condition='WHERE CodeIDX<600000 AND CodeIDX>=300000')]
 
         def SHStock(self, RawCode=False):
             if not self.UpdateManager:
@@ -149,8 +150,8 @@ class CHN:
                 self.UpdateBasicInfo()
 
             if RawCode:
-                return [Item[2] for Item in self.BasicInfoTable.SearchTable('WHERE CodeIDX<680000 AND CodeIDX>=600000')]
-            return [Item[2]+'.SH' for Item in self.BasicInfoTable.SearchTable('WHERE CodeIDX<680000 AND CodeIDX>=600000')]
+                return [Item[2] for Item in self.BasicInfoTable.SearchTable(Condition='WHERE CodeIDX<680000 AND CodeIDX>=600000')]
+            return [Item[2]+'.SH' for Item in self.BasicInfoTable.SearchTable(Condition='WHERE CodeIDX<680000 AND CodeIDX>=600000')]
 
         def KCStock(self, RawCode=False):
             if not self.UpdateManager:
@@ -160,8 +161,8 @@ class CHN:
                 self.UpdateBasicInfo()
 
             if RawCode:
-                return [Item[2] for Item in self.BasicInfoTable.SearchTable('WHERE CodeIDX>680000')]
-            return [Item[2]+'.SH' for Item in self.BasicInfoTable.SearchTable('WHERE CodeIDX>680000')]
+                return [Item[2] for Item in self.BasicInfoTable.SearchTable(Condition='WHERE CodeIDX>680000')]
+            return [Item[2]+'.SH' for Item in self.BasicInfoTable.SearchTable(Condition='WHERE CodeIDX>680000')]
 
     class FundMarket:
         def __init__(self):
@@ -188,14 +189,14 @@ class CHN:
             self.UserName = UserName
             self.UpdateManager = None
             
-            self.Tick = DatabaseTable(ServerName, UserName, 'CHNStockMarket', self.Code[:6]+'_Price', Reload=False)
+            self.TickTable = DatabaseTable(ServerName, UserName, 'CHNStockMarket', self.Code[:6]+'_Price', Reload=False)
 
         def GetSize(self):
-            return self.Tick.TableSize()
+            return self.TickTable.TableSize()
               
         def FullDownload(self):
             print(self.Code+' Full Download Start')
-            self.Tick.CheckColumn({
+            self.TickTable.CheckColumn({
                 'Date':             'INT NOT NULL',
                 'Open':             'DECIMAL(13,4) NOT NULL',
                 'High':             'DECIMAL(13,4) NOT NULL',
@@ -229,8 +230,8 @@ class CHN:
 
             print(self.Code+' Full Download Prepared')
             
-            self.Tick.DeleteAll()
-            self.Tick.Insert(['Date', 'Open', 'High', 'Low', 'Close', 'ChangedPrice', 'ChangedPercent', 'Volume', 'Amount'], Values)
+            self.TickTable.DeleteAll()
+            self.TickTable.Insert(['Date', 'Open', 'High', 'Low', 'Close', 'ChangedPrice', 'ChangedPercent', 'Volume', 'Amount'], Values)
 
             print(self.Code+' Full Download Inserted')
 
@@ -252,14 +253,30 @@ class CHN:
                 self.StockMarket = CHN.StockMarket(self.ServerName, self.UserName)
 
             LastTradeDay = self.StockMarket.LastTradeDay()
-            CurrentTradeDay = self.Tick.SearchTable('', Columns='MAX(Date)')[0][0]
+            CurrentTradeDay = self.TickTable.SearchTable(Column='MAX(Date)')[0][0]
 
-            if CurrentTradeDay < LastTradeDay:
+            if int(CurrentTradeDay) < int(LastTradeDay):
                 print(self.Code+' Sync Ready To Update')
                 RequestStart = Date(CurrentTradeDay).ResetTime(Day=1).String(Style=Style_SS)
+
                 Tick = tushare.pro_bar(ts_code = self.Code, adj='qfq', start_date=str(RequestStart), end_date=str(LastTradeDay))
-                print(Tick)
-                return
+
+                Values = []
+                for Item in Tick.itertuples():
+                    Values.append([
+                        int(Item.trade_date),
+                        float(Item.open),
+                        float(Item.high),
+                        float(Item.low),
+                        float(Item.close),
+                        float(Item.change),
+                        float(Item.pct_chg),
+                        float(Item.vol),
+                        float(Item.amount),
+                        ])
+                Values.reverse()
+
+                self.TickTable.Insert(['Date', 'Open', 'High', 'Low', 'Close', 'ChangedPrice', 'ChangedPercent', 'Volume', 'Amount'], Values)
 
                 self.UpdateManager.Update(self.Code[:6]+'_Price')
                 print(self.Code+' Sync Update Finished')

@@ -39,26 +39,24 @@ class Database:
 
 class DatabaseTable:
     def __init__(self, ServerName, UserName, DatabaseName, TableName, Reload = False):
+        self.DatabaseName = DatabaseName
+        self.TableName = TableName
+
         self.Connection = pymysql.connect(
             host=GetServer(ServerName).IP,
             port=GetServer(ServerName).Port,
             user=GetUser(UserName).UserName,
             passwd=GetUser(UserName).Password,
             db=DatabaseName,)
-        self.DatabaseName = DatabaseName
-        self.TableName = TableName
         self.Cursor = self.Connection.cursor()
 
         Tables = [Item[0] for Item in self.__Execute('''SHOW TABLES;''')]
         if self.TableName not in Tables:
             SQL = '''CREATE TABLE %s (ID INT AUTO_INCREMENT, PRIMARY KEY(ID)) CHARSET=utf8;''' % (self.TableName)
             self.__Execute(SQL)
-        elif Reload:
-            self.__Execute('''DROP TABLE %s''' % (self.TableName))
-            SQL = '''CREATE TABLE %s (ID INT AUTO_INCREMENT, PRIMARY KEY(ID)) CHARSET=utf8;''' % (self.TableName)
-            self.__Execute(SQL)
 
-        self.ListColumns()
+        self.Columns = self.ListColumn()
+        self.Indexs = self.ListIndex()
     
     def __ShowResult(self):
         return self.Cursor.fetchall()
@@ -73,14 +71,67 @@ class DatabaseTable:
 
 
 
-    def AddColumn(self, ColumnName, DataType):
+    def NewColumn(self, ColumnName, DataType):
         if ColumnName in self.Columns:
             return
 
         SQL = '''ALTER TABLE %s ADD %s %s;''' % (self.TableName, ColumnName, DataType)
         self.__Execute(SQL)
+        self.Columns = self.ListColumn()
 
-    def AddIndex(self, ColumnName, IndexName=None):
+    def ChangeColumn(self, ColumnName, DataType):
+        if ColumnName in self.Columns:
+            return
+
+        SQL = '''ALTER TABLE %s MODIFY %s %s;''' % (self.TableName, ColumnName, DataType)
+        self.__Execute(SQL)
+        self.Columns = self.ListColumn()
+
+    def DeleteColumn(self, ColumnName):
+        if ColumnName in self.Columns:
+            return
+
+        SQL = '''ALTER TABLE %s DROP %s %s;''' % (self.TableName, ColumnName)
+        self.__Execute(SQL)
+        self.Columns = self.ListColumn()
+
+
+    def ListColumn(self):
+        SQL = '''SHOW COLUMNS FROM %s''' % (self.TableName)
+        Ret = {}
+        for Item in self.__Execute(SQL):
+            Ret[Item[0]] = Item[1].upper()
+        return Ret
+
+
+    def CheckColumn(self, Columns, Index=None, UniqueIndex=None, FulltextIndex=None):
+        for Item in Columns:
+            if Item in self.Columns:
+                if Columns[Item].split(' ')[0] != self.Columns[Item]:
+                    self.ChangeColumn(Item, Columns[Item])
+            else:
+                self.NewColumn(Item, Columns[Item])
+
+        if type(Index) == list:
+            for Item in Index:
+                self.NewIndex(Item)
+        elif type(Index) == dict:
+            for Item in Index:
+                self.NewIndex(Index[Item], Item)
+        
+        if type(UniqueIndex) == list:
+            pass
+        elif type(UniqueIndex) == dict:
+            pass
+        
+        if type(FulltextIndex) == list:
+            pass
+        elif type(FulltextIndex) == dict:
+            pass
+
+
+
+    def NewIndex(self, ColumnName, IndexName=None):
         Indexs = [item[2] for item in self.__Execute('''SHOW KEYS FROM %s''' % (self.TableName))]
 
         if type(ColumnName) == list:
@@ -95,48 +146,27 @@ class DatabaseTable:
             else:
                 return
         self.__Execute(SQL)
-        self.ListColumns()
+        self.Indexs = self.ListIndex()
 
-    def AddUniqueIndex(self):
+    def NewUniqueIndex(self):
         pass
 
-    def AddFulltextIndex(self):
+    def NewFulltextIndex(self):
         pass
 
-    def ListColumn(self, ColumnName):
-        SQL = '''SELECT %s FROM %s''' % (ColumnName, self.TableName)
-        return self.__Execute(SQL)
-
-    def ListColumns(self):
-        SQL = '''SHOW COLUMNS FROM %s''' % (self.TableName)
-        self.ColumnsDetail = self.__Execute(SQL)
-        self.Columns = [Item[0] for Item in self.ColumnsDetail]
-        return self.ColumnsDetail
-
-    def CheckColumn(self, Columns, Index=None, UniqueIndex=None, FulltextIndex=None):
-        for Item in Columns:
-            self.AddColumn(Item, Columns[Item])
-
-        if type(Index) == list:
-            for Item in Index:
-                self.AddIndex(Item)
-        elif type(Index) == dict:
-            for Item in Index:
-                self.AddIndex(Index[Item], Item)
-        
-        if type(UniqueIndex) == list:
-            pass
-        elif type(UniqueIndex) == dict:
-            pass
-        
-        if type(FulltextIndex) == list:
-            pass
-        elif type(FulltextIndex) == dict:
-            pass
-
+    def DeleteIndex(self):
+        SQL = '''DROP INDEX %s ON %s ; %s''' % (IndexName, self.TableName)
+        self.__Execute(SQL)
+    
     def ListIndex(self):
         SQL = '''SHOW KEYS FROM %s''' % (self.TableName)
-        return self.__Execute(SQL)
+        Ret = {}
+        for Item in self.__Execute(SQL):
+            if Item[2] not in Ret:
+                Ret[Item[2]] = {Item[4]:Item[3]}
+            else:
+                Ret[Item[2]][Item[4]] = Item[3]
+        return Ret
 
 
 
@@ -158,6 +188,7 @@ class DatabaseTable:
             ValueInserted = ValueInserted[:-1]
             SQL = '''INSERT INTO %s (%s) VALUES (%s);''' % (self.TableName, ColumnName, ValueInserted)
             self.Cursor.execute(SQL) 
+            print(SQL)
         self.__Commit()
     
     def Delete(self, ID):
@@ -180,31 +211,23 @@ class DatabaseTable:
 
 
 
-    def ListTable(self): 
-        return self.__Execute('''SELECT * FROM %s''' % (self.TableName))
+    def SearchTable(self, Column='*', Condition=''):
+        return self.__Execute('''SELECT %s FROM %s %s''' % (Column, self.TableName, Condition))
 
-    def SearchTable(self, Condition, Columns='*'):
-        return self.__Execute('''SELECT %s FROM %s %s''' % (Columns, self.TableName, Condition))
-
-    def SearchID(self, Condition):
-        return [Item[0] for Item in self.SearchTable(Condition)]
 
 
     def Distinct(self, ColumnName):
         SQL = '''DELETE %s FROM %s, (SELECT min(id) AS mid, %s FROM %s GROUP BY %s) AS t2 WHERE %s.id != t2.mid;''' % (self.TableName, self.TableName, ColumnName, self.TableName, ColumnName, self.TableName)
         self.__Execute(SQL)
 
-    def TableSize(self):
+    def GetTableSize(self):
         SQL = ''' SELECT CONCAT(ROUND(SUM(DATA_LENGTH/1024/1024),2),'MB') as data from information_schema.TABLES where table_schema='%s' and table_name='%s'; ''' % (self.DatabaseName, self.TableName)
         return self.__Execute(SQL)[0][0]
 
-    def RowNumber(self):
+    def GetRowNumber(self):
         SQL = '''SELECT COUNT(*) FROM %s;''' % (self.TableName)
         return self.__Execute(SQL)[0][0]
 
-
-def SQLString(String):
-    return '\'' + String + '\''
 
 
 class UpdateManager:
@@ -218,7 +241,7 @@ class UpdateManager:
 
 
     def Update(self, Name):
-        Recode = self.DatabaseTable.SearchID('''WHERE ItemIDX=CRC32('%s') AND ItemName='%s' ''' % (Name, Name))
+        Recode = self.DatabaseTable.SearchTable(Column='ID', Condition='''WHERE ItemIDX=CRC32('%s') AND ItemName='%s' ''' % (Name, Name))
         if len(Recode) == 1: 
             self.DatabaseTable.Change(Recode[0], 'UpdateTime', Date().String())
         elif len(Recode) == 0:
@@ -232,7 +255,7 @@ class UpdateManager:
         print('''Update %s At %s''' % (Name, Date().String(Style=Style_L)))
 
     def TableUpdateTime(self, Name):
-        Result = self.DatabaseTable.SearchTable('''WHERE ItemIDX=CRC32('%s') AND ItemName='%s' ''' % (Name, Name))
+        Result = self.DatabaseTable.SearchTable(Condition='''WHERE ItemIDX=CRC32('%s') AND ItemName='%s' ''' % (Name, Name))
         if len(Result) == 0:
             return None
         else:
