@@ -182,15 +182,15 @@ class CHN:
             self.TickTable = DatabaseTable(ServerName, UserName, 'CHNStockMarket', self.Code[:6]+'_Price')
 
 
-        def Sync(self):
+        def Sync(self, LastTradeDay):
             if self.NeedFullDownload():
                 print(self.Code+' Sync Full Download')
                 self.FullDownload() 
 
-            UpdateCheck = self.NeedUpdate()
-            if UpdateCheck[0]:
+            (UpdateCheck, Start, End) = self.NeedUpdate(LastTradeDay)
+            if UpdateCheck:
                 print(self.Code+' Sync Update')
-                self.Update(UpdateCheck[1], UpdateCheck[1])
+                self.Update(Start, End)
 
             print(self.Code+' Synchronize Finished')
 
@@ -232,7 +232,6 @@ class CHN:
 
         def Update(self, Start, End):
             Tick = tushare.pro_bar(ts_code = self.Code, adj='qfq', start_date=Start, end_date=End)
-            print(Start)
 
             Values = []
             for Item in Tick.itertuples():
@@ -256,17 +255,13 @@ class CHN:
                 return True
             return False
 
-        def NeedUpdate(self):
-            if not self.StockMarket:
-                self.StockMarket = CHN.StockMarket(self.ServerName, self.UserName)
-
-            LastTradeDay = self.StockMarket.LastTradeDay()
+        def NeedUpdate(self, LastTradeDay):
             CurrentTradeDay = self.TickTable.SearchTable(Column='MAX(Date)')[0][0]
 
             if int(CurrentTradeDay) < int(LastTradeDay):
                 RequestStart = Date(CurrentTradeDay).ResetTime(Day=1).String(Style=Style_SS)
                 return True, str(RequestStart), str(LastTradeDay)
-            return False
+            return False, '', ''
 
 
         def GetOpen(self):
@@ -365,22 +360,27 @@ class Brokor:
 
 
 class Analyst:
-    def __init__(self):
-        pass
+    def DailyUpdate(ServerName, UserName):
+        TM = TaskMatrix(2,16, LimitPerMinute=250)
+        CHNStockMarket = CHN.StockMarket(ServerName, UserName)
 
-    def do(market, fn, core, thread):
-        TP = ThreadMatix(core, thread)
-        meglist = TP.getList()
+        LTD = CHNStockMarket.LastTradeDay()
 
-        TP.newAutoTasks(
-            market, 
-            fn,
-            [meglist] 
-            )
-        TP.start()
+        CacheList = TM.GetCacheList()
 
-        print(meglist)
-        print(len(meglist))
+        StockArg = [[ServerName, UserName, Item, LTD, CacheList] for Item in CHNStockMarket.AllStock()]
+        print('Ready To Launch')
 
-if GlobalAvailabilityCheck:
-    pass
+        TM.ImportTask(WorkLoad.StockUpdate, StockArg)
+        TM.Start()
+
+        print(CacheList)
+
+class WorkLoad:
+    def StockUpdate(ServerName, UserName, StockCode, LastTradeDay, CacheList):
+        try:
+            CHN.Stock(ServerName, UserName, StockCode).Sync(LastTradeDay)
+        except Exception as e:
+            print(e)
+            print('''ERROR HAPPEND: %s''' % (StockCode))
+            CacheList.append(StockCode)

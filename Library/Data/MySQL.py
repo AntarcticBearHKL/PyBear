@@ -33,7 +33,8 @@ class Database:
         return DatabaseTable(self.ServerName, self.UserName, self.DatabaseName, TableName)
 
     def ListTables(self):
-        return [Item[0] for Item in self.__Execute('''SHOW TABLES;''')]
+        SQL = ''' SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA='%s'; ''' % (self.DatabaseName)
+        return [Item[0] for Item in self.__Execute(SQL)]
 
     def CheckTable(self, TableList):
         ServerTableList = self.ListTables()
@@ -50,7 +51,7 @@ class Database:
 
 
 class DatabaseTable:
-    def __init__(self, Database, TableName):
+    def __init__(self, ServerName, UserName, DatabaseName, TableName):
         self.DatabaseName = DatabaseName
         self.TableName = TableName
 
@@ -210,7 +211,7 @@ class DatabaseTable:
         return self.__Execute(SQL)[0][0]
 
     def GetRowNumber(self):
-        SQL = '''SELECT COUNT(*) FROM %s;''' % (self.TableName)
+        SQL = '''SELECT MAX(ID) FROM %s;''' % (self.TableName)
         return self.__Execute(SQL)[0][0]
 
 

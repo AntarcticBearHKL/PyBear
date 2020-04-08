@@ -7,9 +7,10 @@ from PyBear.GlobalBear import *
 from PyBear.Library.Chronus import *
 
 class MultThread:
-    def __init__(self, ParallelNumber):
+    def __init__(self, ParallelNumber, LimitPerMinute = None):
         self.TaskList = []
         self.ParallelNumber = ParallelNumber
+        self.LimitPerMinute = LimitPerMinute
 
     def ImportTask(self, Function, TaskArg):
         for Item in TaskArg:
@@ -23,7 +24,20 @@ class MultThread:
         for Item in range(self.ParallelNumber):
             WorkSpace.append(None)
 
+        LimitTimer = Date()
+        LimitCounter = 0
+
         for Task in self.TaskList:
+            if self.LimitPerMinute and LimitCounter >= self.LimitPerMinute:
+                while(True):
+                    if (Date() - LimitTimer) > 60:
+                        LimitTimer = Date()
+                        LimitCounter = 0
+                        break
+                    print('Waiting')
+                    Chronus.Sleep(1)
+            LimitCounter += 1
+
             CONTINUE = True
             AvailableThread = None
 
@@ -40,6 +54,7 @@ class MultThread:
         for Item in WorkSpace:
             if Item != None:
                 Item.join() 
+
 
 class MultCore:
     def __init__(self, ParallelNumber):
@@ -78,21 +93,25 @@ class MultCore:
 
 
 class TaskMatrix:
-    def __init__(self, Core, Thread):
+    def __init__(self, Core, Thread, LimitPerMinute = None):
         self.Core = Core
         self.Thread = Thread
         self.TaskList = []
+        self.LimitPerMinute = LimitPerMinute
 
         for Item in range(self.Core):
             self.TaskList.append([])
         self.AutoArrangedTaskList = []
+
+    def GetCacheList(self):
+        return multiprocessing.Manager().list()
 
     def ImportTask(self, Function, TaskArg):
         for Item in TaskArg:
             self.AutoArrangedTaskList.append([Function, tuple(Item)])
 
     def NewProcess(self, ProcessTaskArg):
-        MultThreadProcess = MultThread(self.Thread)
+        MultThreadProcess = MultThread(self.Thread, LimitPerMinute = self.LimitPerMinute)
         MultThreadProcess.SetTask(ProcessTaskArg)
         MultThreadProcess.Start()
 
