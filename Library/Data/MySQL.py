@@ -12,6 +12,8 @@ class Database:
             user=GetUser(UserName).UserName,
             passwd=GetUser(UserName).Password,
             db=DatabaseName,)
+        self.ServerName = ServerName
+        self.UserName = UserName
         self.DatabaseName = DatabaseName
         self.Cursor = self.Connection.cursor()
     
@@ -26,6 +28,9 @@ class Database:
         self.__Commit()
         return self.__ShowResult()
 
+
+    def Table(self, TableName):
+        return DatabaseTable(self.ServerName, self.UserName, self.DatabaseName, TableName)
 
     def ListTables(self):
         return [Item[0] for Item in self.__Execute('''SHOW TABLES;''')]
@@ -45,7 +50,7 @@ class Database:
 
 
 class DatabaseTable:
-    def __init__(self, ServerName, UserName, DatabaseName, TableName):
+    def __init__(self, Database, TableName):
         self.DatabaseName = DatabaseName
         self.TableName = TableName
 
