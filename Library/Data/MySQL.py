@@ -211,7 +211,7 @@ class DatabaseTable:
         return self.__Execute(SQL)[0][0]
 
     def GetRowNumber(self):
-        SQL = '''SELECT MAX(ID) FROM %s;''' % (self.TableName)
+        SQL = '''SELECT TABLE_ROWS FROM information_schema.TABLES WHERE TABLE_NAME='%s';''' % (self.TableName)
         return self.__Execute(SQL)[0][0]
 
 

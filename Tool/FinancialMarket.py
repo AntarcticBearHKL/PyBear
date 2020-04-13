@@ -113,6 +113,19 @@ class CHN:
             Ret = self.TradeDayTable.SearchTable(Condition='''WHERE Date<=%s AND Open = 1'''%(TestedDay.String(Style=Style_SS)), Column='''MAX(Date)''')
             return Ret[0][0]
 
+        def GetTradeDay(self, Start=None, End=None, Day=None):
+            if Start and End:
+                Ret = self.TradeDayTable.SearchTable(Condition='''WHERE Date>=%s AND Date<=%s AND Open = 1 ORDER BY Date ASC'''%(Start.String(Style=Style_SS), End.String(Style=Style_SS)), Column='Date')
+                return [Item[0] for Item in Ret]
+            elif Start and Day:
+                Ret = self.TradeDayTable.SearchTable(Condition='''WHERE Date>=%s AND Open = 1 ORDER BY Date ASC'''%(Start.String(Style=Style_SS)), Column='Date')
+                return [Item[0] for Item in Ret][:Day]
+            elif End and Day:
+                Ret = self.TradeDayTable.SearchTable(Condition='''WHERE Date<=%s AND Open = 1 ORDER BY Date ASC LIMIT %s'''%(Date().String(Style=Style_SS), Day), Column='Date')
+                return [Item[0] for Item in Ret]
+            else:
+                raise BadBear('--------GetTradeDay Para Error---------')
+
 
         def AllStock(self, RawCode=False):
             if RawCode:
@@ -186,6 +199,7 @@ class CHN:
             if self.NeedFullDownload():
                 print(self.Code+' Sync Full Download')
                 self.FullDownload() 
+                return
 
             (UpdateCheck, Start, End) = self.NeedUpdate(LastTradeDay)
             if UpdateCheck:
@@ -197,7 +211,7 @@ class CHN:
         def FullDownload(self):
             print(self.Code+' Full Download Start')
             self.TickTable.CheckColumn({
-                'Date':             'INT NOT NULL DEFAULT ""',
+                'Date':             'INT NOT NULL DEFAULT 0',
                 'Open':             'DECIMAL(13,4) NOT NULL DEFAULT 0',
                 'High':             'DECIMAL(13,4) NOT NULL DEFAULT 0',
                 'Low':              'DECIMAL(13,4) NOT NULL DEFAULT 0',
@@ -208,7 +222,8 @@ class CHN:
                 'Amount':           'DECIMAL(13,4) NOT NULL DEFAULT 0',
             }, Index=['Date'])
 
-            Tick = tushare.pro_bar(ts_code = self.Code, adj='qfq', start_date='20050101', end_date=Date().String(Style='SS'))
+            Tick = tushare.pro_bar(ts_code = self.Code, adj='qfq', start_date='20050101', end_date=Date().String(Style='SS')).dropna()
+            print(Tick)
 
             Values = []
             for Item in Tick.itertuples():
@@ -263,18 +278,21 @@ class CHN:
                 return True, str(RequestStart), str(LastTradeDay)
             return False, '', ''
 
+        def IsAvailable(self, LastTradeDay):
+            if Stock.NeedFullDownload() or Stock.NeedUpdate(LastTradeDay)[0]:
+                return False
+            return True
 
-        def GetOpen(self):
-            pass
 
-        def GetClose(self):
-            pass
-
-        def GetHigh(self):
-            pass
-
-        def GetLow(self):
-            pass
+        def GetData(self, Start, End, DataName):
+            Result = self.TickTable.SearchTable(Column=DataName, Condition='''WHERE Date>=%s AND Date<=%s'''%(Start, End))
+            Ret = []
+            for Item in Result:
+                Ilist = []
+                for Itemm in Item:
+                    Ilist.append(float(Itemm))
+                Ret.append(Ilist)
+            return Ret
 
 
         def GetTableSize(self):
@@ -316,10 +334,10 @@ class GLOBAL:
 
 
 class Quantification:
-    def __init__(self, code):
-        self.stockInfo = StockInfo(code)
+    def Profit(Data, Days):
+        return Data[-1] - Data[-1-Days]
 
-    def RSV(self, days=120, range=5):
+    def RSV(Data, days=120, range=5):
         rsv = talib.STOCH(numpy.array(self.stockInfo.getHigh(days=days)),
         numpy.array(self.stockInfo.getLow(days=days)),
         numpy.array(self.stockInfo.getClose(days=days)),
@@ -330,22 +348,22 @@ class Quantification:
         slowd_matype = 0,)[0]
         return rsv
 
-    def RSI(self, days=120, range=5):
+    def RSI(Data, days=120, range=5):
         rsi = talib.RSI(numpy.array(self.stockInfo.getOpen(days=days)), 5)
         return rsi
 
-    def MA(self, days=120, range=5):
+    def MA(Data, days=120, range=5):
         ma = talib.MA(numpy.array(self.stockInfo.getOpen(days=days)), timeperiod=range) 
         return ma
 
-    def EMA(self, days=120, range=5):
+    def EMA(Data, days=120, range=5):
         ema = talib.EMA(numpy.array(self.stockInfo.getOpen(days=days)), timeperiod=range) 
         return ema
 
-    def BOLL(self, days=120, range=5):
+    def BOLL(Data, days=120, range=5):
         pass
 
-    def MACD(self, days=120, fastperiod=5, slowperiod=20, signalperiod=9):
+    def MACD(Data, days=120, fastperiod=5, slowperiod=20, signalperiod=9):
         dif, dea, macd = talib.MACD(
         numpy.array(self.stockInfo.getOpen(days=days)),
         fastperiod=fastperiod, 
@@ -361,7 +379,7 @@ class Brokor:
 
 class Analyst:
     def DailyUpdate(ServerName, UserName):
-        TM = TaskMatrix(2,16, LimitPerMinute=250)
+        TM = TaskMatrix(2,16, LimitPerMinute=245)
         CHNStockMarket = CHN.StockMarket(ServerName, UserName)
 
         LTD = CHNStockMarket.LastTradeDay()
@@ -376,11 +394,51 @@ class Analyst:
 
         print(CacheList)
 
+    def NeedUpdate(ServerName, UserName):
+        TM = TaskMatrix(2,16)
+        CHNStockMarket = CHN.StockMarket(ServerName, UserName)
+
+        LTD = CHNStockMarket.LastTradeDay()
+
+        CacheList = TM.GetCacheList()
+
+        StockArg = [[ServerName, UserName, Item, LTD, CacheList] for Item in CHNStockMarket.AllStock()]
+        print('Ready To Launch')
+
+        TM.ImportTask(WorkLoad.NeedUpdate, StockArg)
+        TM.Start()
+
+        print(CacheList)
+            
+
 class WorkLoad:
     def StockUpdate(ServerName, UserName, StockCode, LastTradeDay, CacheList):
-        try:
-            CHN.Stock(ServerName, UserName, StockCode).Sync(LastTradeDay)
-        except Exception as e:
-            print(e)
-            print('''ERROR HAPPEND: %s''' % (StockCode))
-            CacheList.append(StockCode)
+        ErrorCounter = 0
+        while True:
+            try:
+                CHN.Stock(ServerName, UserName, StockCode).Sync(LastTradeDay)
+                break
+            except Exception as e:
+                ErrorCounter += 1
+                if ErrorCounter >= 10:
+                    print(e)
+                    print('''ERROR HAPPEND: %s''' % (StockCode))
+                    CacheList.append(StockCode)
+                    break
+
+    def NeedUpdate(ServerName, UserName, StockCode, LastTradeDay, CacheList):
+        ErrorCounter = 0
+        while True:
+            try:
+                print(StockCode)
+                Stock = CHN.Stock(ServerName, UserName, StockCode)
+                if Stock.NeedFullDownload() or Stock.NeedUpdate(LastTradeDay)[0]:
+                    CacheList.append(StockCode)
+                break
+            except Exception as e:
+                ErrorCounter += 1
+                if ErrorCounter >= 10:
+                    print(e)
+                    print('''ERROR HAPPEND: %s''' % (StockCode))
+                    CacheList.append('ERROR: ' + StockCode)
+                    break
