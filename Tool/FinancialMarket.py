@@ -121,8 +121,15 @@ class CHN:
                 Ret = self.TradeDayTable.SearchTable(Condition='''WHERE Date>=%s AND Open = 1 ORDER BY Date ASC'''%(Start.String(Style=Style_SS)), Column='Date')
                 return [Item[0] for Item in Ret][:Day]
             elif End and Day:
-                Ret = self.TradeDayTable.SearchTable(Condition='''WHERE Date<=%s AND Open = 1 ORDER BY Date ASC LIMIT %s'''%(Date().String(Style=Style_SS), Day), Column='Date')
-                return [Item[0] for Item in Ret]
+                Ret = self.TradeDayTable.SearchTable(Condition='''WHERE Date<=%s AND Open = 1 ORDER BY Date DESC LIMIT %s'''%(End().String(Style=Style_SS), Day), Column='Date')
+                Ret = [Item[0] for Item in Ret]
+                Ret.reverse()
+                return Ret
+            elif Day:
+                Ret = self.TradeDayTable.SearchTable(Condition='''WHERE Date<=%s AND Open = 1 ORDER BY Date DESC LIMIT %s'''%(Date().String(Style=Style_SS), Day), Column='Date')
+                Ret = [Item[0] for Item in Ret]
+                Ret.reverse()
+                return Ret
             else:
                 raise BadBear('--------GetTradeDay Para Error---------')
 
@@ -337,39 +344,37 @@ class Quantification:
     def Profit(Data, Days):
         return Data[-1] - Data[-1-Days]
 
-    def RSV(Data, days=120, range=5):
-        rsv = talib.STOCH(numpy.array(self.stockInfo.getHigh(days=days)),
-        numpy.array(self.stockInfo.getLow(days=days)),
-        numpy.array(self.stockInfo.getClose(days=days)),
-        fastk_period = range,
-        slowk_period = 1,
-        slowk_matype = 0,
-        slowd_period = 5,
-        slowd_matype = 0,)[0]
-        return rsv
-
-    def RSI(Data, days=120, range=5):
-        rsi = talib.RSI(numpy.array(self.stockInfo.getOpen(days=days)), 5)
-        return rsi
 
     def MA(Data, days=120, range=5):
-        ma = talib.MA(numpy.array(self.stockInfo.getOpen(days=days)), timeperiod=range) 
-        return ma
+        return talib.MA(numpy.array(self.stockInfo.getOpen(days=days)), timeperiod=range) 
 
     def EMA(Data, days=120, range=5):
-        ema = talib.EMA(numpy.array(self.stockInfo.getOpen(days=days)), timeperiod=range) 
-        return ema
+        return talib.EMA(numpy.array(self.stockInfo.getOpen(days=days)), timeperiod=range) 
 
     def BOLL(Data, days=120, range=5):
         pass
 
-    def MACD(Data, days=120, fastperiod=5, slowperiod=20, signalperiod=9):
-        dif, dea, macd = talib.MACD(
-        numpy.array(self.stockInfo.getOpen(days=days)),
+    def MACD(Data, fastperiod=12, slowperiod=26, signalperiod=9):
+        DIF, DEA, MACD = talib.MACD(
+        numpy.array(Data),
         fastperiod=fastperiod, 
         slowperiod=slowperiod, 
-        signalperiod=signalperiod) 
-        return [dif, dea, macd*2]
+        signalperiod=signalperiod)
+        return DIF, DEA, MACD*2
+
+    def RSV(Close, High, Low):
+        return talib.STOCH(
+            numpy.array(High),
+            numpy.array(Low),
+            numpy.array(Close),
+            fastk_period = 1,
+            slowk_period = 1,
+            slowk_matype = 0,
+            slowd_period = 5,
+            slowd_matype = 0,)
+
+    def RSI(Data, days=120, range=5):
+        return talib.RSI(numpy.array(self.stockInfo.getOpen(days=days)), 5)
 
 
 class Brokor:
