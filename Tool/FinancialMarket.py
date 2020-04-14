@@ -474,7 +474,7 @@ class Brokor:
         for Item in self.Data:
             CounterList = []
             for Counter in range(len(Item)):
-                if numpy.isnan(Item[Counter]):
+                if type(Item[Counter]) != list and numpy.isnan(Item[Counter]):
                     continue
                 CounterList.append(Counter)
             MinList.append(min(CounterList))
