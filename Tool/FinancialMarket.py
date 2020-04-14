@@ -376,11 +376,145 @@ class Quantification:
     def RSI(Data, days=120, range=5):
         return talib.RSI(numpy.array(self.stockInfo.getOpen(days=days)), 5)
 
+    def GetCDLIndex(Open, High, Low, Close):
+        Open = numpy.array(Open)
+        High = numpy.array(High)
+        Low = numpy.array(Low)
+        Close = numpy.array(Close)
+        CDLIndex = []
+        CDLIndex.append(talib.CDL2CROWS(Open, High, Low, Close))
+        CDLIndex.append(talib.CDL3BLACKCROWS(Open, High, Low, Close))
+        CDLIndex.append(talib.CDL3INSIDE(Open, High, Low, Close))
+        CDLIndex.append(talib.CDL3LINESTRIKE(Open, High, Low, Close))
+        CDLIndex.append(talib.CDL3OUTSIDE(Open, High, Low, Close))
+        CDLIndex.append(talib.CDL3STARSINSOUTH(Open, High, Low, Close))
+        CDLIndex.append(talib.CDL3WHITESOLDIERS(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLABANDONEDBABY(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLADVANCEBLOCK(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLBELTHOLD(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLBREAKAWAY(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLCLOSINGMARUBOZU(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLCONCEALBABYSWALL(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLCOUNTERATTACK(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLDARKCLOUDCOVER(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLDOJI(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLDOJISTAR(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLDRAGONFLYDOJI(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLENGULFING(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLEVENINGDOJISTAR(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLEVENINGSTAR(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLGAPSIDESIDEWHITE(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLGRAVESTONEDOJI(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLHAMMER(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLHANGINGMAN(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLHARAMI(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLHARAMICROSS(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLHIGHWAVE(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLHIKKAKE(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLHIKKAKEMOD(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLHOMINGPIGEON(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLIDENTICAL3CROWS(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLINNECK(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLINVERTEDHAMMER(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLKICKING(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLKICKINGBYLENGTH(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLLADDERBOTTOM(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLLONGLEGGEDDOJI(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLLONGLINE(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLMARUBOZU(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLMATCHINGLOW(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLMATHOLD(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLMORNINGDOJISTAR(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLMORNINGSTAR(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLONNECK(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLPIERCING(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLRICKSHAWMAN(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLRISEFALL3METHODS(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLSEPARATINGLINES(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLSHOOTINGSTAR(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLSHORTLINE(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLSPINNINGTOP(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLSTALLEDPATTERN(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLSTICKSANDWICH(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLTAKURI(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLTASUKIGAP(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLTHRUSTING(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLTRISTAR(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLUNIQUE3RIVER(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLUPSIDEGAP2CROWS(Open, High, Low, Close))
+        CDLIndex.append(talib.CDLXSIDEGAP3METHODS(Open, High, Low, Close))
+
+        Ret = []
+        for Counter in range(len(CDLIndex[0])):
+            APList = []
+            for Item in list(CDLIndex):
+                if Item[Counter] == 0:
+                    APList.append(0)
+                else:
+                    APList.append(1)
+            Ret.append(APList)
+        return Ret
 
 class Brokor:
-    def __init__(self):
-        pass
+    def __init__(self, Date, Data):
+        for Item in Data:
+            if len(Item) != len(Date):
+                raise BadBear('Broker Data Not Synchronous')
 
+        self.DateIndex = {}
+        self.Date = Date
+        self.Data = Data
+        IndexNumber = 0
+        for Item in Date:
+            self.DateIndex[Item] = IndexNumber
+            IndexNumber += 1
+
+        MinList = []
+        MaxList = []
+        for Item in self.Data:
+            CounterList = []
+            for Counter in range(len(Item)):
+                if numpy.isnan(Item[Counter]):
+                    continue
+                CounterList.append(Counter)
+            MinList.append(min(CounterList))
+            MaxList.append(max(CounterList))
+
+        self.Start = max(MinList)
+        self.End = min(MaxList)
+        if self.Start > self.End:
+            raise BadBear('Broker Data Not Enough')
+        self.Pointer = self.Start - 1
+
+    def __len__(self):
+        return self.End - self.Start + 1
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        self.Pointer += 1
+        if self.Pointer > self.End:
+            raise StopIteration
+        Ret = [self.Pointer, self.Date[self.Pointer]]
+        for Item in self.Data:
+            Ret.append(Item[self.Pointer])
+        return Ret
+
+    def Inspect(self, Start=None, End=None):
+        if Start and End:
+            pass
+        elif Start:
+            pass
+
+    def GetInfo(self, Pointer, Force = False):
+        if not Force:
+            if Pointer > self.End:
+                raise BadBear('Brokor Pointer Exceed End')
+        Ret = [Pointer, Date[Pointer]]
+        for Item in self.Data:
+            Ret.append(Item[Pointer])
+        return Ret
 
 class Analyst:
     def DailyUpdate(ServerName, UserName):
