@@ -6,11 +6,18 @@ def CompoundInterestPresent():
 def CompoundInterestFinal():
     pass
 
-def AnnuityPresent():
-    pass
+def AnnuityPresent(PaidPerYear, Year, InterestRate):
+    Ret = []
+    for Counter in range(Year):
+        Ret.append( PaidPerYear / ((1+InterestRate) ** (Counter+1)) )
+    return Ret
 
-def AnnuityFinal():
-    pass
+def AnnuityFinal(PaidPerYear, Year, InterestRate):
+    Ret = []
+    for Counter in range(Year):
+        Ret.append( PaidPerYear * ((1+InterestRate) ** (Counter)) )
+    Ret.reverse()
+    return Ret
  
 def Perpetuities():
     pass
