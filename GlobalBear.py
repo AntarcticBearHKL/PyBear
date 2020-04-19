@@ -34,3 +34,14 @@ def CatchBadBear(Fn, *args, **kwargs):
         except BadBear as Error:
             print(Error)
     return Ret
+
+ModuleList = [
+    'tensorflow',
+    'scikit-learn',
+    'statsmodels',
+    'pymysql',
+    'pyecharts',
+    'tushare',
+    'requests-html',
+    'scipy',
+]
