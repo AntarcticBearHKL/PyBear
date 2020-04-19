@@ -8,6 +8,16 @@ class BadBear(Exception):
     def __str__(self):
         return '----------------Error Happend----------------\n' + self.Explain
 
+def CatchBadBear(Fn, *args, **kwargs):
+    def Ret(*args, **kwargs):
+        try:
+            Fn(*args, **kwargs)
+        except BadBear as Error:
+            print(Error)
+    return Ret
+
+
+
 UserList = {}
 class NewUser:
     def __init__(self, UserName, Password):
@@ -27,13 +37,6 @@ def GetServer(ServerName):
     return ServerList[ServerName]
 
 
-def CatchBadBear(Fn, *args, **kwargs):
-    def Ret(*args, **kwargs):
-        try:
-            Fn(*args, **kwargs)
-        except BadBear as Error:
-            print(Error)
-    return Ret
 
 ModuleList = [
     'tensorflow',
@@ -44,4 +47,7 @@ ModuleList = [
     'tushare',
     'requests-html',
     'scipy',
+    'python-dateutil',
+    'tornado',
+    'wxpy',
 ]

@@ -5,9 +5,9 @@ from subprocess import call
 
 def UpgradeModule():
     for dist in get_installed_distributions():
-        call("pip install --upgrade " + dist.project_name, shell=True)
+        call("pip3 install --upgrade " + dist.project_name, shell=True)
 
 def InstallAll():
     for Module in GlobalBear.ModuleList:
         print(Module)
-        call("pip install " + Module, shell=True)
+        call("pip3 install " + Module, shell=True)
