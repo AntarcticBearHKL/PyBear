@@ -1,10 +1,64 @@
 from pyecharts import *
 from pyecharts.charts import *
 
-def bar():
-    bar = (
+#[[x], {A:[B]}]
+def GetBar(Data):
+    Ret = (
         Bar()
-        .add_xaxis(["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"])
-        .add_yaxis("商家A", [5, 20, 36, 10, 75, 90])
+        .add_xaxis(Data[0])
     )
-    bar.render('./Output/render.html')
+    for Item in Data[1]:
+        Ret.add_yaxis(Item, Data[1][Item])
+    return Ret
+
+def GetLine(Data):
+    Ret = (
+        Line()
+        .add_xaxis(Data[0])
+    )
+    for Item in Data[1]:
+        Ret.add_yaxis(Item, Data[1][Item])
+    return Ret
+
+def GetKLine(Data):
+    Ret = (
+        KLine()
+        .add_xaxis(Data[0])
+    )
+    for Item in Data[1]:
+        Ret.add_yaxis(Item, Data[1][Item])
+    return Ret
+
+def GetScatter(Data):
+    Ret = (
+        Scatter()
+        .add_xaxis(Data[0])
+    )
+    for Item in Data[1]:
+        Ret.add_yaxis(Item, Data[1][Item])
+    return Ret
+
+def MergeChart(Main, Sub):
+    for Item in Sub:
+        Main.overlap(Item)
+
+def GridVertical(ChartF, ChartS, SplitP):
+    ArgL = str(SplitP) + '%'
+    ArgR = str(100-SplitP) + '%'
+    return (
+        Grid()
+        .add(ChartS, grid_opts=options.GridOpts(pos_left=ArgL))
+        .add(ChartF, grid_opts=options.GridOpts(pos_right=ArgR))
+    )
+
+def GridHorizontal(ChartF, ChartS, SplitP):
+    ArgT = str(SplitP) + '%'
+    ArgB = str(100-SplitP) + '%'
+    return (
+        Grid()
+        .add(ChartS, grid_opts=options.GridOpts(pos_top=ArgT))
+        .add(ChartF, grid_opts=options.GridOpts(pos_bottom=ArgB))
+    )
+    
+def RenderChart(Plot, OutputLocation):
+    Plot.render(OutputLocation)
