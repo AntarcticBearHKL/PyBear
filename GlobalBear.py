@@ -36,6 +36,14 @@ class NewServer:
 def GetServer(ServerName):
     return ServerList[ServerName]
 
+LocationList = {}
+class NewLocation:
+    def __init__(self, LocationName, Location):
+        self.Location = Location
+        LocationList[LocationName] = self
+def GetLocation(LocationName):
+    return LocationList[LocationName].Location
+
 
 
 ModuleList = [

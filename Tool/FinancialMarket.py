@@ -8,10 +8,11 @@ warnings.filterwarnings('ignore')
 
 from PyBear.GlobalBear import *
 from PyBear.Library.Multitasks import *
-from PyBear.Library.Chronus import *
-from PyBear.Library.Data.File import *
 from PyBear.Library.Statistics import *
+from PyBear.Library.Chronus import *
+from PyBear.Library.Chart import *
 from PyBear.Library.Data.MySQL import *
+from PyBear.Library.Data.File import *
 
 TushareAvailiable = False
 def SetTushareToken(token):
@@ -301,6 +302,16 @@ class CHN:
                 Ret.append(Ilist)
             return Ret
 
+        def PlotData(self, Start, End):
+            DateList = [str(int(Item[0])) for Item in self.GetData(Start, End, 'Date')]
+            PriceList = self.GetData(Start, End, 'Open, Close, Low, High')
+            
+            return GetKLine([
+                DateList,
+                {'Price':PriceList}
+            ])
+            
+
 
         def GetTableSize(self):
             return self.TickTable.GetTableSize()
@@ -376,84 +387,95 @@ class Quantification:
     def RSI(Data, days=120, range=5):
         return talib.RSI(numpy.array(self.stockInfo.getOpen(days=days)), 5)
 
-    def GetCDLIndex(Open, High, Low, Close):
+    def GetCDLIndex(Open, High, Low, Close, Daily=True):
         Open = numpy.array(Open)
         High = numpy.array(High)
         Low = numpy.array(Low)
         Close = numpy.array(Close)
-        CDLIndex = []
-        CDLIndex.append(talib.CDL2CROWS(Open, High, Low, Close))
-        CDLIndex.append(talib.CDL3BLACKCROWS(Open, High, Low, Close))
-        CDLIndex.append(talib.CDL3INSIDE(Open, High, Low, Close))
-        CDLIndex.append(talib.CDL3LINESTRIKE(Open, High, Low, Close))
-        CDLIndex.append(talib.CDL3OUTSIDE(Open, High, Low, Close))
-        CDLIndex.append(talib.CDL3STARSINSOUTH(Open, High, Low, Close))
-        CDLIndex.append(talib.CDL3WHITESOLDIERS(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLABANDONEDBABY(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLADVANCEBLOCK(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLBELTHOLD(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLBREAKAWAY(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLCLOSINGMARUBOZU(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLCONCEALBABYSWALL(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLCOUNTERATTACK(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLDARKCLOUDCOVER(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLDOJI(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLDOJISTAR(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLDRAGONFLYDOJI(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLENGULFING(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLEVENINGDOJISTAR(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLEVENINGSTAR(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLGAPSIDESIDEWHITE(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLGRAVESTONEDOJI(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLHAMMER(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLHANGINGMAN(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLHARAMI(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLHARAMICROSS(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLHIGHWAVE(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLHIKKAKE(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLHIKKAKEMOD(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLHOMINGPIGEON(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLIDENTICAL3CROWS(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLINNECK(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLINVERTEDHAMMER(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLKICKING(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLKICKINGBYLENGTH(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLLADDERBOTTOM(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLLONGLEGGEDDOJI(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLLONGLINE(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLMARUBOZU(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLMATCHINGLOW(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLMATHOLD(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLMORNINGDOJISTAR(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLMORNINGSTAR(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLONNECK(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLPIERCING(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLRICKSHAWMAN(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLRISEFALL3METHODS(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLSEPARATINGLINES(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLSHOOTINGSTAR(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLSHORTLINE(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLSPINNINGTOP(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLSTALLEDPATTERN(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLSTICKSANDWICH(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLTAKURI(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLTASUKIGAP(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLTHRUSTING(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLTRISTAR(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLUNIQUE3RIVER(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLUPSIDEGAP2CROWS(Open, High, Low, Close))
-        CDLIndex.append(talib.CDLXSIDEGAP3METHODS(Open, High, Low, Close))
+        CDLIndex = {}
 
-        Ret = []
-        for Counter in range(len(CDLIndex[0])):
-            APList = []
-            for Item in list(CDLIndex):
-                if Item[Counter] == 0:
-                    APList.append(0)
-                else:
-                    APList.append(1)
-            Ret.append(APList)
-        return Ret
+        CDLIndex['2CROWS'] = talib.CDL2CROWS(Open, High, Low, Close)
+        CDLIndex['3BLACKCROWS'] = talib.CDL3BLACKCROWS(Open, High, Low, Close)
+        CDLIndex['3INSIDE'] = talib.CDL3INSIDE(Open, High, Low, Close)
+        CDLIndex['3LINESTRIKE'] = talib.CDL3LINESTRIKE(Open, High, Low, Close)
+        CDLIndex['3OUTSIDE'] = talib.CDL3OUTSIDE(Open, High, Low, Close)
+        CDLIndex['3STARSINSOUTH'] = talib.CDL3STARSINSOUTH(Open, High, Low, Close)
+        CDLIndex['3WHITESOLDIERS'] = talib.CDL3WHITESOLDIERS(Open, High, Low, Close)
+        CDLIndex['ABANDONEDBABY'] = talib.CDLABANDONEDBABY(Open, High, Low, Close)
+        CDLIndex['ADVANCEBLOCK'] = talib.CDLADVANCEBLOCK(Open, High, Low, Close)
+        CDLIndex['BELTHOLD'] = talib.CDLBELTHOLD(Open, High, Low, Close)
+        CDLIndex['BREAKAWAY'] = talib.CDLBREAKAWAY(Open, High, Low, Close)
+        CDLIndex['CLOSINGMARUBOZU'] = talib.CDLCLOSINGMARUBOZU(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLCONCEALBABYSWALL(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLCOUNTERATTACK(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLDARKCLOUDCOVER(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLDOJI(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLDOJISTAR(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLDRAGONFLYDOJI(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLENGULFING(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLEVENINGDOJISTAR(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLEVENINGSTAR(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLGAPSIDESIDEWHITE(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLGRAVESTONEDOJI(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLHAMMER(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLHANGINGMAN(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLHARAMI(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLHARAMICROSS(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLHIGHWAVE(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLHIKKAKE(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLHIKKAKEMOD(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLHOMINGPIGEON(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLIDENTICAL3CROWS(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLINNECK(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLINVERTEDHAMMER(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLKICKING(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLKICKINGBYLENGTH(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLLADDERBOTTOM(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLLONGLEGGEDDOJI(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLLONGLINE(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLMARUBOZU(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLMATCHINGLOW(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLMATHOLD(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLMORNINGDOJISTAR(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLMORNINGSTAR(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLONNECK(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLPIERCING(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLRICKSHAWMAN(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLRISEFALL3METHODS(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLSEPARATINGLINES(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLSHOOTINGSTAR(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLSHORTLINE(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLSPINNINGTOP(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLSTALLEDPATTERN(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLSTICKSANDWICH(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLTAKURI(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLTASUKIGAP(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLTHRUSTING(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLTRISTAR(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLUNIQUE3RIVER(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLUPSIDEGAP2CROWS(Open, High, Low, Close)
+        CDLIndex['2CROWS'] = talib.CDLXSIDEGAP3METHODS(Open, High, Low, Close)
+
+        if Daily:
+            Ret = []
+            for Counter in range(len(CDLIndex[0])):
+                APList = []
+                for Item in list(CDLIndex):
+                    if Item[Counter] == 0:
+                        APList.append(0)
+                    else:
+                        APList.append(1)
+                Ret.append(APList)
+            return Ret
+        else:
+            for Item in CDLIndex:
+                for Counter in range(len(Item)):
+                    if Item[Counter] == 100:
+                        Item[Counter] = 1
+                    elif Item[Counter] == -100:
+                        Item[Counter] = 2
+            return CDLIndex
+                        
 
 class Brokor:
     def __init__(self, Date, Data):
@@ -519,6 +541,7 @@ class Brokor:
 class Analyst:
     def DailyUpdate(ServerName, UserName):
         TM = TaskMatrix(2,16, LimitPerMinute=245)
+
         CHNStockMarket = CHN.StockMarket(ServerName, UserName)
 
         LTD = CHNStockMarket.LastTradeDay()
@@ -526,6 +549,7 @@ class Analyst:
         CacheList = TM.GetCacheList()
 
         StockArg = [[ServerName, UserName, Item, LTD, CacheList] for Item in CHNStockMarket.AllStock()]
+
         print('Ready To Launch')
 
         TM.ImportTask(WorkLoad.StockUpdate, StockArg)

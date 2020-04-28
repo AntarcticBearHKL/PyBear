@@ -22,7 +22,7 @@ def GetLine(Data):
 
 def GetKLine(Data):
     Ret = (
-        KLine()
+        Kline()
         .add_xaxis(Data[0])
     )
     for Item in Data[1]:
