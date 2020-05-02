@@ -42,13 +42,11 @@ class CHN:
             self.CHNStockMarketDataBase.CheckTable([
                 'BasicInfo',
                 'TradeDay',
-                'UpdateInfo',
             ])
 
             self.BasicInfoTable = self.CHNStockMarketDataBase.Table('BasicInfo')
             self.TradeDayTable = self.CHNStockMarketDataBase.Table('TradeDay')
-            self.UpdateInfoTable = self.CHNStockMarketDataBase.Table('UpdateInfo')
-            self.UpdateManager = UpdateManager(self.UpdateInfoTable)
+
 
         def UpdateBasicInfo(self):
             print('BasicInfo Update Start')
@@ -69,10 +67,9 @@ class CHN:
             self.BasicInfoTable.DeleteAll()
             self.BasicInfoTable.Insert(['CodeIDX', 'Code', 'Name', 'Area', 'Industry'], Values)
 
-            self.UpdateManager.Update('BasicInfo')
             print('BasicInfo Update Finished')
 
-        def UpdateTradeDay(self, latest=False):
+        def UpdateTradeDay(self):
             print('TradeDay Update Start')
             self.TradeDayTable.CheckColumn({
                 'Date': 'INT NOT NULL',
@@ -88,11 +85,12 @@ class CHN:
             self.TradeDayTable.DeleteAll()
             self.TradeDayTable.Insert(['Date', 'Open'], Values)
 
-            self.UpdateManager.Update('TradeDay')
             print('TradeDay Update Finished')
 
         def CheckStockTable(self):
-            self.DB.CheckTable([Item[:6]+'_Price' for Item in self.AllStock()])
+            print("Inital All Stock Table Start")
+            self.CHNStockMarketDataBase.CheckTable([Item[:6]+'_Price' for Item in self.AllStock()])
+            print("Inital All Stock Table Finished")
 
 
         def IsTradeDay(self, TestedDay):
@@ -230,8 +228,13 @@ class CHN:
                 'Amount':           'DECIMAL(13,4) NOT NULL DEFAULT 0',
             }, Index=['Date'])
 
-            Tick = tushare.pro_bar(ts_code = self.Code, adj='qfq', start_date='20050101', end_date=Date().String(Style='SS')).dropna()
-            print(Tick)
+            Tick = tushare.pro_bar(ts_code = self.Code, adj='qfq', start_date='20050101', end_date=Date().String(Style='SS'))
+
+            if Tick:
+                Tick = Tick.dropna()
+            else:
+                print(self.Code+' Full Download Finished')
+                return
 
             Values = []
             for Item in Tick.itertuples():
@@ -274,7 +277,7 @@ class CHN:
             self.TickTable.Insert(['Date', 'Open', 'High', 'Low', 'Close', 'ChangedPrice', 'ChangedPercent', 'Volume', 'Amount'], Values)
 
         def NeedFullDownload(self):
-            if self.TickTable.GetRowNumber() == 0:
+            if not self.TickTable.GetRowNumber():
                 return True
             return False
 
@@ -311,7 +314,6 @@ class CHN:
                 {'Price':PriceList}
             ])
             
-
 
         def GetTableSize(self):
             return self.TickTable.GetTableSize()
@@ -539,10 +541,15 @@ class Brokor:
         return Ret
 
 class Analyst:
-    def DailyUpdate(ServerName, UserName):
-        TM = TaskMatrix(2,16, LimitPerMinute=245)
+    def DailyUpdate(ServerName, UserName, Init=False, LimitPerMinute=None):
+        TM = TaskMatrix(2,16, LimitPerMinute=LimitPerMinute)
+        #TM = TaskMatrix(1,1, LimitPerMinute=LimitPerMinute)
 
         CHNStockMarket = CHN.StockMarket(ServerName, UserName)
+        if Init:       
+            CHNStockMarket.UpdateBasicInfo()
+            CHNStockMarket.UpdateTradeDay()
+            CHNStockMarket.CheckStockTable()
 
         LTD = CHNStockMarket.LastTradeDay()
 

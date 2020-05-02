@@ -208,11 +208,19 @@ class DatabaseTable:
 
     def GetTableSize(self):
         SQL = ''' SELECT DATA_LENGTH as data from information_schema.TABLES where table_schema='%s' and table_name='%s'; ''' % (self.DatabaseName, self.TableName)
-        return self.__Execute(SQL)[0][0]
+        Ret = self.__Execute(SQL)
+        if len(Ret) == 0:
+            return None
+        else:
+            return Ret[0][0]
 
     def GetRowNumber(self):
-        SQL = '''SELECT TABLE_ROWS FROM information_schema.TABLES WHERE TABLE_NAME='%s';''' % (self.TableName)
-        return self.__Execute(SQL)[0][0]
+        SQL = '''SELECT MAX(ID) FROM %s;''' % (self.TableName)
+        Ret = self.__Execute(SQL)
+        if len(Ret) == 0:
+            return None
+        else:
+            return Ret[0][0]
 
 
 class UpdateManager:

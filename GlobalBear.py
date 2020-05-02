@@ -58,4 +58,5 @@ ModuleList = [
     'python-dateutil',
     'tornado',
     'wxpy',
+    'cryptography',
 ]
