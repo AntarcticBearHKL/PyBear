@@ -1,4 +1,4 @@
-DebugMode = False
+GlobalDebugMode = False
 GlobalAvailabilityCheck = False
 
 class BadBear(Exception):
@@ -15,7 +15,6 @@ def CatchBadBear(Fn, *args, **kwargs):
         except BadBear as Error:
             print(Error)
     return Ret
-
 
 
 UserList = {}
@@ -45,7 +44,6 @@ def GetLocation(LocationName):
     return LocationList[LocationName].Location
 
 
-
 BearModule = [
     'tensorflow',
     'scikit-learn',
@@ -68,3 +66,13 @@ BearPort = {
     'HomePageHTTPS': 443,
     'WechatMPBE': 443
 }
+
+import platform
+if platform.system() == "Windows":
+    import asyncio
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+    NewLocation('DefaultCertificationFileLocation', 'E:\GitHub\BearApplication\PythonApplication/Certification/www.bear-services.com')
+
+elif platform.system() == "Linux":
+    NewLocation('DefaultCertificationFileLocation', '/BearApplication/PythonApplication/Certification/www.bear-services.com')

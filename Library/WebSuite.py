@@ -130,12 +130,12 @@ class RequestAnalyst:
                 FilePath = FJoin(FilePath, Item)
         return FilePath
 
+    def Redirect(self, Destination):
+        self.Connection.redirect(Destination)
+
 def GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandler, PostHandler):
     class HTTPListener(RequestHandler):
         def get(self):
-            if GetHandler:
-                    GetHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation))
-            return
             try:
                 if GetHandler:
                     GetHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation))
@@ -145,9 +145,6 @@ def GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandl
                 self.write('Nobody Want To Respond You')
 
         def post(self):
-            if PostHandler:
-                    PostHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation))   
-            return
             try:
                 if PostHandler:
                     PostHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation))   
@@ -157,21 +154,10 @@ def GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandl
                 self.write('Nobody Want To Respond You')
     return HTTPListener
 
-def GetRedirectListener(Destination):
-    class RedirectListener(RequestHandler):
-        def get(self):
-            self.redirect(Destination)
-    return RedirectListener
-
-def StartRedirectServer(Port, Destination):
-    Application( [(r".*", GetRedirectListener(Destination)),] ).listen(Port)
-    IOLoop.instance().start()
 
 
 def StartSocketServer():
     pass
-
-
 
 def SendHttpGet(Url, Parameter):
     Request = requests.get(Url+'?'+Parameter)
