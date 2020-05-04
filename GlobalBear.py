@@ -46,7 +46,7 @@ def GetLocation(LocationName):
 
 
 
-ModuleList = [
+BearModule = [
     'tensorflow',
     'scikit-learn',
     'statsmodels',
@@ -59,4 +59,12 @@ ModuleList = [
     'tornado',
     'wxpy',
     'cryptography',
+    'talib'
 ]
+
+BearPort = {
+    'Authentication': 2333,
+    'HomePageHTTP': 80,
+    'HomePageHTTPS': 443,
+    'WechatMPBE', 443
+}
