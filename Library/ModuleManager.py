@@ -4,7 +4,8 @@ from pip._internal.utils.misc import get_installed_distributions
 from subprocess import call
 
 def InitEnvironment():
-    call('wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz')
+    call('apt install curl')
+    call('curl http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz')
     call('tar -xzvf ta-lib-0.4.0-src.tar.gz')
     call('cd ta-lib')
     call('./configure --prefix=/usr')
