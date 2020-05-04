@@ -9,41 +9,12 @@ import re
 
 from PyBear.GlobalBear import *
 from PyBear.Library.Data.File import *
- 
-def GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandler, PostHandler):
-    class HTTPListener(RequestHandler):
-        def get(self):
-            if GetHandler:
-                    GetHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation))
-            return
-            try:
-                if GetHandler:
-                    GetHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation))
-            except Exception as Error:
-                print(Error)
-                self.set_status(403)
-                self.write('Nobody Want To Respond You')
 
-        def post(self):
-            if PostHandler:
-                    PostHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation))   
-            return
-            try:
-                if PostHandler:
-                    PostHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation))   
-            except Exception as Error:
-                print(Error)
-                self.set_status(403)
-                self.write('Nobody Want To Respond You')
-    return HTTPListener
-
-def StartHttpServer(ApplicationFileLocation=None, 
-    LibraryFileLocation=None, 
-    GetHandler=None, PostHandler=None, Port=80):
+def StartHttpServer(ApplicationFileLocation=None, LibraryFileLocation=None, GetHandler=None, PostHandler=None, Port=80):
     Application( [(r".*", GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandler, PostHandler) ),] ).listen(Port)
     IOLoop.instance().start()
 
-def StartHttpsServer(CertificationLocation, ApplicationFileLocation=None, LibraryFileLocation=None, GetHandler=None, PostHandler=None, Port=443):
+def StartHttpsServer(CertificationFileLocation, ApplicationFileLocation=None, LibraryFileLocation=None, GetHandler=None, PostHandler=None, Port=443):
     HTTPServer(
         Application(
             [(r".*", GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandler, PostHandler)),], 
@@ -51,8 +22,8 @@ def StartHttpsServer(CertificationLocation, ApplicationFileLocation=None, Librar
             "static_path" : FJoin(os.path.dirname(__file__), "static"),
         }),
         ssl_options={
-            "certfile": FJoin(CertificationLocation, 'server.crt'),
-            "keyfile": FJoin(CertificationLocation, 'server.key'),
+            "certfile": FJoin(CertificationFileLocation, 'server.crt'),
+            "keyfile": FJoin(CertificationFileLocation, 'server.key'),
         }).listen(Port)
     IOLoop.instance().start()
 
@@ -159,6 +130,32 @@ class RequestAnalyst:
                 FilePath = FJoin(FilePath, Item)
         return FilePath
 
+def GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandler, PostHandler):
+    class HTTPListener(RequestHandler):
+        def get(self):
+            if GetHandler:
+                    GetHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation))
+            return
+            try:
+                if GetHandler:
+                    GetHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation))
+            except Exception as Error:
+                print(Error)
+                self.set_status(403)
+                self.write('Nobody Want To Respond You')
+
+        def post(self):
+            if PostHandler:
+                    PostHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation))   
+            return
+            try:
+                if PostHandler:
+                    PostHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation))   
+            except Exception as Error:
+                print(Error)
+                self.set_status(403)
+                self.write('Nobody Want To Respond You')
+    return HTTPListener
 
 def GetRedirectListener(Destination):
     class RedirectListener(RequestHandler):
@@ -171,23 +168,26 @@ def StartRedirectServer(Port, Destination):
     IOLoop.instance().start()
 
 
-def SendHttpGet(Url, Port):
-    Request = requests.get(Url)
+def StartSocketServer():
+    pass
+
+
+
+def SendHttpGet(Url, Parameter):
+    Request = requests.get(Url+'?'+Parameter)
     return [Request.status_code, Request.text]
 
 def SendHttpPost(Url, Parameter):
     Request = requests.post(Url, data=json.dumps(Parameter))
     return [Request.status_code, Request.text]
 
-
-def StartSocketServer():
-    pass
-
 def SendTcpRequest():
     pass
 
 def SendUdpRequest():
     pass
+
+
 
 def GetPrivateIP():
     Request = requests.get("http://www.baidu.com", stream=True)
