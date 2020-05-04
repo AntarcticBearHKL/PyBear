@@ -66,5 +66,5 @@ BearPort = {
     'Authentication': 2333,
     'HomePageHTTP': 80,
     'HomePageHTTPS': 443,
-    'WechatMPBE', 443
+    'WechatMPBE': 443
 }
