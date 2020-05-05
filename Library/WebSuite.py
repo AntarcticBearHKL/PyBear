@@ -56,19 +56,8 @@ class RequestAnalyst:
             print('Get Path Error')    
 
 
-        if self.Method == 'GET':
-            try:
-                for item in self.Connection.request.arguments:
-                    self.Parameter[item] = self.Connection.request.arguments[item][0].decode('ascii')
-            except Exception as Error:
-                print(Error)
-                print('Get Get Parameter Error')         
-        elif self.Method == 'POST':
-            try:
-                self.Parameter = json.loads(self.Connection.request.body.decode('ascii'))
-            except Exception as Error:
-                print(Error)
-                print('Get Post Parameter Error')
+        self.Parameter = self.Connection.request.arguments
+        self.Body = self.Connection.request.body
 
 
     def Write(self, Content):
