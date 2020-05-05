@@ -55,14 +55,17 @@ class RequestAnalyst:
             print(Error)
             print('Get Path Error')    
 
-
-        self.Parameter = self.Connection.request.arguments
+        self.Request = self.Connection.request
+        self.Argument = self.Connection.request.arguments
         self.Body = self.Connection.request.body
 
 
     def Write(self, Content):
         self.Connection.write(Content)
 
+    def PrintRequest(self):
+        for Item in self.Request.__dict__:
+            print(i, ':' self.Request.__dict__[i])
 
     def ReturnApplicationGet(self):
         if not self.Path:
