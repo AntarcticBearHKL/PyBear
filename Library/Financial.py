@@ -18,9 +18,14 @@ def AnnuityFinal(PaidPerYear, Year, InterestRate):
         Ret.append( PaidPerYear * ((1+InterestRate) ** (Counter)) )
     Ret.reverse()
     return Ret
+
+def BondPresent(Principal, BondInterestRate, Year, InterestRate):
+    Ret = AnnuityPresent(Principal*BondInterestRate, Year, InterestRate)
+    Ret.append((Principal/((1+InterestRate)**Year)))
+    return Ret
  
 def Perpetuities():
     pass
 
 def CompoundingInterestRates():
-    pass
+    pass 
