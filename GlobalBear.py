@@ -57,7 +57,9 @@ BearModule = [
     'tornado',
     'wxpy',
     'cryptography',
-    'talib'
+    'talib',
+    'pymongo',
+    'redis',
 ]
 
 BearPort = {

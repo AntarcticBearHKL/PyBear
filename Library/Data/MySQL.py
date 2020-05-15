@@ -97,7 +97,7 @@ class DatabaseTable:
             Ret[Item[0]] = Item[1].upper()
         return Ret
 
-    def CheckColumn(self, Columns, Index=None, UniqueIndex=None, FulltextIndex=None):
+    def InitTable(self, Columns, Index=None, UniqueIndex=None, FulltextIndex=None):
         self.Columns = self.ListColumn()
         self.Indexs = self.ListIndex()
 
@@ -221,34 +221,3 @@ class DatabaseTable:
             return None
         else:
             return Ret[0][0]
-
-
-class UpdateManager:
-    def __init__(self, DatabaseTable):
-        self.DatabaseTable = DatabaseTable
-        self.DatabaseTable.CheckColumn({
-            'ItemIDX': 'BIGINT NOT NULL',
-            'ItemName': 'CHAR(64) NOT NULL',
-            'UpdateTime': 'CHAR(16) NOT NULL',
-        }, Index={'ItemIndex':['ItemIDX', 'ItemName']})
-
-    def Update(self, Name):
-        Recode = self.DatabaseTable.SearchTable(Column='ID', Condition='''WHERE ItemIDX=CRC32('%s') AND ItemName='%s' ''' % (Name, Name))
-        if len(Recode) == 1: 
-            self.DatabaseTable.Change(Recode[0], 'UpdateTime', Date().String())
-        elif len(Recode) == 0:
-            self.DatabaseTable.Insert( 
-            ['ItemIDX', 'ItemName', 'UpdateTime'], 
-            [[
-                ['''CRC32('%s')''' % (Name)], 
-                Name, 
-                Date().String(),
-            ],])
-        print('''Update %s At %s''' % (Name, Date().String(Style=Style_L)))
-
-    def TableUpdateTime(self, Name):
-        Result = self.DatabaseTable.SearchTable(Condition='''WHERE ItemIDX=CRC32('%s') AND ItemName='%s' ''' % (Name, Name))
-        if len(Result) == 0:
-            return None
-        else:
-            return Date(Result[0][3])

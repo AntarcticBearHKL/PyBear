@@ -35,7 +35,6 @@ class CHN:
             self.API = tushare.pro_api()
             self.ServerName = ServerName
             self.UserName = UserName
-            self.UpdateManager = None
 
             self.CHNStockMarketDataBase = Database(ServerName, UserName, 'CHNStockMarket')
 
@@ -50,7 +49,7 @@ class CHN:
 
         def UpdateBasicInfo(self):
             print('BasicInfo Update Start')
-            self.BasicInfoTable.CheckColumn({
+            self.BasicInfoTable.InitTable({
                 'CodeIDX': 'BIGINT NOT NULL',
                 'Code': 'CHAR(16) NOT NULL',
                 'Name': 'CHAR(16) NOT NULL',
@@ -71,7 +70,7 @@ class CHN:
 
         def UpdateTradeDay(self):
             print('TradeDay Update Start')
-            self.TradeDayTable.CheckColumn({
+            self.TradeDayTable.InitTable({
                 'Date': 'INT NOT NULL',
                 'Open': 'INT NOT NULL',
             }, Index=['Date'])
@@ -216,7 +215,7 @@ class CHN:
 
         def FullDownload(self):
             print(self.Code+' Full Download Start')
-            self.TickTable.CheckColumn({
+            self.TickTable.InitTable({
                 'Date':             'INT NOT NULL DEFAULT 0',
                 'Open':             'DECIMAL(13,4) NOT NULL DEFAULT 0',
                 'High':             'DECIMAL(13,4) NOT NULL DEFAULT 0',
