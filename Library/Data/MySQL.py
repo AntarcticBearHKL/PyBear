@@ -4,7 +4,7 @@ import os, sys
 from PyBear.GlobalBear import *
 from PyBear.Library.Chronus import *
 
-class Database:
+class MySQL:
     def __init__(self, ServerName, UserName, DatabaseName):
         self.Connection = pymysql.connect(
             host=GetServer(ServerName).IP,
@@ -32,26 +32,28 @@ class Database:
     def Table(self, TableName):
         return DatabaseTable(self.ServerName, self.UserName, self.DatabaseName, TableName)
 
-    def ListTables(self):
+    def ListTable(self):
         SQL = ''' SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA='%s'; ''' % (self.DatabaseName)
         return [Item[0] for Item in self.__Execute(SQL)]
 
-    def CheckTable(self, TableList):
-        ServerTableList = self.ListTables()
+    def InitTable(self, TableList):
+        ServerTableList = self.ListTable()
         for Item in TableList:
             if Item not in ServerTableList:
                 SQL = '''CREATE TABLE %s (ID INT AUTO_INCREMENT, PRIMARY KEY(ID)) CHARSET=utf8;''' % (Item)
                 self.__Execute(SQL)
     
-    def DeleteTables(self, Condition):
+    def DeleteTable(self, Condition):
         SQL = '''select concat('drop table ', table_name, ';') from information_schema.tables where table_name like '%s';''' % (Condition)
         for SQL in self.__Execute(SQL):
             print(SQL)
             self.__Execute(SQL[0])
 
 
-class DatabaseTable:
+class MySQLTable:
     def __init__(self, ServerName, UserName, DatabaseName, TableName):
+        self.ServerName = ServerName
+        self.UserName = UserName
         self.DatabaseName = DatabaseName
         self.TableName = TableName
 
@@ -74,28 +76,6 @@ class DatabaseTable:
         self.__Commit()
         return self.__ShowResult()
 
-
-    def NewColumn(self, ColumnName, DataType):
-        SQL = '''ALTER TABLE %s ADD %s %s;''' % (self.TableName, ColumnName, DataType)
-        self.__Execute(SQL)
-        self.Columns = self.ListColumn()
-
-    def ChangeColumn(self, ColumnName, DataType):
-        SQL = '''ALTER TABLE %s MODIFY %s %s;''' % (self.TableName, ColumnName, DataType)
-        self.__Execute(SQL)
-        self.Columns = self.ListColumn()
-
-    def DeleteColumn(self, ColumnName):
-        SQL = '''ALTER TABLE %s DROP %s %s;''' % (self.TableName, ColumnName)
-        self.__Execute(SQL)
-        self.Columns = self.ListColumn()
-
-    def ListColumn(self):
-        SQL = '''SHOW COLUMNS FROM %s''' % (self.TableName)
-        Ret = {}
-        for Item in self.__Execute(SQL):
-            Ret[Item[0]] = Item[1].upper()
-        return Ret
 
     def InitTable(self, Columns, Index=None, UniqueIndex=None, FulltextIndex=None):
         self.Columns = self.ListColumn()
@@ -124,6 +104,29 @@ class DatabaseTable:
             pass
         elif type(FulltextIndex) == dict:
             pass
+
+
+    def NewColumn(self, ColumnName, DataType):
+        SQL = '''ALTER TABLE %s ADD %s %s;''' % (self.TableName, ColumnName, DataType)
+        self.__Execute(SQL)
+        self.Columns = self.ListColumn()
+
+    def ChangeColumn(self, ColumnName, DataType):
+        SQL = '''ALTER TABLE %s MODIFY %s %s;''' % (self.TableName, ColumnName, DataType)
+        self.__Execute(SQL)
+        self.Columns = self.ListColumn()
+
+    def DeleteColumn(self, ColumnName):
+        SQL = '''ALTER TABLE %s DROP %s %s;''' % (self.TableName, ColumnName)
+        self.__Execute(SQL)
+        self.Columns = self.ListColumn()
+
+    def ListColumn(self):
+        SQL = '''SHOW COLUMNS FROM %s''' % (self.TableName)
+        Ret = {}
+        for Item in self.__Execute(SQL):
+            Ret[Item[0]] = Item[1].upper()
+        return Ret
 
 
     def NewIndex(self, ColumnName, IndexName=None):
@@ -198,7 +201,7 @@ class DatabaseTable:
         self.__Execute(SQL)
 
 
-    def SearchTable(self, Column='*', Condition=''):
+    def Search(self, Column='*', Condition=''):
         return self.__Execute('''SELECT %s FROM %s %s''' % (Column, self.TableName, Condition))
 
 
