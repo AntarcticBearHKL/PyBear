@@ -36,7 +36,7 @@ class CHN:
             self.ServerName = ServerName
             self.UserName = UserName
 
-            self.CHNStockMarketDataBase = Database(ServerName, UserName, 'CHNStockMarket')
+            self.CHNStockMarketDataBase = MySQLDB(ServerName, UserName, 'CHNStockMarket')
 
             self.CHNStockMarketDataBase.CheckTable([
                 'BasicInfo',
@@ -197,7 +197,7 @@ class CHN:
             self.Code = Code
             self.StockMarket = None
              
-            self.TickTable = DatabaseTable(ServerName, UserName, 'CHNStockMarket', self.Code[:6]+'_Price')
+            self.TickTable = MySQLTable(ServerName, UserName, 'CHNStockMarket', self.Code[:6]+'_Price')
 
 
         def Sync(self, LastTradeDay):

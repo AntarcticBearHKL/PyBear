@@ -4,7 +4,7 @@ import os, sys
 from PyBear.GlobalBear import *
 from PyBear.Library.Chronus import *
 
-class MySQL:
+class MySQLDB:
     def __init__(self, ServerName, UserName, DatabaseName):
         self.Connection = pymysql.connect(
             host=GetServer(ServerName).IP,
@@ -78,6 +78,7 @@ class MySQLTable:
 
 
     def InitTable(self, Columns, Index=None, UniqueIndex=None, FulltextIndex=None):
+        self.Cursor.execute('''TRUNCATE TABLE %s;''' % (self.TableName))
         self.Columns = self.ListColumn()
         self.Indexs = self.ListIndex()
 

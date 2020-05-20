@@ -27,6 +27,27 @@ def StartHttpsServer(CertificationFileLocation, ApplicationFileLocation=None, Li
         }).listen(Port)
     IOLoop.instance().start()
 
+def GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandler, PostHandler):
+    class HTTPListener(RequestHandler):
+        def get(self):
+            try:
+                if GetHandler:
+                    GetHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation))
+            except Exception as Error:
+                print(Error)
+                self.set_status(403)
+                self.write('Nobody Want To Respond You')
+
+        def post(self):
+            try:
+                if PostHandler:
+                    PostHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation))   
+            except Exception as Error:
+                print(Error)
+                self.set_status(403)
+                self.write('Nobody Want To Respond You')
+    return HTTPListener
+
 
 class RequestAnalyst:
     def __init__(self, Connection, ApplicationFileLocation, LibraryFileLocation):
@@ -124,27 +145,6 @@ class RequestAnalyst:
 
     def Redirect(self, Destination):
         self.Connection.redirect(Destination)
-
-def GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandler, PostHandler):
-    class HTTPListener(RequestHandler):
-        def get(self):
-            try:
-                if GetHandler:
-                    GetHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation))
-            except Exception as Error:
-                print(Error)
-                self.set_status(403)
-                self.write('Nobody Want To Respond You')
-
-        def post(self):
-            try:
-                if PostHandler:
-                    PostHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation))   
-            except Exception as Error:
-                print(Error)
-                self.set_status(403)
-                self.write('Nobody Want To Respond You')
-    return HTTPListener
 
 
 

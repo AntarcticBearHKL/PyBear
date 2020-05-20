@@ -1,6 +1,93 @@
+import platform
 GlobalDebugMode = False
 GlobalAvailabilityCheck = False
 
+if platform.system() == "Windows":
+    import asyncio
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+    NewLocation('DefaultCertificationFileLocation', 'E:\GitHub\BearApplication\PythonApplication/Certification/www.bear-services.com')
+
+elif platform.system() == "Linux":
+    NewLocation('DefaultCertificationFileLocation', '/BearApplication/PythonApplication/Certification/www.bear-services.com')
+
+
+#----------------
+#Authentication:
+#----------------
+DefaultAuthenticationPort = 621
+
+#================
+
+#---------
+#WebDisk
+#---------
+DefaultWebDiskPort = 555
+
+#=========
+
+
+#-------------
+#TimeCapsule:
+#-------------
+DefaultTimeCapsulePort = 715
+
+#============
+
+
+
+#---------
+#Balance:
+#---------
+DefaultBalancePort = 517
+
+#=========
+
+
+
+#----------
+#HomePage:
+#----------
+DefaultHomePagePort = 443
+
+#==========
+
+
+#------------
+#WechatMPBE:
+#------------
+DefaultWechatMPBEPort = 443
+
+#============
+
+
+#--------------
+#GlobalConfig:
+#--------------
+BearModule = [
+    'tensorflow',
+    'scikit-learn',
+    'statsmodels',
+    'pymysql',
+    'pyecharts',
+    'tushare',
+    'requests-html',
+    'scipy',
+    'python-dateutil',
+    'tornado',
+    'wxpy',
+    'cryptography',
+    'talib',
+    'pymongo',
+    'redis',
+]
+
+#==============
+
+
+#----------------
+#GlobalFunction:
+#----------------
 class BadBear(Exception):
     def __init__(self, Explain):
         self.Explain = Explain
@@ -15,8 +102,6 @@ def CatchBadBear(Fn, *args, **kwargs):
         except BadBear as Error:
             print(Error)
     return Ret
-
-
 UserList = {}
 class NewUser:
     def __init__(self, UserName, Password):
@@ -43,38 +128,4 @@ class NewLocation:
 def GetLocation(LocationName):
     return LocationList[LocationName].Location
 
-
-BearModule = [
-    'tensorflow',
-    'scikit-learn',
-    'statsmodels',
-    'pymysql',
-    'pyecharts',
-    'tushare',
-    'requests-html',
-    'scipy',
-    'python-dateutil',
-    'tornado',
-    'wxpy',
-    'cryptography',
-    'talib',
-    'pymongo',
-    'redis',
-]
-
-BearPort = {
-    'Authentication': 2333,
-    'HomePageHTTP': 80,
-    'HomePageHTTPS': 443,
-    'WechatMPBE': 443
-}
-
-import platform
-if platform.system() == "Windows":
-    import asyncio
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
-    NewLocation('DefaultCertificationFileLocation', 'E:\GitHub\BearApplication\PythonApplication/Certification/www.bear-services.com')
-
-elif platform.system() == "Linux":
-    NewLocation('DefaultCertificationFileLocation', '/BearApplication/PythonApplication/Certification/www.bear-services.com')
+#================
