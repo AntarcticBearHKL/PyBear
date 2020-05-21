@@ -10,14 +10,14 @@ import re
 from PyBear.GlobalBear import *
 from PyBear.Library.Data.File import *
 
-def StartHttpServer(ApplicationFileLocation=None, LibraryFileLocation=None, GetHandler=None, PostHandler=None, Port=80):
-    Application( [(r".*", GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandler, PostHandler) ),] ).listen(Port)
+def StartHttpServer(ApplicationFileLocation=None, LibraryFileLocation=None, GetHandler=None, PostHandler=None, ParameterAnalyst=None, Port=80):
+    Application( [(r".*", GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandler, PostHandler, ParameterAnalyst) ),] ).listen(Port)
     IOLoop.instance().start()
 
-def StartHttpsServer(CertificationFileLocation, ApplicationFileLocation=None, LibraryFileLocation=None, GetHandler=None, PostHandler=None, Port=443):
+def StartHttpsServer(CertificationFileLocation, ApplicationFileLocation=None, LibraryFileLocation=None, GetHandler=None, PostHandler=None, ParameterAnalyst=None, Port=443):
     HTTPServer(
         Application(
-            [(r".*", GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandler, PostHandler)),], 
+            [(r".*", GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandler, PostHandler, ParameterAnalyst)),], 
             **{
             "static_path" : FJoin(os.path.dirname(__file__), "static"),
         }),
@@ -27,12 +27,12 @@ def StartHttpsServer(CertificationFileLocation, ApplicationFileLocation=None, Li
         }).listen(Port)
     IOLoop.instance().start()
 
-def GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandler, PostHandler):
+def GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandler, PostHandler, ParameterAnalyst):
     class HTTPListener(RequestHandler):
         def get(self):
             try:
                 if GetHandler:
-                    GetHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation))
+                    GetHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation, ParameterAnalyst))
             except Exception as Error:
                 print(Error)
                 self.set_status(403)
@@ -41,7 +41,7 @@ def GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandl
         def post(self):
             try:
                 if PostHandler:
-                    PostHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation))   
+                    PostHandler(RequestAnalyst(self, ApplicationFileLocation, LibraryFileLocation, ParameterAnalyst))   
             except Exception as Error:
                 print(Error)
                 self.set_status(403)
@@ -50,9 +50,8 @@ def GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandl
 
 
 class RequestAnalyst:
-    def __init__(self, Connection, ApplicationFileLocation, LibraryFileLocation):
+    def __init__(self, Connection, ApplicationFileLocation, LibraryFileLocation, ParameterAnalyst):
         self.Connection = Connection
-        self.Parameter = {}
 
         self.ApplicationFileLocation = ApplicationFileLocation
         self.LibraryFileLocation = LibraryFileLocation
@@ -79,6 +78,8 @@ class RequestAnalyst:
         self.Request = self.Connection.request
         self.Argument = self.Connection.request.arguments
         self.Body = self.Connection.request.body
+
+        self.Parameter = ParameterAnalyst(self.Request, self.Argument, self.Body)
 
 
     def Write(self, Content):
@@ -145,7 +146,6 @@ class RequestAnalyst:
 
     def Redirect(self, Destination):
         self.Connection.redirect(Destination)
-
 
 
 def StartSocketServer():
