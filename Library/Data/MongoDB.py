@@ -1,5 +1,7 @@
-from PyBear.GlobalBear import *
+import PyBear.GlobalBear as GlobalBear
 import pymongo
+
+ #db.createUser({'user':'Debuger', 'pwd':'A11b22;;', 'roles':[{'role':'readWrite', 'db':'Authentication'}], 'mechanisms':['SCRAM-SHA-1']]});
 
 class MongoDB:
     def __init__(self, ServerName, UserName, DatabasesName):
@@ -7,11 +9,12 @@ class MongoDB:
         self.UserName = UserName
         self.DatabasesName = DatabasesName
         self.Connection = pymongo.MongoClient(
-            '''mongodb://%s:%s@%s:%s/'''%(
+            host = GetServer(ServerName).IP, 
+            port = GetServer(ServerName).Port)
+        self.Connection[DatabasesName].authenticate(
             GetUser(UserName).UserName, 
             GetUser(UserName).Password, 
-            GetServer(ServerName).IP, 
-            GetServer(ServerName).Port))
+            mechanism='SCRAM-SHA-1')
 
         self.Database = self.Connection[self.DatabasesName]
 
@@ -29,16 +32,20 @@ class MongoDBTable:
         self.TableName = TableName
 
         self.Connection = pymongo.MongoClient(
-            '''mongodb://%s:%s@%s:%s/'''%(
+            host = GetServer(ServerName).IP, 
+            port = GetServer(ServerName).Port)
+        self.Connection[DatabasesName].authenticate(
             GetUser(UserName).UserName, 
             GetUser(UserName).Password, 
-            GetServer(ServerName).IP, 
-            GetServer(ServerName).Port))
+            mechanism='SCRAM-SHA-1')
         
         self.Table = self.Connection[self.DatabasesName][self.TableName]
 
     def Insert(self, Data):
-        self.Table.insert_many(Data)
+        if type(Data) == dict:
+            self.Table.insert_one(Data)
+        elif type(Data) == list:
+            self.Table.insert_many(Data)
 
     def Change(self, Condition, Value):
         Ret = self.Table.update_many(Condition, Value)
@@ -46,15 +53,17 @@ class MongoDBTable:
 
     def Search(self, Condition, Count=None, Sort=None, Limit=None):
         if Count:
-            self.Table.find(Condition).count()
+            Ret = self.Table.find(Condition).count()
         elif Sort and not Limit:
-            self.Table.find(Condition).sort(Sort[0], Sort[1])
+            Ret = self.Table.find(Condition).sort(Sort[0], Sort[1])
         elif Sort and Limit:
-            self.Table.find(Condition).sort(Sort[0], Sort[1]).limit(Limit)
+            Ret = self.Table.find(Condition).sort(Sort[0], Sort[1]).limit(Limit)
         elif Limit:
-            self.Table.find(Condition).limit(Limit)
+            Ret = self.Table.find(Condition).limit(Limit)
         else:
-            self.Table.find(Condition)
+            Ret = self.Table.find(Condition)
+
+        return [Item for Item in Ret]
 
     def Delete(self, Condition):
         return self.Table.delete_many(Condition).deleted_count

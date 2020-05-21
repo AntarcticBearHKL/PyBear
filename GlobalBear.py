@@ -1,90 +1,3 @@
-import platform
-GlobalDebugMode = False
-GlobalAvailabilityCheck = False
-
-if platform.system() == "Windows":
-    import asyncio
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
-    NewLocation('DefaultCertificationFileLocation', 'E:\GitHub\BearApplication\PythonApplication/Certification/www.bear-services.com')
-
-elif platform.system() == "Linux":
-    NewLocation('DefaultCertificationFileLocation', '/BearApplication/PythonApplication/Certification/www.bear-services.com')
-
-
-#----------------
-#Authentication:
-#----------------
-DefaultAuthenticationPort = 621
-
-#================
-
-#---------
-#WebDisk
-#---------
-DefaultWebDiskPort = 555
-
-#=========
-
-
-#-------------
-#TimeCapsule:
-#-------------
-DefaultTimeCapsulePort = 715
-
-#============
-
-
-
-#---------
-#Balance:
-#---------
-DefaultBalancePort = 517
-
-#=========
-
-
-
-#----------
-#HomePage:
-#----------
-DefaultHomePagePort = 443
-
-#==========
-
-
-#------------
-#WechatMPBE:
-#------------
-DefaultWechatMPBEPort = 443
-
-#============
-
-
-#--------------
-#GlobalConfig:
-#--------------
-BearModule = [
-    'tensorflow',
-    'scikit-learn',
-    'statsmodels',
-    'pymysql',
-    'pyecharts',
-    'tushare',
-    'requests-html',
-    'scipy',
-    'python-dateutil',
-    'tornado',
-    'wxpy',
-    'cryptography',
-    'talib',
-    'pymongo',
-    'redis',
-]
-
-#==============
-
-
 #----------------
 #GlobalFunction:
 #----------------
@@ -129,3 +42,114 @@ def GetLocation(LocationName):
     return LocationList[LocationName].Location
 
 #================
+
+
+#--------------
+#GlobalConfig:
+#--------------
+import platform
+GlobalDebugMode = False
+GlobalAvailabilityCheck = False
+
+if platform.system() == "Windows":
+    import asyncio
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+    NewLocation('DefaultCertificationFileLocation', 'E:\GitHub\BearApplication\PythonApplication/Certification/www.bear-services.com')
+
+elif platform.system() == "Linux":
+    NewLocation('DefaultCertificationFileLocation', '/BearApplication/PythonApplication/Certification/www.bear-services.com')
+
+#==============
+
+
+#----------------
+#Authentication:
+#----------------
+AuthenticationName = 'Authentication'
+AuthenticationPort = 621
+AuthenticationOpenFunction = []
+AuthenticationDatabaseName = 'Authentication'
+AuthenticationMongoDBServerName = ''
+AuthenticationMongoDBUserName = ''
+AuthenticationRedisServerName = ''
+AuthenticationRedisUserName = ''
+
+#================
+
+#---------
+#WebDisk
+#---------
+DefaultWebDiskPort = 555
+
+#=========
+
+
+#-------------
+#TimeCapsule:
+#-------------
+DefaultTimeCapsulePort = 715
+
+#============
+
+
+
+#---------
+#Balance:
+#---------
+DefaultBalancePort = 1314
+
+#=========
+
+
+
+#----------
+#HomePage:
+#----------
+DefaultHomePagePort = 443
+
+#==========
+
+
+
+#---------
+#NoteBook:
+#---------
+DefaultNoteBookPort = 520
+
+#=========
+
+
+#------------
+#WechatMPBE:
+#------------
+DefaultWechatMPBEPort = 443
+
+#============
+
+
+#--------------
+#GlobalConfig:
+#--------------
+BearModule = [
+    'tensorflow',
+    'scikit-learn',
+    'statsmodels',
+    'pymysql',
+    'pyecharts',
+    'tushare',
+    'requests-html',
+    'scipy',
+    'python-dateutil',
+    'tornado',
+    'wxpy',
+    'cryptography',
+    'talib',
+    'pymongo',
+    'redis',
+    'pycryptodome',
+    'jieba',
+    'nltk',
+]
+
+#==============

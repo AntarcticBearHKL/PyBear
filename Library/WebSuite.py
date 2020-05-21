@@ -7,8 +7,8 @@ import json
 import ssl
 import re
 
-from PyBear.GlobalBear import *
-from PyBear.Library.Data.File import *
+import PyBear.GlobalBear as GlobalBear
+import PyBear.Library.Data.File import FileBear
 
 def StartHttpServer(ApplicationFileLocation=None, LibraryFileLocation=None, GetHandler=None, PostHandler=None, ParameterAnalyst=None, Port=80):
     Application( [(r".*", GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandler, PostHandler, ParameterAnalyst) ),] ).listen(Port)
@@ -111,8 +111,7 @@ class RequestAnalyst:
             exec('import ' + self.GetApplication() + '_api.py')
             exec(self.GetApplication()+'_api.Handler()')
         else:
-            raise BadBear('Application Not Found')
-
+            raise BadBear('Application Not Found') 
 
     def SetDefaultApplication(self, DefaultApplication):
         self.DefaultApplication = DefaultApplication
@@ -146,6 +145,13 @@ class RequestAnalyst:
 
     def Redirect(self, Destination):
         self.Connection.redirect(Destination)
+
+
+    def GetCookie(self):
+        pass
+
+    def SetCookie(self):
+        pass
 
 
 def StartSocketServer():
