@@ -70,10 +70,10 @@ AuthenticationName = 'Authentication'
 AuthenticationPort = 621
 AuthenticationOpenFunction = []
 AuthenticationDatabaseName = 'Authentication'
-AuthenticationMongoDBServerName = ''
-AuthenticationMongoDBUserName = ''
-AuthenticationRedisServerName = ''
-AuthenticationRedisUserName = ''
+AuthenticationMongoDBServerName = None
+AuthenticationMongoDBUserName = None
+AuthenticationRedisServerName = None
+AuthenticationRedisUserName = None
 
 #================
 

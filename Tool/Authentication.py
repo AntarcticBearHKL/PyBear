@@ -54,7 +54,7 @@ def UserExist(UserNumber):
         GlobalBear.AuthenticationMongoDBServerName, 
         GlobalBear.AuthenticationMongoDBUserName, 
         GlobalBear.AuthenticationDatabaseName, 
-        'UserNumber')
+        'UserCenter')
 
     Ret = Table.Search({"UserNumber" : UserNumber})
     if len(Ret) != 0:
@@ -78,6 +78,7 @@ def DeleteUser(UserNumber):
 
 def NewServiceUser(ServiceName, UserName, Password):
     if ServiceUserExist(ServiceName, UserName):
+        print('User Exist')
         return
     ServiceTable = MongoDBBear.MongoDBTable(
         GlobalBear.AuthenticationMongoDBServerName, 

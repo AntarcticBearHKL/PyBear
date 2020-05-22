@@ -9,11 +9,11 @@ class MongoDB:
         self.UserName = UserName
         self.DatabasesName = DatabasesName
         self.Connection = pymongo.MongoClient(
-            host = GetServer(ServerName).IP, 
-            port = GetServer(ServerName).Port)
+            host = GlobalBear.GetServer(ServerName).IP, 
+            port = GlobalBear.GetServer(ServerName).Port)
         self.Connection[DatabasesName].authenticate(
-            GetUser(UserName).UserName, 
-            GetUser(UserName).Password, 
+            GlobalBear.GetUser(UserName).UserName, 
+            GlobalBear.GetUser(UserName).Password, 
             mechanism='SCRAM-SHA-1')
 
         self.Database = self.Connection[self.DatabasesName]
@@ -32,11 +32,11 @@ class MongoDBTable:
         self.TableName = TableName
 
         self.Connection = pymongo.MongoClient(
-            host = GetServer(ServerName).IP, 
-            port = GetServer(ServerName).Port)
+            host = GlobalBear.GetServer(ServerName).IP, 
+            port = GlobalBear.GetServer(ServerName).Port)
         self.Connection[DatabasesName].authenticate(
-            GetUser(UserName).UserName, 
-            GetUser(UserName).Password, 
+            GlobalBear.GetUser(UserName).UserName, 
+            GlobalBear.GetUser(UserName).Password, 
             mechanism='SCRAM-SHA-1')
         
         self.Table = self.Connection[self.DatabasesName][self.TableName]
