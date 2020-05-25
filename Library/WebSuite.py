@@ -78,8 +78,10 @@ class RequestAnalyst:
         self.Request = self.Connection.request
         self.Argument = self.Connection.request.arguments
         self.Body = self.Connection.request.body
-
-        self.Parameter = ParameterAnalyst(self.Request, self.Argument, self.Body)
+        if ParameterAnalyst:
+            self.Parameter = ParameterAnalyst(self.Request, self.Argument, self.Body)
+        else:
+            self.Parameter = {}
 
 
     def Write(self, Content):
