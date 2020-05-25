@@ -1,19 +1,18 @@
 import PyBear.GlobalBear as GlobalBear
 import pymongo
 
- #db.createUser({'user':'Debuger', 'pwd':'A11b22;;', 'roles':[{'role':'readWrite', 'db':'Authentication'}], 'mechanisms':['SCRAM-SHA-1']]});
+#db.createUser({'user':'Debuger', 'pwd':'A11b22;;', 'roles':[{'role':'readWrite', 'db':'Balance'}], 'mechanisms':['SCRAM-SHA-1']});
 
 class MongoDB:
-    def __init__(self, ServerName, UserName, DatabasesName):
+    def __init__(self, ServerName, DatabasesName):
         self.ServerName = ServerName
-        self.UserName = UserName
         self.DatabasesName = DatabasesName
         self.Connection = pymongo.MongoClient(
-            host = GlobalBear.GetServer(ServerName).IP, 
-            port = GlobalBear.GetServer(ServerName).Port)
+            host = GlobalBear.Server(ServerName).IP, 
+            port = GlobalBear.Server(ServerName).Port)
         self.Connection[DatabasesName].authenticate(
-            GlobalBear.GetUser(UserName).UserName, 
-            GlobalBear.GetUser(UserName).Password, 
+            GlobalBear.Server(ServerName).UserName, 
+            GlobalBear.Server(ServerName).Password, 
             mechanism='SCRAM-SHA-1')
 
         self.Database = self.Connection[self.DatabasesName]
@@ -25,21 +24,20 @@ class MongoDB:
         self.Database[TableName].drop()
 
 class MongoDBTable:
-    def __init__(self, ServerName, UserName, DatabasesName, TableName):
+    def __init__(self, ServerName, DatabasesName, TableName):
         self.ServerName = ServerName
-        self.UserName = UserName
         self.DatabasesName = DatabasesName
         self.TableName = TableName
 
         self.Connection = pymongo.MongoClient(
-            host = GlobalBear.GetServer(ServerName).IP, 
-            port = GlobalBear.GetServer(ServerName).Port)
+            host = GlobalBear.Server(ServerName).IP, 
+            port = GlobalBear.Server(ServerName).Port)
         self.Connection[DatabasesName].authenticate(
-            GlobalBear.GetUser(UserName).UserName, 
-            GlobalBear.GetUser(UserName).Password, 
+            GlobalBear.Server(ServerName).UserName, 
+            GlobalBear.Server(ServerName).Password, 
             mechanism='SCRAM-SHA-1')
         
-        self.Table = self.Connection[self.DatabasesName][self.TableName]
+        self.  = self.Connection[self.DatabasesName][self.TableName]
 
     def Insert(self, Data):
         if type(Data) == dict:

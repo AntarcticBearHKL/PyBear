@@ -8,7 +8,7 @@ import ssl
 import re
 
 import PyBear.GlobalBear as GlobalBear
-import PyBear.Library.Data.File import FileBear
+import PyBear.Library.Data.File as FileBear
 
 def StartHttpServer(ApplicationFileLocation=None, LibraryFileLocation=None, GetHandler=None, PostHandler=None, ParameterAnalyst=None, Port=80):
     Application( [(r".*", GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandler, PostHandler, ParameterAnalyst) ),] ).listen(Port)
@@ -19,11 +19,11 @@ def StartHttpsServer(CertificationFileLocation, ApplicationFileLocation=None, Li
         Application(
             [(r".*", GetHttpServerListener(ApplicationFileLocation, LibraryFileLocation, GetHandler, PostHandler, ParameterAnalyst)),], 
             **{
-            "static_path" : FJoin(os.path.dirname(__file__), "static"),
+            "static_path" : FileBear.Join(os.path.dirname(__file__), "static"),
         }),
         ssl_options={
-            "certfile": FJoin(CertificationFileLocation, 'server.crt'),
-            "keyfile": FJoin(CertificationFileLocation, 'server.key'),
+            "certfile": FileBear.Join(CertificationFileLocation, 'server.crt'),
+            "keyfile": FileBear.Join(CertificationFileLocation, 'server.key'),
         }).listen(Port)
     IOLoop.instance().start()
 
@@ -92,7 +92,7 @@ class RequestAnalyst:
     def ReturnApplicationGet(self):
         if not self.Path:
             raise BadBear('No Application Selected')
-        RetFile = FBRead(self.GetFilePath())
+        RetFile = FileBear.ReadB(self.GetFilePath())
         Filetype = self.Path[2]
         if Filetype == 'html':
             self.Connection.set_header('Content-Type', 'text/html')
@@ -105,13 +105,13 @@ class RequestAnalyst:
         self.Connection.write(RetFile)
 
     def ReturnApplicationPost(self):
-        if self.GetApplication() in FList(self.ApplicationFileLocation):
-            APIFileLocation = FJoin(self.ApplicationFileLocation, self.GetApplication())
+        if self.GetApplication() in FileBear.List(self.ApplicationFileLocation):
+            APIFileLocation = FileBear.Join(self.ApplicationFileLocation, self.GetApplication())
             sys.path.append(APIFileLocation)
             exec('import ' + self.GetApplication() + '_api.py')
             exec(self.GetApplication()+'_api.Handler()')
         else:
-            raise BadBear('Application Not Found') 
+            raise GlobalBear.BadBear('Application Not Found') 
 
     def SetDefaultApplication(self, DefaultApplication):
         self.DefaultApplication = DefaultApplication
@@ -123,9 +123,6 @@ class RequestAnalyst:
     def GetMethod(self):
         return self.Method
 
-    def GetParameter(self):
-        return self.Parameter
-
     def GetApplication(self): 
         if len(self.Path) > 1:
             return self.Path[1]
@@ -136,11 +133,11 @@ class RequestAnalyst:
         if self.Path[2] == 'libcss' or self.Path[2] == 'libjs':
             FilePath = self.LibraryFileLocation
             for Item in self.Path[3:]:
-                FilePath = FJoin(FilePath, Item)
+                FilePath = FileBear.Join(FilePath, Item)
         else:
-            FilePath = FJoin(self.ApplicationFileLocation, self.Path[1])
+            FilePath = FileBear.Join(self.ApplicationFileLocation, self.Path[1])
             for Item in self.Path[2:]:
-                FilePath = FJoin(FilePath, Item)
+                FilePath = FileBear.Join(FilePath, Item)
         return FilePath
 
     def Redirect(self, Destination):

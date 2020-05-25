@@ -15,22 +15,18 @@ def CatchBadBear(Fn, *args, **kwargs):
         except BadBear as Error:
             print(Error)
     return Ret
-UserList = {}
-class NewUser:
-    def __init__(self, UserName, Password):
-        self.UserName = UserName
-        self.Password = Password
-        UserList[UserName] = self
-def GetUser(UserName):
-    return UserList[UserName]
+
+
 
 ServerList = {}
 class NewServer:
-    def __init__(self, ServerName, IP, Port):
+    def __init__(self, ServerName, IP, Port, Username, Password):
         self.IP = IP
         self.Port = Port
+        self.Username = Username
+        self.Password = Password
         ServerList[ServerName] = self
-def GetServer(ServerName):
+def Server(ServerName):
     return ServerList[ServerName]
 
 LocationList = {}
@@ -38,7 +34,7 @@ class NewLocation:
     def __init__(self, LocationName, Location):
         self.Location = Location
         LocationList[LocationName] = self
-def GetLocation(LocationName):
+def Location(LocationName):
     return LocationList[LocationName].Location
 
 #================
@@ -68,12 +64,8 @@ elif platform.system() == "Linux":
 #----------------
 AuthenticationName = 'Authentication'
 AuthenticationPort = 621
-AuthenticationOpenFunction = []
+AuthenticationOpenedFunction = []
 AuthenticationDatabaseName = 'Authentication'
-AuthenticationMongoDBServerName = None
-AuthenticationMongoDBUserName = None
-AuthenticationRedisServerName = None
-AuthenticationRedisUserName = None
 
 #================
 

@@ -2,14 +2,14 @@ import sys,os
 
 from PyBear.GlobalBear import *
 
-def FUWrite(Path, content):
+def WriteU(Path, content):
     if not os.path.exists(os.path.dirname(Path)):
         os.makedirs(os.path.dirname(Path))
     file = open(Path, 'w', encoding='utf-8')
     file.write(content)
     file.close()
 
-def FURead(Path):
+def ReadU(Path):
     if not os.path.exists(Path):
         print('File: ' + Path + ' Not Exist')
         return ''
@@ -18,14 +18,14 @@ def FURead(Path):
     retf.close()
     return Ret
 
-def FBWrite(Path, content):
+def WriteB(Path, content):
     if not os.path.exists(os.path.dirname(Path)):
         os.makedirs(os.path.dirname(Path))
     file = open(Path, 'wb')
     file.write(content)
     file.close()
 
-def FBRead(Path):
+def ReadB(Path):
     if not os.path.exists(Path):
         print('File: ' + Path + ' Not Exist')
         return ''
@@ -34,25 +34,25 @@ def FBRead(Path):
     retf.close()
     return Ret
 
-def FRead(Path):
+def Read(Path):
     try:
-        return FURead(Path)
+        return ReadU(Path)
     except:
-        return FBRead(Path)
+        return ReadB(Path)
 
-FWrite = FUWrite
-
-
-def FNewFile(Path):
-    FWrite(Path, '')
-
-FNewDirectory = os.makedirs
+Write = WriteU
 
 
-def FList(Path):
+def NewFile(Path):
+    Write(Path, '')
+
+NewDirectory = os.makedirs
+
+
+def List(Path):
     return os.listdir(Path)
 
-def FDetailList(Path):
+def DetailList(Path):
     Ret = {}
     for node in flist(Path):
         if os.path.isfile(fjoin(Path, node)):
@@ -62,14 +62,14 @@ def FDetailList(Path):
     return Ret
 
 
-def FRemovefile(Path):
+def Removefile(Path):
     if fexists(Path):
         os.remove(Path)
         return True
     else:
         return False
 
-def FRemoveDirectory(Path):
+def RemoveDirectory(Path):
     for root, dirs, files in os.walk(Path, topdown=False):
         for name in files:
             os.remove(os.path.join(root, name))
@@ -77,10 +77,10 @@ def FRemoveDirectory(Path):
             os.rmdir(os.path.join(root, name))
     os.rmdir(path)
 
-FRename = os.rename
+Rename = os.rename
 
-FExists = os.path.exists
-FJoin = os.path.join
+Exists = os.path.exists
+Join = os.path.join
 
-FIsFile = os.path.isfile
-FIsDirectory = os.path.isdir
+IsFile = os.path.isfile
+IsDirectory = os.path.isdir

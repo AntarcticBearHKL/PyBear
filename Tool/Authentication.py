@@ -4,85 +4,12 @@ import PyBear.Library.Data.Redis as RedisBear
 import PyBear.Library.Cipher as CipherBear
 
 
-def InitMongoDB(ServerName, UserName):
-    GlobalBear.AuthenticationMongoDBServerName = ServerName
-    GlobalBear.AuthenticationMongoDBUserName = UserName
-
-def InitRedis(ServerName, UserName):
-    GlobalBear.AuthenticationRedisServerName = ServerName
-    GlobalBear.AuthenticationRedisUserName = UserName
-
-def NewUserNumber():
-    Table = MongoDBBear.MongoDBTable(
-        GlobalBear.AuthenticationMongoDBServerName, 
-        GlobalBear.AuthenticationMongoDBUserName, 
-        GlobalBear.AuthenticationDatabaseName, 
-        'UserCenter')
-
-    UserNumber = CipherBear.UUID()
-    Table.Insert({
-        'UserNumber': UserNumber,
-        'Service': {},
-    })
-    return UserNumber
-
-def NewServiceToUser(UserNumber, ServiceName, UserName):
-    if not UserExist(UserNumber):
-        return
-    Table = MongoDBBear.MongoDBTable(
-        GlobalBear.AuthenticationMongoDBServerName, 
-        GlobalBear.AuthenticationMongoDBUserName, 
-        GlobalBear.AuthenticationDatabaseName, 
-        'UserCenter')
-
-    Service = Table.Search({"UserNumber" : UserNumber,})[0]['Service']
-    Service[ServiceName] = UserName
-
-    Table.Change(
-        {
-            "UserNumber" : UserNumber,
-        },
-        {
-            '$set':{
-                'Service':Service
-            }
-        }
-    )
-
-def UserExist(UserNumber):
-    Table = MongoDBBear.MongoDBTable(
-        GlobalBear.AuthenticationMongoDBServerName, 
-        GlobalBear.AuthenticationMongoDBUserName, 
-        GlobalBear.AuthenticationDatabaseName, 
-        'UserCenter')
-
-    Ret = Table.Search({"UserNumber" : UserNumber})
-    if len(Ret) != 0:
-        return True
-    return False
-
-def MergeUserNumber():
-    pass
-
-def DeleteUser(UserNumber):
-    #!!判断所有服务都停用
-    Table = MongoDBBear.MongoDBTable(
-        GlobalBear.AuthenticationMongoDBServerName, 
-        GlobalBear.AuthenticationMongoDBUserName, 
-        GlobalBear.AuthenticationDatabaseName, 
-        'UserNumber')
-
-    Table.Delete({"UserNumber" : UserNumber})
-
-
-
-def NewServiceUser(ServiceName, UserName, Password):
-    if ServiceUserExist(ServiceName, UserName):
+def CreateUser(ServerName, ServiceName, Username, Password):
+    if ExistUser(ServerName, ServiceName, UserName):
         print('User Exist')
         return
-    ServiceTable = MongoDBBear.MongoDBTable(
+    UserTable = MongoDBBear.MongoDBTable(
         GlobalBear.AuthenticationMongoDBServerName, 
-        GlobalBear.AuthenticationMongoDBUserName, 
         GlobalBear.AuthenticationDatabaseName, 
         ServiceName)
     
@@ -95,12 +22,10 @@ def NewServiceUser(ServiceName, UserName, Password):
         'Privilege':{},
     })
 
-    NewServiceToUser(UserNumber, ServiceName, UserName)
-
 def ChangePassword():
     pass
 
-def ServiceUserExist(ServiceName, UserName):
+def ExistUser(ServiceName, UserName):
     Table = MongoDBBear.MongoDBTable(
         GlobalBear.AuthenticationMongoDBServerName, 
         GlobalBear.AuthenticationMongoDBUserName, 
@@ -112,7 +37,7 @@ def ServiceUserExist(ServiceName, UserName):
         return True
     return False
 
-def ServiceLogin(ServiceName, UserName, Password):
+def LoginUser(ServiceName, UserName, Password):
     ServiceTable = MongoDBBear.MongoDBTable(
         GlobalBear.AuthenticationMongoDBServerName, 
         GlobalBear.AuthenticationMongoDBUserName, 
@@ -130,17 +55,17 @@ def ServiceLogin(ServiceName, UserName, Password):
         LoginTable.set(ServiceName+'/-/'+UserName, Status, px=86400000)
         return Status
 
-def ServiceLogout():
+def LogoutUser():
     pass
 
-def ServiceUserAuthentication(ServiceName, Status):
+def UserAuthentication(ServiceName, Status):
     LoginTable = RedisBear.Redis(
     GlobalBear.AuthenticationRedisServerName, 
     GlobalBear.AuthenticationRedisUserName, 
     )
     return LoginTable.get(Status).split('/-/')[1]
 
-def IsUserLogin(ServiceName, UserName):
+def UserLogined(ServiceName, UserName):
     LoginTable = RedisBear.Redis(
     GlobalBear.AuthenticationRedisServerName, 
     GlobalBear.AuthenticationRedisUserName, 
@@ -153,7 +78,7 @@ def IsUserLogin(ServiceName, UserName):
 def GrantUser():
     pass
 
-def IsUserGranted():
+def UserGranted():
     pass
 
 
