@@ -119,6 +119,13 @@ DefaultWechatMPBEPort = 443
 
 #============
 
+#------------
+#BearSearch:
+#------------
+DefaultBearSearchPort = 233
+
+#============
+
 
 #--------------
 #GlobalConfig:
