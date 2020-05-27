@@ -4,7 +4,7 @@ import time
 import sys,os
 from dateutil import tz, zoneinfo
 
-from PyBear.GlobalBear import *
+import PyBear.GlobalBear as GlobalBear
 
 Style_S = '%Y%m%d'
 Style_D = '%Y%m%d%H%M%S'

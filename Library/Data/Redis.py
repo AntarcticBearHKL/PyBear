@@ -1,10 +1,10 @@
 import PyBear.GlobalBear as GlobalBear
 import redis
 
-def Redis(ServerName, UserName, DatabaseName=0, Decode=True):
+def Redis(ServerName, DatabaseName=0, Decode=True):
     return redis.StrictRedis(
-        password = GetUser(UserName).Password, 
-        host = GetServer(ServerName).IP, 
-        port = GetServer(ServerName).Port,
+        password = GlobalBear.Server(ServerName).Password, 
+        host = GlobalBear.Server(ServerName).IP, 
+        port = GlobalBear.Server(ServerName).Port,
         db = DatabaseName,
         decode_responses=Decode)

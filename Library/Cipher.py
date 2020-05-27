@@ -8,6 +8,9 @@ import uuid
 def UUID():
     return ''.join(str(uuid.uuid4()).split('-'))
 
+def NumberIndex():
+    return str(abs(hash(UUID())))
+
 def MD5Encrypt(Data):
     return hashlib.md5(Data.encode()).hexdigest()
 

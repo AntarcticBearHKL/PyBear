@@ -37,7 +37,7 @@ class MongoDBTable:
             GlobalBear.Server(ServerName).Password, 
             mechanism='SCRAM-SHA-1')
         
-        self.  = self.Connection[self.DatabasesName][self.TableName]
+        self.Table = self.Connection[self.DatabasesName][self.TableName]
 
     def Insert(self, Data):
         if type(Data) == dict:
