@@ -22,8 +22,8 @@ def StartHttpsServer(CertificationFileLocation, ApplicationFileLocation=None, Li
             "static_path" : FileBear.Join(os.path.dirname(__file__), "static"),
         }),
         ssl_options={
-            "certfile": FileBear.Join(CertificationFileLocation, 'server.crt'),
-            "keyfile": FileBear.Join(CertificationFileLocation, 'server.key'),
+            "certfile": FileBear.Join(CertificationFileLocation, 'crt'),
+            "keyfile": FileBear.Join(CertificationFileLocation, 'key'),
         }).listen(Port)
     IOLoop.instance().start()
 
