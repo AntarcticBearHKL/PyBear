@@ -89,7 +89,7 @@ class RequestAnalyst:
 
     def PrintRequest(self):
         for Item in self.Request.__dict__:
-            print(i, ':', self.Request.__dict__[i])
+            print(Item, ':', self.Request.__dict__[Item])
 
     def ReturnApplicationGet(self):
         if not self.Path:
