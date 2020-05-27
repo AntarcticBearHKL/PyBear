@@ -6,8 +6,8 @@ from dateutil import tz, zoneinfo
 
 from PyBear.GlobalBear import *
 
-Style_SS = '%Y%m%d'
-Style_SL = '%Y%m%d%H%M%S'
+Style_S = '%Y%m%d'
+Style_D = '%Y%m%d%H%M%S'
 Style_M = '%Y-%m-%d'
 Style_L = '%Y-%m-%d %H:%M:%S'
 Style_Raw = '%Y %m %d %H %M %S'
@@ -41,7 +41,7 @@ class Date:
             self.Time = datetime.datetime.now(tz=TimeZoneChina)
 
 
-    def String(self, Style = Style_SL):
+    def String(self, Style = Style_D):
         return self.Time.strftime(Style)
 
     def Timestamp(self):
