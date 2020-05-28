@@ -45,7 +45,17 @@ def Location(LocationName):
 #--------------
 import platform
 GlobalDebugMode = False
-GlobalAvailabilityCheck = False
+GlobalTestModuleOn = False
+
+NewServer(
+    'Mysql', '47.95.119.172', 3306,
+    'Debuger', 'A11b22;;')
+NewServer(
+    'MongoDB', '47.95.119.172', 27017,
+    'Debuger', 'A11b22;;')
+NewServer(
+    'Redis', '47.95.119.172', 6379,
+    'Debuger', 'A11b22;;')
 
 if platform.system() == "Windows":
     import asyncio
@@ -64,7 +74,6 @@ elif platform.system() == "Linux":
 #----------------
 AuthenticationName = 'Authentication'
 AuthenticationPort = 621
-AuthenticationOpenedFunction = []
 AuthenticationDatabaseName = 'Authentication'
 
 #================
@@ -80,8 +89,9 @@ DefaultWebDiskPort = 555
 #-------------
 #TimeCapsule:
 #-------------
-DefaultTimeCapsulePort = 715
-
+TimeCapsuleName = 'TimeCapsule'
+TimeCapsulePort = 715
+TimeCapsuleDatabaseName = 'TimeCapsule'
 #============
 
 
@@ -123,6 +133,14 @@ DefaultWechatMPBEPort = 443
 #BearSearch:
 #------------
 DefaultBearSearchPort = 233
+
+#============
+
+
+#------------
+#FinancialMarket:
+#------------
+TushareToken = '85eca8e96158d3127814bcde6bf4c000326799ae66b54030d51ccde5'
 
 #============
 

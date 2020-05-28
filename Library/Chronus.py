@@ -45,7 +45,7 @@ class Date:
         return self.Time.strftime(Style)
 
     def Timestamp(self):
-        return str(int(time.mktime(self.Time.timetuple())))
+        return int(time.mktime(self.Time.timetuple()))
 
     def AsZeroTimeZone(self):
         return Date(self.Time.astimezone(TimeZoneZero))
@@ -471,5 +471,5 @@ class Chronus:
                 _end = _count + 1
         return [_start, _end]
 
-if GlobalAvailabilityCheck:
+if GlobalBear.GlobalTestModuleOn:
     pass

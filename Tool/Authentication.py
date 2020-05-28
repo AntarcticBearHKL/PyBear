@@ -5,7 +5,7 @@ import PyBear.Library.Cipher as CipherBear
 
 
 def CreateUser(ServerName, ServiceName, Username, Password):
-    if ExistUser(ServerName, ServiceName, UserName):
+    if ExistUser(ServerName, ServiceName, Username):
         print('User Exist')
         return
     Table = MongoDBBear.MongoDBTable(
@@ -14,7 +14,7 @@ def CreateUser(ServerName, ServiceName, Username, Password):
         ServiceName)
 
     Table.Insert({
-        'UserName':UserName,
+        'Username':Username,
         'Password':CipherBear.SHA256Encrypt(Password),
         'Privilege':{},
     })
@@ -22,45 +22,43 @@ def CreateUser(ServerName, ServiceName, Username, Password):
 def ChangePassword():
     pass
 
-def ExistUser(ServerName, ServiceName):
+def ExistUser(ServerName, ServiceName, Username):
     Table = MongoDBBear.MongoDBTable(
         ServerName, 
         GlobalBear.AuthenticationDatabaseName, 
         ServiceName)
 
-    Ret = Table.Search({"UserName" : UserName})
+    Ret = Table.Search({"Username" : Username})
     if len(Ret) != 0:
         return True
     return False
 
-def LoginUser(ServerName, ServiceName, UserName, Password, ExpireTime=86400000):
+def LoginUser(MongoServerName, RedisServerName, ServiceName, Username, Password, ExpireTime=86400000):
     Table = MongoDBBear.MongoDBTable(
-        ServerName, 
+        MongoServerName, 
         GlobalBear.AuthenticationDatabaseName, 
         ServiceName)
     
-    Ret = Table.Search({'UserName': UserName})[0]
+    Ret = Table.Search({'Username': Username})[0]
     if Ret['Password'] == CipherBear.SHA256Encrypt(Password):
-        LoginTable = RedisBear.Redis(ServerName)
+        LoginTable = RedisBear.Redis(RedisServerName)
         AuthenticationCode = CipherBear.UUID()
-        LoginTable.set(AuthenticationCode, ServiceName+'/-/'+UserName, px=ExpireTime)
-        LoginTable.set(ServiceName+'/-/'+UserName, AuthenticationCode, px=ExpireTime)
+        LoginTable.set(AuthenticationCode, ServiceName+'/-/'+Username, px=ExpireTime)
+        LoginTable.set(ServiceName+'/-/'+Username, AuthenticationCode, px=ExpireTime)
         return AuthenticationCode
 
 def LogoutUser():
     pass
 
-def UserAuthentication(ServerName, ServiceName, AuthenticationCode):
+def UserAuthentication(ServerName, AuthenticationCode):
     Result = RedisBear.Redis(ServerName).get(AuthenticationCode)
     if Result:
         Result = Result.split('/-/')
-        if Result[0] == ServiceName:
-            return Result.split('/-/')[1]
-    return None
+        return Result[0], Result[1]
+    return None, None
 
-def UserLogined(ServiceName, UserName):
-    RedisBear.Redis(ServerName)
-    if UserName in LoginTable.get(ServiceName+'/-/'+UserName):
+def UserLogined(ServerName, ServiceName, Username):
+    if RedisBear.Redis(ServerName).get(ServiceName+'/-/'+Username):
         return True
     return False
 
@@ -69,3 +67,6 @@ def GrantUser():
 
 def UserGranted():
     pass
+
+if GlobalBear.GlobalTestModuleOn:
+    CreateUser('TestModule', 'test', 'root', 'root')

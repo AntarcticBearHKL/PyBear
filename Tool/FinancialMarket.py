@@ -14,11 +14,6 @@ from PyBear.Library.Chart import *
 from PyBear.Library.Data.MySQL import *
 from PyBear.Library.Data.File import *
 
-TushareAvailiable = False
-def SetTushareToken(token):
-    tushare.set_token(token)
-    TushareAvailiable = True
-
 class CHN:
     class MacroMarket:
         def __init__(self):
@@ -30,7 +25,9 @@ class CHN:
 
     class StockMarket:
         def __init__(self, ServerName, UserName):
-            if TushareAvailiable:
+            try:
+                tushare.set_token(GlobalBear.TushareToken)
+            except:
                 raise BadBear('Tushare Cannot Use Without Token')
             self.API = tushare.pro_api()
             self.ServerName = ServerName

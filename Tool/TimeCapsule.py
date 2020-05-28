@@ -4,13 +4,20 @@ import PyBear.Tool.Authentication as Authentication
 import PyBear.Library.Chronus as ChronusBear
 import PyBear.Library.Cipher as CipherBear
 
-def NewEvent(ServerName, AuthenticationCode, Label, Info, Append):
+def NewEvent(MongoServerName, RedisServerName, AuthenticationCode, Label, Info, Append, CustomDate = None): 
+    Result = Authentication.UserAuthentication(RedisServerName, AuthenticationCode)
+    if Result[0] != 'TimeCapsule':
+        return 'Authentication Failed'
     Table = MongoDBBear.MongoDBTable(
-        ServerName,
-        GlobalBear.AuthenticationDatabaseName, 
-        ServiceName)
+        MongoServerName,
+        GlobalBear.TimeCapsuleDatabaseName, 
+        Result[1])
+    if not CustomDate:
+        CustomDate = ChronusBear.Date().Timestamp()
+    else:
+        CustomDate = ChronusBear.Date(CustomDate).Timestamp()
     Table.Insert({
-        'Date': ChronusBear.Date().Timestamp(),
+        'Date': CustomDate,
         'UnionID': CipherBear.NumberIndex(),
         'Label': Label,
         'Info': Info,
@@ -20,8 +27,23 @@ def NewEvent(ServerName, AuthenticationCode, Label, Info, Append):
 def NewPeriod(ServerName, AuthenticationCode, Period, Label, Info, Append):
     pass
 
-def GetPeriod(ServerName, AuthenticationCode, Period, Label):
-    pass
+def GetPeriod(MongoServerName, RedisServerName, AuthenticationCode, Period, Label):
+    Result = Authentication.UserAuthentication(RedisServerName, AuthenticationCode)
+    if Result[0] != 'TimeCapsule':
+        return 'Authentication Failed'
+    Table = MongoDBBear.MongoDBTable(
+        MongoServerName,
+        GlobalBear.TimeCapsuleDatabaseName, 
+        Result[1])
+    Condition = {
+        'Label': Label,
+        '$and': [
+            {'Date': {'$gte' : Period[0].Timestamp()}},
+            {'Date': {'$lte' : Period[1].Timestamp()}},
+        ]
+    }
+    Ret = Table.Search(Condition)
+    return Ret
 
 def GetDay(ServerName, AuthenticationCode, Day):
     pass

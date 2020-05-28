@@ -33,7 +33,7 @@ class MongoDBTable:
             host = GlobalBear.Server(ServerName).IP, 
             port = GlobalBear.Server(ServerName).Port)
         self.Connection[DatabasesName].authenticate(
-            GlobalBear.Server(ServerName).UserName, 
+            GlobalBear.Server(ServerName).Username, 
             GlobalBear.Server(ServerName).Password, 
             mechanism='SCRAM-SHA-1')
         
