@@ -44,7 +44,7 @@ class Date:
     def String(self, Style = Style_D):
         return self.Time.strftime(Style)
 
-    def Timestamp(self):
+    def TimeStamp(self):
         return int(time.mktime(self.Time.timetuple()))
 
     def AsZeroTimeZone(self):
