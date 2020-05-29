@@ -4,20 +4,13 @@ import PyBear.Tool.Authentication as Authentication
 import PyBear.Library.Chronus as ChronusBear
 import PyBear.Library.Cipher as CipherBear
 
-def NewEvent(MongoServerName, RedisServerName, AuthenticationCode, Label, Info, Append, CustomDate = None): 
-    Result = Authentication.UserAuthentication(RedisServerName, AuthenticationCode)
-    if Result[0] != 'TimeCapsule':
-        return 'Authentication Failed'
+def NewEvent(MongoServerName, RedisServerName, Username, Date, Label, Info, Append, CustomDate = None): 
     Table = MongoDBBear.MongoDBTable(
         MongoServerName,
         GlobalBear.TimeCapsuleDatabaseName, 
-        Result[1])
-    if not CustomDate:
-        CustomDate = ChronusBear.Date().Timestamp()
-    else:
-        CustomDate = ChronusBear.Date(CustomDate).Timestamp()
+        Username)
     Table.Insert({
-        'Date': CustomDate,
+        'Date': Date.Timestamp(),
         'UnionID': CipherBear.NumberIndex(),
         'Label': Label,
         'Info': Info,
