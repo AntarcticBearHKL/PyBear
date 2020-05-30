@@ -38,7 +38,8 @@ class Date:
                 Load = Load[0:4] + '-' + Load[4:6] + '-' + Load[6:8] + ' 00:00:00'
                 self.Time = datetime.datetime.strptime(Load, '%Y-%m-%d %H:%M:%S')
         else:
-            self.Time = datetime.datetime.now(tz=TimeZoneChina)
+            self.Time = datetime.datetime.now()
+        self.Time.astimezone(TimeZoneChina)
 
 
     def String(self, Style = Style_D):
