@@ -39,7 +39,7 @@ class Date:
                 self.Time = datetime.datetime.strptime(Load, '%Y-%m-%d %H:%M:%S')
         else:
             self.Time = datetime.datetime.now()
-        self.Time.astimezone(TimeZoneChina)
+        self.Time = self.Time.astimezone(TimeZoneChina)
 
 
     def String(self, Style = Style_D):
