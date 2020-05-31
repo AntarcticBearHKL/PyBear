@@ -32,6 +32,7 @@ class Date:
                 Load = str(Load)
                 Load = Load[0:4] + '-' + Load[4:6] + '-' + Load[6:8] + '  ' + Load[8:10] + ':' + Load[10:12] + ':' + Load[12:14]
                 self.Time = datetime.datetime.strptime(Load, '%Y-%m-%d %H:%M:%S')
+                print(self.Time)
             
             elif len(str(Load).split('-')) == 1: # YYMMDD
                 Load = str(Load)
