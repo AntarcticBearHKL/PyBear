@@ -44,8 +44,11 @@ def Location(LocationName):
 #GlobalConfig:
 #--------------
 import platform
+import os
 GlobalDebugMode = False
 GlobalTestModuleOn = False
+
+os.environ['TZ'] = 'Asia/Shanghai'
 
 NewServer(
     'Mysql', '47.95.119.172', 3306,
