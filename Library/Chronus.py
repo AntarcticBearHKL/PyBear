@@ -29,6 +29,7 @@ class Date:
                 self.Time = datetime.datetime.strptime(Load, '%Y-%m-%d %H:%M:%S')
             
             elif len(str(Load)) == 14: # YYMMDDhhmmss
+                print('aaaa')
                 Load = str(Load)
                 Load = Load[0:4] + '-' + Load[4:6] + '-' + Load[6:8] + '  ' + Load[8:10] + ':' + Load[10:12] + ':' + Load[12:14]
                 self.Time = datetime.datetime.strptime(Load, '%Y-%m-%d %H:%M:%S')
