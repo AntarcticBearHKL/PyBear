@@ -60,7 +60,7 @@ class Date:
         return self.Time.strftime(Style)
 
     def TimeStampR(self):
-        return int(time.mktime(self.Time.timetuple(), tz=TimeZoneZero))
+        return int(time.mktime(self.Time.timetuple()))
     
     def AsTimeZone(self, Offset):
         return self.Shift(Hour=Offset)
