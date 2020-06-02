@@ -32,7 +32,7 @@ class Date:
                     Day=int(Load[2])).Time
 
             elif len(str(Load)) == 10: # TimeStamp
-                self.Time = datetime.datetime.fromtimestamp(int(Load), tz=TimeZoneZero)
+                self.Time = datetime.datetime.fromtimestamp(int(Load))
             
             elif len(str(Load)) == 14: # YYMMDDhhmmss
                 Load = str(Load)
