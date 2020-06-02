@@ -31,8 +31,9 @@ class Date:
                     Year=int(Load[0]), Month=int(Load[1]), 
                     Day=int(Load[2])).Time
 
-            elif len(str(Load)) == 10: # TimeStamp
-                self.Time = datetime.datetime.fromtimestamp(int(Load))
+            elif len(str(Load)) == 10: # TimeStamp !!!
+                Load = Date(datetime.datetime.fromtimestamp(int(Load), tz=TimeZoneZero))
+                self.Time = Load.astimezone(GlobalBear.LocalTimeZoneShift).Time
             
             elif len(str(Load)) == 14: # YYMMDDhhmmss
                 Load = str(Load)
@@ -59,7 +60,7 @@ class Date:
         return self.Time.strftime(Style)
 
     def TimeStampR(self):
-        return int(time.mktime(self.Time.timetuple()))
+        return int(time.mktime(self.Time.timetuple(), tz=TimeZoneZero))
     
     def AsTimeZone(self, Offset):
         return self.Shift(Hour=Offset)
