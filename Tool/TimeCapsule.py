@@ -10,7 +10,7 @@ def NewEvent(MongoServerName, RedisServerName, Username, Date, Label, Info, Appe
         GlobalBear.TimeCapsuleDatabaseName, 
         Username)
     Table.Insert({
-        'Date': Date.TimestampR(),
+        'Date': Date,
         'UnionID': CipherBear.NumberIndex(),
         'Label': Label,
         'Info': Info,
