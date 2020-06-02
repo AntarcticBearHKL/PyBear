@@ -2,7 +2,9 @@ import calendar
 import datetime
 import time
 import sys,os
-from dateutil import tz, zoneinfo
+from dateutil import tz
+from dateutil.tz import tzlocal
+
 
 import PyBear.GlobalBear as GlobalBear
 
@@ -11,44 +13,56 @@ Style_D = '%Y%m%d%H%M%S'
 Style_M = '%Y-%m-%d'
 Style_L = '%Y-%m-%d %H:%M:%S'
 Style_Raw = '%Y %m %d %H %M %S'
-
+ 
+GlobalBear.LocalTimeZone = tz.gettz(datetime.datetime.now(tzlocal()).tzname())
+GlobalBear.LocalTimeZoneShift = int(int(time.strftime('%z'))/100)
 TimeZoneZero = tz.gettz('Etc/GMT+0')
-TimeZoneChina = tz.gettz('Asia/Shanghai')
 
 class Date:
     def __init__(self, Load=False):
         if Load:
-            if type(Load) == datetime.datetime: # DateTime
+            if type(Load) == datetime.datetime:
                 self.Time = Load
+            
+            elif len(str(Load).split('-')) == 3: #YY-MM-DD
+                Load = str(Load).split('-')
+                self.Time = datetime.datetime.fromtimestamp(0, tz=TimeZoneZero)
+                self.Time = self.SetTime(
+                    Year=int(Load[0]), Month=int(Load[1]), 
+                    Day=int(Load[2])).Time
 
             elif len(str(Load)) == 10: # TimeStamp
                 self.Time = datetime.datetime.fromtimestamp(int(Load))
             
-            elif len(str(Load).split('-')) == 3: #YY-MM-DD
-                Load = str(Load) + ' 00:00:00'
-                self.Time = datetime.datetime.strptime(Load, '%Y-%m-%d %H:%M:%S')
-            
             elif len(str(Load)) == 14: # YYMMDDhhmmss
                 Load = str(Load)
-                Load = Load[0:4] + '-' + Load[4:6] + '-' + Load[6:8] + '  ' + Load[8:10] + ':' + Load[10:12] + ':' + Load[12:14]
-                self.Time = datetime.datetime.strptime(Load, '%Y-%m-%d %H:%M:%S')
+                self.Time = datetime.datetime.fromtimestamp(0, tz=TimeZoneZero)
+                self.Time = self.SetTime(
+                    Year=int(Load[0:4]), Month=int(Load[4:6]), 
+                    Day=int(Load[6:8]), Hour=int(Load[8:10]), 
+                    Minute=int(Load[10:12]), Second=int(Load[12:14])).Time
             
             elif len(str(Load).split('-')) == 1: # YYMMDD
                 Load = str(Load)
-                Load = Load[0:4] + '-' + Load[4:6] + '-' + Load[6:8] + ' 00:00:00'
-                self.Time = datetime.datetime.strptime(Load, '%Y-%m-%d %H:%M:%S')
+                self.Time = datetime.datetime.fromtimestamp(0, tz=TimeZoneZero)
+                self.Time = self.SetTime(
+                    Year=int(Load[0:4]), Month=int(Load[4:6]), 
+                    Day=int(Load[6:8])).Time
         else:
-            self.Time = datetime.datetime.now()
+            self.Time = datetime.datetime.now(tz=TimeZoneZero)
 
 
     def String(self, Style = Style_D):
+        return self.AsTimeZone(GlobalBear.LocalTimeZoneShift).Time.strftime(Style)
+    
+    def StringR(self, Style = Style_D):
         return self.Time.strftime(Style)
 
-    def TimeStamp(self):
+    def TimeStampR(self):
         return int(time.mktime(self.Time.timetuple()))
-
-    def AsZeroTimeZone(self):
-        return Date(self.Time.astimezone(TimeZoneZero))
+    
+    def AsTimeZone(self, Offset):
+        return self.Shift(Hour=Offset)
 
     def SetTime(self, Year=None, Month=None, Day=None, Hour=None, Minute=None, Second=None):
         if Year:
@@ -84,86 +98,23 @@ class Date:
         else:
             NSecond = self.SecondInt()
 
-        return Date(datetime.datetime(NYear, NMonth, NDay, NHour, NMinute, NSecond))
+        return Date(datetime.datetime(NYear, NMonth, NDay, NHour, NMinute, NSecond, tzinfo=TimeZoneZero))
             
 
-    def ResetTime(self, Year=None, Month=None, Day=None, Hour=None, Minute=None, Second=None):
-        if Year:
-            NYear = self.YearInt() + Year
-        else:
-            NYear = self.YearInt()
+    def Shift(self, Year=0, Month=0, Day=0, Hour=0, Minute=0, Second=0):
+        NYear = self.YearInt() + Year
 
-        if Month:
-            NMonth = self.MonthInt() + Month
-            if NMonth <= 0:
-                NMonth = 12
-                NYear -= 1
-        else:
-            NMonth = self.MonthInt()
-        
-        if Day:
-            NDay = self.DayInt() + Day
-            if NDay <= 0:
-                NMonth -= 1
-                if NMonth == 0:
-                    NMonth = 12
-                    NYear -= 1
-                NDay = Calender(Year=NYear, Month=NMonth).HowManyDays()
-        else:
-            NDay = self.DayInt()
-        
-        if Hour:
-            NHour = self.HourInt() + Hour
-            if NHour < 0:
-                NHour = 23
-                NDay -= 1
-                if NDay == 0:
-                    NMonth -= 1
-                    if NMonth == 0:
-                        NMonth = 12
-                        NYear -= 1
-                    NDay = Calender(Year=NYear, Month=NMonth).HowManyDays()
-        else:
-            NHour = self.HourInt()
+        NMonth = self.MonthInt() + Month
+        NYear += NMonth // 12
+        NMonth = NMonth % 12
 
-        if Minute:
-            NMinute = self.MinuteInt() + Minute
-            if NMinute < 0:
-                NMinute = 59
-                NHour -= 1
-                if NHour < 0:
-                    NHour = 23
-                    NDay -= 1
-                    if NDay == 0:
-                        NMonth -= 1
-                        if NMonth == 0:
-                            NMonth = 12
-                            NYear -= 1
-                        NDay = Calender(Year=NYear, Month=NMonth).HowManyDays()
-        else:
-            NMinute = self.MinuteInt()
+        Base = datetime.datetime(
+            NYear, NMonth, self.DayInt(), 
+            self.HourInt(), self.MinuteInt(), self.SecondInt(), tzinfo=TimeZoneZero)
 
-        if Second:
-            NSecond = self.SecondInt() + Second
-            if NSecond < 0:
-                NSecond = 59
-                NMinute -= 1
-                if NMinute < 0:
-                    NMinute = 59
-                    NHour -= 1
-                    if NHour < 0:
-                        NHour = 23
-                        NDay -= 1
-                        if NDay == 0:
-                            NMonth -= 1
-                            if NMonth == 0:
-                                NMonth = 12
-                                NYear -= 1
-                            NDay = Calender(Year=NYear, Month=NMonth).HowManyDays()
-        else:
-            NSecond = self.SecondInt()
-
-        return Date(datetime.datetime(NYear, NMonth, NDay, NHour, NMinute, NSecond))
+        TimePlus = datetime.timedelta(days=Day, hours=Hour, minutes=Minute, seconds=Second) 
+    
+        return Date(Base+TimePlus)
 
 
     def Year(self):

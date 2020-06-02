@@ -44,11 +44,12 @@ def Location(LocationName):
 #GlobalConfig:
 #--------------
 import platform
-import os
 GlobalDebugMode = False
 GlobalTestModuleOn = False
-
-os.environ['TZ'] = 'Asia/Shanghai'
+import datetime
+StartTime = datetime.datetime.now()
+LocalTimeZone = None
+LocalTimeZoneShift = None
 
 NewServer(
     'Mysql', '47.95.119.172', 3306,
