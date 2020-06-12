@@ -13,27 +13,14 @@ Style_D = '%Y%m%d%H%M%S'
 Style_M = '%Y-%m-%d'
 Style_L = '%Y-%m-%d %H:%M:%S'
 Style_Raw = '%Y %m %d %H %M %S'
- 
-GlobalBear.LocalTimeZone = tz.gettz(datetime.datetime.now(tzlocal()).tzname())
+
 GlobalBear.LocalTimeZoneShift = int(int(time.strftime('%z'))/100)
-TimeZoneZero = tz.gettz('Etc/GMT+0')
 
 class Date:
     def __init__(self, Load=False):
         if Load:
             if type(Load) == datetime.datetime:
                 self.Time = Load
-            
-            elif len(str(Load).split('-')) == 3: #YY-MM-DD
-                Load = str(Load).split('-')
-                self.Time = datetime.datetime.fromtimestamp(0, tz=TimeZoneZero)
-                self.Time = self.SetTime(
-                    Year=int(Load[0]), Month=int(Load[1]), 
-                    Day=int(Load[2])).Time
-
-            elif len(str(Load)) == 10: # TimeStamp !!!
-                Load = Date(datetime.datetime.fromtimestamp(int(Load), tz=TimeZoneZero))
-                self.Time = Load.AsTimeZone(GlobalBear.LocalTimeZoneShift).Time
             
             elif len(str(Load)) == 14: # YYMMDDhhmmss
                 Load = str(Load)

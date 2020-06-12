@@ -46,11 +46,13 @@ def Location(LocationName):
 #--------------
 import platform
 GlobalDebugMode = False
-GlobalTestModuleOn = True
+GlobalTestModuleOn = False
+import time
 import datetime
 StartTime = datetime.datetime.now()
-LocalTimeZone = None
-LocalTimeZoneShift = None
+LocalTimeZoneShift = int(int(time.strftime('%z'))/100)
+def UpTime():
+    print(datetime.datetime.now() - StartTime)
 
 NewServer(
     'Mysql', '47.95.119.172', 3306,

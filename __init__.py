@@ -68,27 +68,4 @@ if GlobalBear.GlobalTestModuleOn:
     print('Testing PyBear.Library.Data.Word')
     import PyBear.Library.Data.Word as WordBear
 
-
-
-    print('Testing PyBear.Tool.Authentication')
-    import PyBear.Tool.Authentication as AuthenticationBear
-
-    print('Testing PyBear.Tool.Balance')
-    import PyBear.Tool.Balance as BalanceBear
-
-    print('Testing PyBear.Tool.Contact')
-    import PyBear.Tool.Contact as ContactBear
-
-    print('Testing PyBear.Tool.FinancialMarket')
-    import PyBear.Tool.FinancialMarket as FinancialMarketBear
-
-    print('Testing PyBear.Tool.NoteBook')
-    import PyBear.Tool.NoteBook as NoteBookBear
-
-    print('Testing PyBear.Tool.TimeCapsule')
-    import PyBear.Tool.TimeCapsule as TimeCapsuleBear
-
-    print('Testing PyBear.Tool.WebDisk')
-    import PyBear.Tool.WebDisk as WebDiskBear
-
     print('--------------- Global Availability Check Successful ---------------')

@@ -8,9 +8,9 @@ warnings.filterwarnings('ignore')
 
 import PyBear.GlobalBear as GlobalBear
 import PyBear.Library.Multitask as MultitaskBear
-import PyBear.Library.Statistics as MultitaskBear
-import PyBear.Library.Chronus as MultitaskBear
-import PyBear.Library.Chart as MultitaskBear
+import PyBear.Library.Statistics as StatisticsBear
+import PyBear.Library.Chronus as ChronusBear
+import PyBear.Library.Chart as ChartBear
 import PyBear.Library.Data.MongoDB as MongoDBBear
 import PyBear.Library.Data.Redis as RedisBear
 
@@ -24,34 +24,28 @@ class CHN:
             pass
 
     class StockMarket:
-        def __init__(self, ServerName, UserName):
+        def __init__(self):
             try:
                 tushare.set_token(GlobalBear.TushareToken)
             except:
                 raise BadBear('Tushare Cannot Use Without Token')
             self.API = tushare.pro_api()
-            self.ServerName = ServerName
-            self.UserName = UserName
 
-            self.BasicInfo = MongoDBBear.MongoDB('MongoDB', 'BasicInfo')
-            self.TradeDay = MongoDBBear.MongoDB('MongoDB', 'TradeDay')
-
-
-        def UpdateBasicInfo(self):
+        def UpdateStockBasicInfo(self):
             print('BasicInfo Update Start')
-            self.BasicInfoTable.InitTable({
-                'CodeIDX': 'BIGINT NOT NULL',
-                'Code': 'CHAR(16) NOT NULL',
-                'Name': 'CHAR(16) NOT NULL',
-                'Area': 'CHAR(8) NOT NULL',
-                'Industry': 'CHAR(16) NOT NULL',
-            }, Index=['CodeIDX']) 
-
             BasicInfo = self.API.stock_basic()
 
-            Values = []
+            Data = []
             for Item in BasicInfo.itertuples():
-                Values.append([int(Item.symbol), Item.symbol, Item.name, Item.area, Item.industry])
+                Data.append({
+                    'Code': Item.symbol,
+                    'TSCode': Item.ts_code,
+                    'Name': Item.name,
+                    'Area': Item.area,
+                    'Industry': Item.industry,
+                })
+            print(Data)
+            return
             
             self.BasicInfoTable.DeleteAll()
             self.BasicInfoTable.Insert(['CodeIDX', 'Code', 'Name', 'Area', 'Industry'], Values)

@@ -18,7 +18,7 @@ class MongoDB:
             mechanism='SCRAM-SHA-1')
         
 
-    def SetTable(self, TableName):
+    def UseTable(self, TableName):
         self.TableName = TableName
 
 
@@ -32,7 +32,7 @@ class MongoDB:
 
     def Insert(self, Data):
         if not self.TableName:
-            raise GlobalBear.BadBear('')
+            raise GlobalBear.BadBear(NoTableSelected)
         self.Table = self.Connection[self.DatabasesName][self.TableName]
 
         if type(Data) == dict:
@@ -40,9 +40,13 @@ class MongoDB:
         elif type(Data) == list:
             self.Table.insert_many(Data)
 
+    def CreateIndex(self, Column):
+        if not self.TableName:
+            raise GlobalBear.BadBear(NoTableSelected)
+
     def Change(self, Condition, Value):
         if not self.TableName:
-            raise GlobalBear.BadBear('')
+            raise GlobalBear.BadBear(NoTableSelected)
         self.Table = self.Connection[self.DatabasesName][self.TableName]
 
         Ret = self.Table.update_many(Condition, Value)
@@ -50,7 +54,7 @@ class MongoDB:
 
     def Search(self, Condition, Count=None, Sort=None, Limit=None):
         if not self.TableName:
-            raise GlobalBear.BadBear('')
+            raise GlobalBear.BadBear(NoTableSelected)
         self.Table = self.Connection[self.DatabasesName][self.TableName]
 
         if Count:
@@ -68,14 +72,45 @@ class MongoDB:
 
     def Delete(self, Condition):
         if not self.TableName:
-            raise GlobalBear.BadBear('')
+            raise GlobalBear.BadBear(NoTableSelected)
         self.Table = self.Connection[self.DatabasesName][self.TableName]
             
         return self.Table.delete_many(Condition).deleted_count
 
+
+def NoTableSelected():
+    print('No Table Selected')
+
+
 if GlobalBear.GlobalTestModuleOn:
+    print('Database Create')
     TestDB = MongoDB('MongoDB', 'Test', 'MongoDB_Test')
+
+    print('Database DeleteTable')
+    TestDB.DeleteTable('MongoDB_Test')
+
+    print('Database ListTable')
+    TestDB.ListTable()
+
+    print('Database Delete')
     TestDB.Delete({})
-    TestDB.Insert({
-        'Test' : 'Success'
+
+    print('Database Insert')
+    for i in range(10):
+        TestDB.Insert({
+            'Test' : i
+        })
+
+    print('Database Search')
+    TestDB.Search({
+        'Test' : 2
+    })
+
+    print('Database Change')
+    TestDB.Change({
+        'Test' : 2
+    },{
+        '$set' : {
+            'Test' : 3
+        }
     })
