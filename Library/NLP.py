@@ -1,7 +1,7 @@
 import jieba
 import nltk
 
-import PyBear.Library.Multitasks as Multitasks
+import PyBear.Library.Multitask as MultitaskBear
 
 def ChineseTokenize():
     pass

@@ -33,7 +33,7 @@ class Date:
 
             elif len(str(Load)) == 10: # TimeStamp !!!
                 Load = Date(datetime.datetime.fromtimestamp(int(Load), tz=TimeZoneZero))
-                self.Time = Load.astimezone(GlobalBear.LocalTimeZoneShift).Time
+                self.Time = Load.AsTimeZone(GlobalBear.LocalTimeZoneShift).Time
             
             elif len(str(Load)) == 14: # YYMMDDhhmmss
                 Load = str(Load)

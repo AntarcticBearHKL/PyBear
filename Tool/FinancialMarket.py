@@ -6,13 +6,13 @@ import pandas
 import warnings
 warnings.filterwarnings('ignore')
 
-from PyBear.GlobalBear import *
-from PyBear.Library.Multitasks import *
-from PyBear.Library.Statistics import *
-from PyBear.Library.Chronus import *
-from PyBear.Library.Chart import *
-from PyBear.Library.Data.MySQL import *
-from PyBear.Library.Data.File import *
+import PyBear.GlobalBear as GlobalBear
+import PyBear.Library.Multitask as MultitaskBear
+import PyBear.Library.Statistics as MultitaskBear
+import PyBear.Library.Chronus as MultitaskBear
+import PyBear.Library.Chart as MultitaskBear
+import PyBear.Library.Data.MongoDB as MongoDBBear
+import PyBear.Library.Data.Redis as RedisBear
 
 class CHN:
     class MacroMarket:
@@ -33,15 +33,8 @@ class CHN:
             self.ServerName = ServerName
             self.UserName = UserName
 
-            self.CHNStockMarketDataBase = MySQLDB(ServerName, UserName, 'CHNStockMarket')
-
-            self.CHNStockMarketDataBase.CheckTable([
-                'BasicInfo',
-                'TradeDay',
-            ])
-
-            self.BasicInfoTable = self.CHNStockMarketDataBase.Table('BasicInfo')
-            self.TradeDayTable = self.CHNStockMarketDataBase.Table('TradeDay')
+            self.BasicInfo = MongoDBBear.MongoDB('MongoDB', 'BasicInfo')
+            self.TradeDay = MongoDBBear.MongoDB('MongoDB', 'TradeDay')
 
 
         def UpdateBasicInfo(self):
@@ -52,7 +45,7 @@ class CHN:
                 'Name': 'CHAR(16) NOT NULL',
                 'Area': 'CHAR(8) NOT NULL',
                 'Industry': 'CHAR(16) NOT NULL',
-            }, Index=['CodeIDX'])
+            }, Index=['CodeIDX']) 
 
             BasicInfo = self.API.stock_basic()
 
@@ -329,6 +322,15 @@ class CHN:
         def __init__(self):
             pass
 
+class HK:
+    class StockMarket:
+        def __init__(self):
+            pass
+    
+
+    class Stock:
+        def __init__(self):
+            pass
 
 class GLOBAL:
     class CurrencyMarket:

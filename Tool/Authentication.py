@@ -8,7 +8,7 @@ def CreateUser(ServerName, ServiceName, Username, Password):
     if ExistUser(ServerName, ServiceName, Username):
         print('User Exist')
         return
-    Table = MongoDBBear.MongoDBTable(
+    Table = MongoDBBear.MongoDB(
         ServerName, 
         GlobalBear.AuthenticationDatabaseName, 
         ServiceName)
@@ -23,7 +23,7 @@ def ChangePassword():
     pass
 
 def ExistUser(ServerName, ServiceName, Username):
-    Table = MongoDBBear.MongoDBTable(
+    Table = MongoDBBear.MongoDB(
         ServerName, 
         GlobalBear.AuthenticationDatabaseName, 
         ServiceName)
@@ -34,7 +34,7 @@ def ExistUser(ServerName, ServiceName, Username):
     return False
 
 def LoginUser(MongoServerName, RedisServerName, ServiceName, Username, Password, ExpireTime=86400000):
-    Table = MongoDBBear.MongoDBTable(
+    Table = MongoDBBear.MongoDB(
         MongoServerName, 
         GlobalBear.AuthenticationDatabaseName, 
         ServiceName)
@@ -69,4 +69,4 @@ def UserGranted():
     pass
 
 if GlobalBear.GlobalTestModuleOn:
-    CreateUser('TestModule', 'test', 'root', 'root')
+    pass

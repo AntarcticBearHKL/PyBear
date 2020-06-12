@@ -5,17 +5,18 @@ class BadBear(Exception):
     def __init__(self, Explain):
         self.Explain = Explain
     
-    def __str__(self):
-        return '----------------Error Happend----------------\n' + self.Explain
+    def Except(self):
+        if callable(self.Explain):
+            return self.Explain()
+        return self.Explain
 
 def CatchBadBear(Fn, *args, **kwargs):
     def Ret(*args, **kwargs):
         try:
             Fn(*args, **kwargs)
         except BadBear as Error:
-            print(Error)
+            Error.Except()
     return Ret
-
 
 
 ServerList = {}
@@ -45,7 +46,7 @@ def Location(LocationName):
 #--------------
 import platform
 GlobalDebugMode = False
-GlobalTestModuleOn = False
+GlobalTestModuleOn = True
 import datetime
 StartTime = datetime.datetime.now()
 LocalTimeZone = None

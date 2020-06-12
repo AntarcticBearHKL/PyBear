@@ -1,20 +1,21 @@
 import pymysql
 import os, sys
 
-from PyBear.GlobalBear import *
-from PyBear.Library.Chronus import *
+import PyBear.GlobalBear as GlobalBear
+import PyBear.Library.Chronus as ChronusBear
 
-class MySQLDB:
-    def __init__(self, ServerName, UserName, DatabaseName):
+class MySQL:
+    def __init__(self, ServerName, DatabaseName, TableName=None):
+        self.ServerName = ServerName
+        self.DatabaseName = DatabaseName
+        self.TableName = TableName
+
         self.Connection = pymysql.connect(
             host=GetServer(ServerName).IP,
             port=GetServer(ServerName).Port,
-            user=GetUser(UserName).UserName,
-            passwd=GetUser(UserName).Password,
+            user=GetServer(ServerName).UserName,
+            passwd=GetServer(ServerName).Password,
             db=DatabaseName,)
-        self.ServerName = ServerName
-        self.UserName = UserName
-        self.DatabaseName = DatabaseName
         self.Cursor = self.Connection.cursor()
     
     def __ShowResult(self):
@@ -29,14 +30,12 @@ class MySQLDB:
         return self.__ShowResult()
 
 
-    def Table(self, TableName):
-        return DatabaseTable(self.ServerName, self.UserName, self.DatabaseName, TableName)
 
     def ListTable(self):
         SQL = ''' SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA='%s'; ''' % (self.DatabaseName)
         return [Item[0] for Item in self.__Execute(SQL)]
 
-    def InitTable(self, TableList):
+    def InitDatabase(self, TableList):
         ServerTableList = self.ListTable()
         for Item in TableList:
             if Item not in ServerTableList:
@@ -50,34 +49,21 @@ class MySQLDB:
             self.__Execute(SQL[0])
 
 
-class MySQLTable:
-    def __init__(self, ServerName, UserName, DatabaseName, TableName):
-        self.ServerName = ServerName
-        self.UserName = UserName
-        self.DatabaseName = DatabaseName
-        self.TableName = TableName
 
-        self.Connection = pymysql.connect(
-            host=GetServer(ServerName).IP,
-            port=GetServer(ServerName).Port,
-            user=GetUser(UserName).UserName,
-            passwd=GetUser(UserName).Password,
-            db=DatabaseName,)
-        self.Cursor = self.Connection.cursor()
-    
-    def __ShowResult(self):
-        return self.Cursor.fetchall()
+    def QuickInit(self, Columns, Index=None, UniqueIndex=None, FulltextIndex=None):
+        if not self.TableName:
+            return 'No TableName'
+        if self.TableName in self.ListTable():
+            return
+        self.InitDatabase(self.TableName)
+        self.InitTable(self, Columns, Index=Index, UniqueIndex=UniqueIndex, FulltextIndex=FulltextIndex)
 
-    def __Commit(self):
-        self.Connection.commit()
-
-    def __Execute(self, SQL):
-        self.Cursor.execute(SQL)
-        self.__Commit()
-        return self.__ShowResult()
 
 
     def InitTable(self, Columns, Index=None, UniqueIndex=None, FulltextIndex=None):
+        if not self.TableName:
+            return 'No TableName'
+
         self.Cursor.execute('''TRUNCATE TABLE %s;''' % (self.TableName))
         self.Columns = self.ListColumn()
         self.Indexs = self.ListIndex()
@@ -130,6 +116,7 @@ class MySQLTable:
         return Ret
 
 
+
     def NewIndex(self, ColumnName, IndexName=None):
         Indexs = [item[2] for item in self.__Execute('''SHOW KEYS FROM %s''' % (self.TableName))]
 
@@ -168,7 +155,12 @@ class MySQLTable:
         return Ret
 
 
+
     def Insert(self, ColumnName, Data):    
+        if not self.TableName:
+            return 'No TableName'
+            
+
         ColumnName = ','.join(ColumnName)
 
         for Item in Data:
@@ -202,7 +194,11 @@ class MySQLTable:
         self.__Execute(SQL)
 
 
+
     def Search(self, Column='*', Condition=''):
+        if not self.TableName:
+            return 'No TableName'
+              
         return self.__Execute('''SELECT %s FROM %s %s''' % (Column, self.TableName, Condition))
 
 

@@ -5,7 +5,7 @@ import PyBear.Library.Chronus as ChronusBear
 import PyBear.Library.Cipher as CipherBear
 
 def NewEvent(MongoServerName, RedisServerName, Username, Date, Label, Info, Append, CustomDate = None): 
-    Table = MongoDBBear.MongoDBTable(
+    Table = MongoDBBear.MongoDB(
         MongoServerName,
         GlobalBear.TimeCapsuleDatabaseName, 
         Username)
@@ -24,7 +24,7 @@ def GetPeriod(MongoServerName, RedisServerName, AuthenticationCode, Period, Labe
     Result = Authentication.UserAuthentication(RedisServerName, AuthenticationCode)
     if Result[0] != 'TimeCapsule':
         return 'Authentication Failed'
-    Table = MongoDBBear.MongoDBTable(
+    Table = MongoDBBear.MongoDB(
         MongoServerName,
         GlobalBear.TimeCapsuleDatabaseName, 
         Result[1])
