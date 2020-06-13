@@ -67,7 +67,7 @@ class MongoDB:
             Ret = self.Table.find(Condition).limit(Limit)
         else:
             Ret = self.Table.find(Condition)
-
+            
         return [Item for Item in Ret]
 
     def Delete(self, Condition):

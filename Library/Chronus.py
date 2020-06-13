@@ -5,52 +5,43 @@ import sys,os
 from dateutil import tz
 from dateutil.tz import tzlocal
 
-
 import PyBear.GlobalBear as GlobalBear
 
-Style_S = '%Y%m%d'
-Style_D = '%Y%m%d%H%M%S'
-Style_M = '%Y-%m-%d'
-Style_L = '%Y-%m-%d %H:%M:%S'
-Style_Raw = '%Y %m %d %H %M %S'
-
-GlobalBear.LocalTimeZoneShift = int(int(time.strftime('%z'))/100)
-
 class Date:
-    def __init__(self, Load=False):
-        if Load:
-            if type(Load) == datetime.datetime:
-                self.Time = Load
-            
-            elif len(str(Load)) == 14: # YYMMDDhhmmss
-                Load = str(Load)
-                self.Time = datetime.datetime.fromtimestamp(0, tz=TimeZoneZero)
-                self.Time = self.SetTime(
-                    Year=int(Load[0:4]), Month=int(Load[4:6]), 
-                    Day=int(Load[6:8]), Hour=int(Load[8:10]), 
-                    Minute=int(Load[10:12]), Second=int(Load[12:14])).Time
-            
-            elif len(str(Load).split('-')) == 1: # YYMMDD
-                Load = str(Load)
-                self.Time = datetime.datetime.fromtimestamp(0, tz=TimeZoneZero)
-                self.Time = self.SetTime(
-                    Year=int(Load[0:4]), Month=int(Load[4:6]), 
-                    Day=int(Load[6:8])).Time
+    def __init__(self, Load=None, TimeShift=None):
+        if type(Load) == datetime.datetime and TimeShift:
+            self.Time = Load
+            self.TimeShift = TimeShift      
+        elif len(str(Load)) == 17:
+            Load = str(Load)
+            self.Time = datetime.datetime(
+                int(Load[0:4]), int(Load[4:6]), int(Load[6:8]), 
+                int(Load[8:10]), int(Load[10:12]), int(Load[12:14]))
+            self.TimeShift = int(Load[15:16])
+        elif len(str(Load)) == 8:
+            Load = str(Load)
+            self.Time = datetime.datetime(
+                int(Load[0:4]), int(Load[4:6]), int(Load[6:8]), 
+                0, 0, 0)
+            if not TimeShift:
+                self.TimeShift = GlobalBear.LocalTimeZoneShift
+            else:
+                self.TimeShift = TimeShift
         else:
-            self.Time = datetime.datetime.now(tz=TimeZoneZero)
+            self.Time = datetime.datetime.now()
+            self.TimeShift = GlobalBear.LocalTimeZoneShift
 
-
-    def String(self, Style = Style_D):
-        return self.AsTimeZone(GlobalBear.LocalTimeZoneShift).Time.strftime(Style)
-    
-    def StringR(self, Style = Style_D):
-        return self.Time.strftime(Style)
-
-    def TimeStampR(self):
-        return int(time.mktime(self.Time.timetuple()))
-    
-    def AsTimeZone(self, Offset):
-        return self.Shift(Hour=Offset)
+    def String(self, Style):
+        if Style == 1:
+            Style = '%Y-%m-%d'
+        elif Style == 2:
+            Style = '%Y-%m-%d %H:%M:%S'
+        elif Style == -1:
+            Style = '%Y%m%d'
+            return self.Time.strftime(Style)
+        else:
+            Style = '%Y%m%d%H%M%S'
+        return self.Time.strftime(Style) + '(' + str(self.TimeShift) + ')'
 
     def SetTime(self, Year=None, Month=None, Day=None, Hour=None, Minute=None, Second=None):
         if Year:
@@ -86,7 +77,8 @@ class Date:
         else:
             NSecond = self.SecondInt()
 
-        return Date(datetime.datetime(NYear, NMonth, NDay, NHour, NMinute, NSecond, tzinfo=TimeZoneZero))
+        self.Time = datetime.datetime(NYear, NMonth, NDay, NHour, NMinute, NSecond)
+        return self
             
 
     def Shift(self, Year=0, Month=0, Day=0, Hour=0, Minute=0, Second=0):
@@ -102,7 +94,8 @@ class Date:
 
         TimePlus = datetime.timedelta(days=Day, hours=Hour, minutes=Minute, seconds=Second) 
     
-        return Date(Base+TimePlus)
+        self.Time = Base + TimePlus
+        return self
 
 
     def Year(self):

@@ -32,128 +32,170 @@ class CHN:
             self.API = tushare.pro_api()
 
         def UpdateStockBasicInfo(self):
-            print('BasicInfo Update Start')
+            StockBasicInfoTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'StockBasicInfo')
+            UpdateTime = StockBasicInfoTable.Search({
+                'SearchID': 1
+            })
+            if len(UpdateTime) !=0 and (ChronusBear.Date() // ChronusBear.Date(UpdateTime[0]['UpdateTime']))[2] < 10:
+                print('UpdateStockBasicInfo Finish(N)')
+                return
+
+
+            print('UpdateStockBasicInfo Start')
             BasicInfo = self.API.stock_basic()
 
-            Data = []
+            Data = [{
+                'UpdateTime': ChronusBear.Date().String(0),
+                'SearchID': 1
+            }]
             for Item in BasicInfo.itertuples():
                 Data.append({
-                    'Code': Item.symbol,
+                    'Code': int(Item.symbol),
                     'TSCode': Item.ts_code,
                     'Name': Item.name,
                     'Area': Item.area,
                     'Industry': Item.industry,
                 })
-            print(Data)
-            return
             
-            self.BasicInfoTable.DeleteAll()
-            self.BasicInfoTable.Insert(['CodeIDX', 'Code', 'Name', 'Area', 'Industry'], Values)
-
-            print('BasicInfo Update Finished')
+            StockBasicInfoTable.Delete({})
+            StockBasicInfoTable.Insert(Data)
+            print('UpdateStockBasicInfo Finish')
 
         def UpdateTradeDay(self):
-            print('TradeDay Update Start')
-            self.TradeDayTable.InitTable({
-                'Date': 'INT NOT NULL',
-                'Open': 'INT NOT NULL',
-            }, Index=['Date'])
+            TradeDayTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'TradeDay')
+            UpdateTime = TradeDayTable.Search({
+                'SearchID': 1
+            })
+            if len(UpdateTime) !=0 and (ChronusBear.Date() // ChronusBear.Date(UpdateTime[0]['UpdateTime']))[2] < 10:
+                print('UpdateTradeDay Finish(N)')
+                return
 
-            TradeDay = self.API.trade_cal(exchange='', start_date='20000101', end_date=Date().SetTime(Month=12, Day=999).String(Style=Style_SS))
+            print('UpdateTradeDay Start')
+            EndDate = ChronusBear.Date()
+            EndDate.SetTime(Month=12, Day=999)
+            TradeDay = self.API.trade_cal(exchange='', start_date='20000101', end_date=EndDate.String(-1))
 
-            Values = []
+            Data = [{
+                'UpdateTime': ChronusBear.Date().String(0),
+                'SearchID': 1
+            }]
             for Item in TradeDay.itertuples():
-                Values.append([int(Item.cal_date), int(Item.is_open)])
+                Data.append({
+                    'Date': int(Item.cal_date),
+                    'IsOpen': int(Item.is_open),
+                })
+
             
-            self.TradeDayTable.DeleteAll()
-            self.TradeDayTable.Insert(['Date', 'Open'], Values)
+            TradeDayTable.Delete({})
+            TradeDayTable.Insert(Data)
+            print('UpdateTradeDay Finish')
 
-            print('TradeDay Update Finished')
 
-        def CheckStockTable(self):
-            print("Inital All Stock Table Start")
-            self.CHNStockMarketDataBase.CheckTable([Item[:6]+'_Price' for Item in self.AllStock()])
-            print("Inital All Stock Table Finished")
+        def GetStockCode(self, TSCode=None, Filter=[]):
+            StockBasicInfoTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'StockBasicInfo')
+            Condition = []
+            if 'SZ' in Filter:
+                Condition.append({
+                    '$and': [
+                        {'Code': {'$gte': 0}},
+                        {'Code': {'$lte': 1000}},
+                    ]
+                })
+            if 'ZX' in Filter:
+                Condition.append({
+                    '$and': [
+                        {'Code': {'$gte': 2000}},
+                        {'Code': {'$lte': 299999}},
+                    ]
+                })
+            if 'CY' in Filter:
+                Condition.append({
+                    '$and': [
+                        {'Code': {'$gte': 300000}},
+                        {'Code': {'$lte': 599999}},
+                    ]
+                })
+            if 'SH' in Filter:
+                Condition.append({
+                    '$and': [
+                        {'Code': {'$gte': 600000}},
+                        {'Code': {'$lte': 687000}},
+                    ]
+                })
+            if 'KC' in Filter:
+                Condition.append({
+                    '$and': [
+                        {'Code': {'$gte': 688000}},
+                    ]
+                })
+            Ret = StockBasicInfoTable.Search({
+                '$and': [
+                    {'Code': {'$exists': 'true'}},
+                    {'$or': Condition}
+                ]
+            })
+            if TSCode:
+                return [Item['TSCode'] for Item in Ret]
+            return [Item['Code'] for Item in Ret]
 
 
         def IsTradeDay(self, TestedDay):
-            if type(TestedDay) == Date:
-                TestedDay = TestedDay.String(Style=Style_SS)
-
-            Ret = self.TradeDayTable.SearchTable(Condition='''WHERE Date=%s'''%(TestedDay))
-
-            if len(Ret) > 0:
+            TradeDayTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'TradeDay')
+            Ret = TradeDayTable.Search({
+                'Date': TestedDay
+            })
+            if len(Ret) != 0 and Ret[0]['IsOpen'] == 1:
                 return True
             return False
 
-        def LastTradeDay(self, TestedDay = None):
-            if not TestedDay:
-                TestedDay = Date()
-            if TestedDay.HourInt() < 16:
-                TestedDay = Date().ResetTime(Day=-1)
-
-            Ret = self.TradeDayTable.SearchTable(Condition='''WHERE Date<=%s AND Open = 1'''%(TestedDay.String(Style=Style_SS)), Column='''MAX(Date)''')
-            return Ret[0][0]
+        def LastTradeDay(self):
+            if ChronusBear.Date().HourInt() <= 17:
+                TargetDay = ChronusBear.Date().ResetTime(Day=-1).String(-1)
+            else:
+                TargetDay = ChronusBear.Date().String(-1)
+            
+            return self.GetTradeDay(End=TargetDay, Day=1)[0] 
 
         def GetTradeDay(self, Start=None, End=None, Day=None):
-            if Start and End:
-                Ret = self.TradeDayTable.SearchTable(Condition='''WHERE Date>=%s AND Date<=%s AND Open = 1 ORDER BY Date ASC'''%(Start.String(Style=Style_SS), End.String(Style=Style_SS)), Column='Date')
-                return [Item[0] for Item in Ret]
+            TradeDayTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'TradeDay')
+            if Start and End:  
+                Ret = TradeDayTable.Search({
+                    '$and': [
+                        { 'Date': {'$gte': int(Start)} },
+                        { 'Date': {'$lte': int(End)}   },
+                    ],
+                    'IsOpen': 1,
+                }, Sort=['Date', 1])
+                return [Item['Date'] for Item in Ret]
             elif Start and Day:
-                Ret = self.TradeDayTable.SearchTable(Condition='''WHERE Date>=%s AND Open = 1 ORDER BY Date ASC'''%(Start.String(Style=Style_SS)), Column='Date')
-                return [Item[0] for Item in Ret][:Day]
+                Ret = TradeDayTable.Search({
+                    '$and': [
+                        { 'Date': {'$gte': int(Start)} },
+                    ],
+                    'IsOpen': 1,
+                }, Sort=['Date', 1], Limit=Day)
+                return [Item['Date'] for Item in Ret]
             elif End and Day:
-                Ret = self.TradeDayTable.SearchTable(Condition='''WHERE Date<=%s AND Open = 1 ORDER BY Date DESC LIMIT %s'''%(End().String(Style=Style_SS), Day), Column='Date')
-                Ret = [Item[0] for Item in Ret]
+                Ret = TradeDayTable.Search({
+                    '$and': [
+                        { 'Date': {'$lte': int(End)}   },
+                    ],
+                    'IsOpen': 1,
+                }, Sort=['Date', -1], Limit=Day)
                 Ret.reverse()
-                return Ret
+                return [Item['Date'] for Item in Ret]
             elif Day:
-                Ret = self.TradeDayTable.SearchTable(Condition='''WHERE Date<=%s AND Open = 1 ORDER BY Date DESC LIMIT %s'''%(Date().String(Style=Style_SS), Day), Column='Date')
-                Ret = [Item[0] for Item in Ret]
+                Ret = TradeDayTable.Search({
+                    '$and': [
+                        { 'Date': {'$lte': int(ChronusBear.Date().String(-1))}   },
+                    ],
+                    'IsOpen': 1,
+                }, Sort=['Date', -1], Limit=Day)
                 Ret.reverse()
-                return Ret
+                return [Item['Date'] for Item in Ret]
             else:
                 raise BadBear('--------GetTradeDay Para Error---------')
 
-
-        def AllStock(self, RawCode=False):
-            if RawCode:
-                return self.SZStock(RawCode=True) + self.ZXStock(RawCode=True) + self.SHStock(RawCode=True) + self.KCStock(RawCode=True)
-            return self.SZStock() + self.ZXStock() + self.SHStock() + self.KCStock()
-            print('Get All Stock Code')
-
-        def SZStock(self, RawCode=False):
-            if self.BasicInfoTable.GetRowNumber == 0:
-                self.UpdateBasicInfo()
-
-            if RawCode:
-                return [Item[2] for Item in self.BasicInfoTable.SearchTable(Condition='WHERE CodeIDX<300000')]
-            return [Item[2]+'.SZ' for Item in self.BasicInfoTable.SearchTable(Condition='WHERE CodeIDX<300000')]
-
-        def ZXStock(self, RawCode=False):
-            if self.BasicInfoTable.GetRowNumber == 0:
-                self.UpdateBasicInfo()
-            
-            if RawCode:
-                return [Item[2] for Item in self.BasicInfoTable.SearchTable(Condition='WHERE CodeIDX<600000 AND CodeIDX>=300000')]
-            return [Item[2]+'.SZ' for Item in self.BasicInfoTable.SearchTable(Condition='WHERE CodeIDX<600000 AND CodeIDX>=300000')]
-
-        def SHStock(self, RawCode=False):
-            if self.BasicInfoTable.GetRowNumber == 0:
-                self.UpdateBasicInfo()
-            
-
-            if RawCode:
-                return [Item[2] for Item in self.BasicInfoTable.SearchTable(Condition='WHERE CodeIDX<680000 AND CodeIDX>=600000')]
-            return [Item[2]+'.SH' for Item in self.BasicInfoTable.SearchTable(Condition='WHERE CodeIDX<680000 AND CodeIDX>=600000')]
-
-        def KCStock(self, RawCode=False):
-            if self.BasicInfoTable.GetRowNumber == 0:
-                self.UpdateBasicInfo()
-
-            if RawCode:
-                return [Item[2] for Item in self.BasicInfoTable.SearchTable(Condition='WHERE CodeIDX>680000')]
-            return [Item[2]+'.SH' for Item in self.BasicInfoTable.SearchTable(Condition='WHERE CodeIDX>680000')]
 
     class FundMarket:
         def __init__(self):
@@ -533,7 +575,7 @@ class Brokor:
         return Ret
 
 class Analyst:
-    def DailyUpdate(ServerName, UserName, Init=False, LimitPerMinute=None):
+    def DailyUpdate(LimitPerMinute=None):
         TM = TaskMatrix(2,16, LimitPerMinute=LimitPerMinute)
         #TM = TaskMatrix(1,1, LimitPerMinute=LimitPerMinute)
 
