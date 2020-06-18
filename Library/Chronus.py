@@ -90,7 +90,7 @@ class Date:
 
         Base = datetime.datetime(
             NYear, NMonth, self.DayInt(), 
-            self.HourInt(), self.MinuteInt(), self.SecondInt(), tzinfo=TimeZoneZero)
+            self.HourInt(), self.MinuteInt(), self.SecondInt())
 
         TimePlus = datetime.timedelta(days=Day, hours=Hour, minutes=Minute, seconds=Second) 
     

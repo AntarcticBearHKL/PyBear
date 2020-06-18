@@ -31,22 +31,26 @@ class CHN:
                 raise BadBear('Tushare Cannot Use Without Token')
             self.API = tushare.pro_api()
 
-        def UpdateStockBasicInfo(self):
-            StockBasicInfoTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'StockBasicInfo')
+        def Init(self):
+            self.UpdateStockBasic()
+            self.UpdateTradeDay()
+            return self
+
+        def UpdateStockBasic(self):
+            StockBasicInfoTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'StockBasic')
             UpdateTime = StockBasicInfoTable.Search({
-                'SearchID': 1
+                'UpdateTime': {'$exists': 'true'}
             })
             if len(UpdateTime) !=0 and (ChronusBear.Date() // ChronusBear.Date(UpdateTime[0]['UpdateTime']))[2] < 10:
-                print('UpdateStockBasicInfo Finish(N)')
+                print('Update StockBasic Finish(N)')
                 return
 
 
-            print('UpdateStockBasicInfo Start')
+            print('Update StockBasic Start')
             BasicInfo = self.API.stock_basic()
 
             Data = [{
                 'UpdateTime': ChronusBear.Date().String(0),
-                'SearchID': 1
             }]
             for Item in BasicInfo.itertuples():
                 Data.append({
@@ -59,25 +63,24 @@ class CHN:
             
             StockBasicInfoTable.Delete({})
             StockBasicInfoTable.Insert(Data)
-            print('UpdateStockBasicInfo Finish')
+            print('Update StockBasic Finish')
 
         def UpdateTradeDay(self):
             TradeDayTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'TradeDay')
             UpdateTime = TradeDayTable.Search({
-                'SearchID': 1
+                'UpdateTime': {'$exists': 'true'}
             })
             if len(UpdateTime) !=0 and (ChronusBear.Date() // ChronusBear.Date(UpdateTime[0]['UpdateTime']))[2] < 10:
-                print('UpdateTradeDay Finish(N)')
+                print('Update TradeDay Finish(N)')
                 return
 
-            print('UpdateTradeDay Start')
+            print('Update TradeDay Start')
             EndDate = ChronusBear.Date()
             EndDate.SetTime(Month=12, Day=999)
             TradeDay = self.API.trade_cal(exchange='', start_date='20000101', end_date=EndDate.String(-1))
 
             Data = [{
                 'UpdateTime': ChronusBear.Date().String(0),
-                'SearchID': 1
             }]
             for Item in TradeDay.itertuples():
                 Data.append({
@@ -88,8 +91,7 @@ class CHN:
             
             TradeDayTable.Delete({})
             TradeDayTable.Insert(Data)
-            print('UpdateTradeDay Finish')
-
+            print('Update TradeDay Finish')
 
         def GetStockCode(self, TSCode=None, Filter=[]):
             StockBasicInfoTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'StockBasicInfo')
@@ -128,10 +130,14 @@ class CHN:
                         {'Code': {'$gte': 688000}},
                     ]
                 })
+            if len(Condition) != 0:
+                Condition =  {'$or': Condition}
+            else:
+                Condition = {}
             Ret = StockBasicInfoTable.Search({
                 '$and': [
                     {'Code': {'$exists': 'true'}},
-                    {'$or': Condition}
+                    Condition
                 ]
             })
             if TSCode:
@@ -199,7 +205,42 @@ class CHN:
 
     class FundMarket:
         def __init__(self):
-            pass
+            try:
+                tushare.set_token(GlobalBear.TushareToken)
+            except:
+                raise BadBear('Tushare Cannot Use Without Token')
+            self.API = tushare.pro_api()
+        
+        def UpdateFundBasic(self):
+            FundBasicInfo = MongoDBBear.MongoDB('MongoDB', 'FundCHN', 'FundBasicInfo')
+            UpdateTime = FundBasicInfo.Search({
+                'UpdateTime': {'$exists': 'true'}
+            })
+            if len(UpdateTime) !=0 and (ChronusBear.Date() // ChronusBear.Date(UpdateTime[0]['UpdateTime']))[2] < 10:
+                print('Update FundBasic Finish(N)')
+                return
+
+
+            print('Update FundBasic Start')
+            BasicInfo = self.API.fund_basic()
+            return BasicInfo
+
+            Data = [{
+                'UpdateTime': ChronusBear.Date().String(0),
+            }]
+            for Item in BasicInfo.itertuples():
+                Data.append({
+                    'Code': int(Item.symbol),
+                    'TSCode': Item.ts_code,
+                    'Name': Item.name,
+                    'Area': Item.area,
+                    'Industry': Item.industry,
+                })
+            
+            StockBasicInfoTable.Delete({})
+            StockBasicInfoTable.Insert(Data)
+            print('Update StockBasic Finish')
+
 
     class CommodityMarket:
         def __init__(self):
@@ -215,137 +256,57 @@ class CHN:
             pass
 
     class Stock:
-        def __init__(self, ServerName, UserName, Code):
-            if TushareAvailiable:
+        def __init__(self, TSCode):
+            try:
+                tushare.set_token(GlobalBear.TushareToken)
+            except:
                 raise BadBear('Tushare Cannot Use Without Token')
-            self.ServerName = ServerName
-            self.UserName = UserName
-            self.Code = Code
-            self.StockMarket = None
+            self.API = tushare.pro_api()
+            self.TSCode = TSCode
              
-            self.TickTable = MySQLTable(ServerName, UserName, 'CHNStockMarket', self.Code[:6]+'_Price')
+            self.TickTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'Price_'+TSCode[0:6])
 
 
         def Sync(self, LastTradeDay):
-            if self.NeedFullDownload():
-                print(self.Code+' Sync Full Download')
-                self.FullDownload() 
-                return
-
-            (UpdateCheck, Start, End) = self.NeedUpdate(LastTradeDay)
-            if UpdateCheck:
-                print(self.Code+' Sync Update')
-                self.Update(Start, End)
-
-            print(self.Code+' Synchronize Finished')
-
-        def FullDownload(self):
-            print(self.Code+' Full Download Start')
-            self.TickTable.InitTable({
-                'Date':             'INT NOT NULL DEFAULT 0',
-                'Open':             'DECIMAL(13,4) NOT NULL DEFAULT 0',
-                'High':             'DECIMAL(13,4) NOT NULL DEFAULT 0',
-                'Low':              'DECIMAL(13,4) NOT NULL DEFAULT 0',
-                'Close':            'DECIMAL(13,4) NOT NULL DEFAULT 0',
-                'ChangedPrice':     'DECIMAL(13,4) NOT NULL DEFAULT 0',
-                'ChangedPercent':   'DECIMAL(13,4) NOT NULL DEFAULT 0',
-                'Volume':           'DECIMAL(13,4) NOT NULL DEFAULT 0',
-                'Amount':           'DECIMAL(13,4) NOT NULL DEFAULT 0',
-            }, Index=['Date'])
-
-            Tick = tushare.pro_bar(ts_code = self.Code, adj='qfq', start_date='20050101', end_date=Date().String(Style='SS'))
-
-            if Tick:
-                Tick = Tick.dropna()
+            LastTradeDay = int(LastTradeDay)
+            UpdateTime = self.TickTable.Search({},Sort=['Date', -1],Limit=1)[0]['Date']
+            if UpdateTime:
+                if LastTradeDay > int(ChronusBear.Date(UpdateTime).String(-1)):
+                    self.Update(Start=ChronusBear.Date(UpdateTime).Shift(Day=1).String(-1), End=LastTradeDay)
+                else:
+                    print("Don't Need Update")
             else:
-                print(self.Code+' Full Download Finished')
-                return
-
-            Values = []
-            for Item in Tick.itertuples():
-                Values.append([
-                    int(Item.trade_date),
-                    round(float(Item.open), 6),
-                    round(float(Item.high), 6),
-                    round(float(Item.low), 6),
-                    round(float(Item.close), 6),
-                    round(float(Item.change), 6),
-                    round(float(Item.pct_chg), 6),
-                    round(float(Item.vol), 6),
-                    round(float(Item.amount), 6),
-                    ])
-            Values.reverse()
-
-            self.TickTable.DeleteAll()
-            self.TickTable.Insert(['Date', 'Open', 'High', 'Low', 'Close', 'ChangedPrice', 'ChangedPercent', 'Volume', 'Amount'], Values)
-
-            print(self.Code+' Full Download Finished')
+                self.Update(Start=999, End=LastTradeDay)
 
         def Update(self, Start, End):
-            Tick = tushare.pro_bar(ts_code = self.Code, adj='qfq', start_date=Start, end_date=End)
+            if Start == 999:
+                Start = '20000101'
+            Tick = tushare.pro_bar(ts_code = self.TSCode, adj='qfq', start_date=str(Start), end_date=str(End))
 
-            Values = []
+            Data = []
             for Item in Tick.itertuples():
-                Values.append([
-                    int(Item.trade_date),
-                    round(float(Item.open), 6),
-                    round(float(Item.high), 6),
-                    round(float(Item.low), 6),
-                    round(float(Item.close), 6),
-                    round(float(Item.change), 6),
-                    round(float(Item.pct_chg), 6),
-                    round(float(Item.vol), 6),
-                    round(float(Item.amount), 6),
-                    ])
-            Values.reverse()
+                Data.append({
+                    'TSCode': Item.ts_code,
+                    'Date': Item.trade_date,
+                    'Open': Item.open,
+                    'High': Item.high,
+                    'Low': Item.low,
+                    'Close': Item.close,
+                    'Volumn': Item.vol,
+                    'Amount': Item.amount,
+                })
+            Data.reverse()
 
-            self.TickTable.Insert(['Date', 'Open', 'High', 'Low', 'Close', 'ChangedPrice', 'ChangedPercent', 'Volume', 'Amount'], Values)
+            self.TickTable.Insert(Data)
 
-        def NeedFullDownload(self):
-            if not self.TickTable.GetRowNumber():
-                return True
-            return False
+        def GetLatestDay(self):
+            LatestDay = self.TickTable.Search({},Sort=['Date', -1],Limit=1)
+            if len(LatestDay) != 0:
+                return LatestDay[0]
+            else:
+                raise GlobalBear.BadBear('Stock Does Not Exist')
 
-        def NeedUpdate(self, LastTradeDay):
-            CurrentTradeDay = self.TickTable.SearchTable(Column='MAX(Date)')[0][0]
-
-            if int(CurrentTradeDay) < int(LastTradeDay):
-                RequestStart = Date(CurrentTradeDay).ResetTime(Day=1).String(Style=Style_SS)
-                return True, str(RequestStart), str(LastTradeDay)
-            return False, '', ''
-
-        def IsAvailable(self, LastTradeDay):
-            if Stock.NeedFullDownload() or Stock.NeedUpdate(LastTradeDay)[0]:
-                return False
-            return True
-
-
-        def GetData(self, Start, End, DataName):
-            Result = self.TickTable.SearchTable(Column=DataName, Condition='''WHERE Date>=%s AND Date<=%s'''%(Start, End))
-            Ret = []
-            for Item in Result:
-                Ilist = []
-                for Itemm in Item:
-                    Ilist.append(float(Itemm))
-                Ret.append(Ilist)
-            return Ret
-
-        def PlotData(self, Start, End):
-            DateList = [str(int(Item[0])) for Item in self.GetData(Start, End, 'Date')]
-            PriceList = self.GetData(Start, End, 'Open, Close, Low, High')
-            
-            return GetKLine([
-                DateList,
-                {'Price':PriceList}
-            ])
-            
-
-        def GetTableSize(self):
-            return self.TickTable.GetTableSize()
-
-        def GetRowNumber(self):
-            return self.TickTable.GetRowNumber()
-              
+   
     class Fund:
         def __init__(self):
             pass
@@ -579,13 +540,8 @@ class Analyst:
         TM = TaskMatrix(2,16, LimitPerMinute=LimitPerMinute)
         #TM = TaskMatrix(1,1, LimitPerMinute=LimitPerMinute)
 
-        CHNStockMarket = CHN.StockMarket(ServerName, UserName)
-        if Init:       
-            CHNStockMarket.UpdateBasicInfo()
-            CHNStockMarket.UpdateTradeDay()
-            CHNStockMarket.CheckStockTable()
-
-        LTD = CHNStockMarket.LastTradeDay()
+        CHNStockMarket = CHN.StockMarket().Init()
+        LastTradeDay = CHNStockMarket.LastTradeDay()
 
         CacheList = TM.GetCacheList()
 
