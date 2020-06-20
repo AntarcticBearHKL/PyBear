@@ -3,8 +3,9 @@ import threading
 import os,sys
 import time
 
-from PyBear.GlobalBear import *
-from PyBear.Library.Chronus import *
+import PyBear.GlobalBear as GlobalBear
+import PyBear.Library.Chronus as ChronusBear
+import PyBear.Library.Data.Redis as RedisBear
 
 class MultThread:
     def __init__(self, ParallelNumber, LimitPerMinute = None):
@@ -24,18 +25,19 @@ class MultThread:
         for Item in range(self.ParallelNumber):
             WorkSpace.append(None)
 
-        LimitTimer = Date()
+        LimitTimer = ChronusBear.Date()
         LimitCounter = 0
 
         for Task in self.TaskList:
+            #print(LimitCounter)
             if self.LimitPerMinute and LimitCounter >= self.LimitPerMinute:
                 while(True):
-                    if (Date() - LimitTimer) > 60:
-                        LimitTimer = Date()
+                    if (ChronusBear.Date() - LimitTimer) > 60:
+                        LimitTimer = ChronusBear.Date()
                         LimitCounter = 0
                         break
                     print('Waiting')
-                    Chronus.Sleep(1)
+                    ChronusBear.Chronus.Sleep(1)
             LimitCounter += 1
 
             CONTINUE = True
@@ -49,6 +51,7 @@ class MultThread:
                         break
                     
             WorkSpace[AvailableThread] = threading.Thread(target = Task[0], args = Task[1])
+            RedisBear.Redis('RedisLocal').hset('D', str(AvailableThread), ' '.join([str(Item) for Item in Task[1]]) + ChronusBear.Date().String(2))
             WorkSpace[AvailableThread].start() 
 
         for Item in WorkSpace:
@@ -102,9 +105,6 @@ class TaskMatrix:
         for Item in range(self.Core):
             self.TaskList.append([])
         self.AutoArrangedTaskList = []
-
-    def GetCacheList(self):
-        return multiprocessing.Manager().list()
 
     def ImportTask(self, Function, TaskArg):
         for Item in TaskArg:

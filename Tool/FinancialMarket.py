@@ -93,8 +93,9 @@ class CHN:
             TradeDayTable.Insert(Data)
             print('Update TradeDay Finish')
 
+
         def GetStockCode(self, TSCode=None, Filter=[]):
-            StockBasicInfoTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'StockBasicInfo')
+            StockBasicInfoTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'StockBasic')
             Condition = []
             if 'SZ' in Filter:
                 Condition.append({
@@ -156,7 +157,7 @@ class CHN:
 
         def LastTradeDay(self):
             if ChronusBear.Date().HourInt() <= 17:
-                TargetDay = ChronusBear.Date().ResetTime(Day=-1).String(-1)
+                TargetDay = ChronusBear.Date().Shift(Day=-1).String(-1)
             else:
                 TargetDay = ChronusBear.Date().String(-1)
             
@@ -269,25 +270,27 @@ class CHN:
 
         def Sync(self, LastTradeDay):
             LastTradeDay = int(LastTradeDay)
-            UpdateTime = self.TickTable.Search({},Sort=['Date', -1],Limit=1)[0]['Date']
-            if UpdateTime:
-                if LastTradeDay > int(ChronusBear.Date(UpdateTime).String(-1)):
-                    self.Update(Start=ChronusBear.Date(UpdateTime).Shift(Day=1).String(-1), End=LastTradeDay)
+            UpdateTime = self.TickTable.Search({},Sort=['Date', -1],Limit=1)
+            if len(UpdateTime) != 0:
+                if LastTradeDay > int(ChronusBear.Date(UpdateTime[0]['Date']).String(-1)):
+                    return self.Update(Start=ChronusBear.Date(UpdateTime[0]['Date']).Shift(Day=1).String(-1), End=LastTradeDay)
                 else:
-                    print("Don't Need Update")
+                    return "Don't Need Update"
             else:
-                self.Update(Start=999, End=LastTradeDay)
+                return self.Update(Start=999, End=LastTradeDay)
 
         def Update(self, Start, End):
             if Start == 999:
                 Start = '20000101'
             Tick = tushare.pro_bar(ts_code = self.TSCode, adj='qfq', start_date=str(Start), end_date=str(End))
+            if len(Tick) == 0:
+                return 'Stock Is Dead'
 
             Data = []
             for Item in Tick.itertuples():
                 Data.append({
                     'TSCode': Item.ts_code,
-                    'Date': Item.trade_date,
+                    'Date': int(Item.trade_date),
                     'Open': Item.open,
                     'High': Item.high,
                     'Low': Item.low,
@@ -296,8 +299,8 @@ class CHN:
                     'Amount': Item.amount,
                 })
             Data.reverse()
-
             self.TickTable.Insert(Data)
+            return 'Success'
 
         def GetLatestDay(self):
             LatestDay = self.TickTable.Search({},Sort=['Date', -1],Limit=1)
@@ -306,6 +309,13 @@ class CHN:
             else:
                 raise GlobalBear.BadBear('Stock Does Not Exist')
 
+        def GetRange(self, Start, End):
+            Ret = self.TickTable.Search({
+                '$and': [
+                    {'Date': {'$gte': Start}},
+                    {'Date': {'$lte': End}}]
+            })
+            return Ret
    
     class Fund:
         def __init__(self):
@@ -537,68 +547,111 @@ class Brokor:
 
 class Analyst:
     def DailyUpdate(LimitPerMinute=None):
-        TM = TaskMatrix(2,16, LimitPerMinute=LimitPerMinute)
-        #TM = TaskMatrix(1,1, LimitPerMinute=LimitPerMinute)
+        TM = MultitaskBear.TaskMatrix(2,32, LimitPerMinute=LimitPerMinute)
+        #TM = MultitaskBear.TaskMatrix(1,1, LimitPerMinute=LimitPerMinute)
 
         CHNStockMarket = CHN.StockMarket().Init()
         LastTradeDay = CHNStockMarket.LastTradeDay()
+        RedisBear.Redis('RedisLocal').delete('A')
 
-        CacheList = TM.GetCacheList()
-
-        StockArg = [[ServerName, UserName, Item, LTD, CacheList] for Item in CHNStockMarket.AllStock()]
-
+        StockArg = [[Item, LastTradeDay] for Item in CHNStockMarket.GetStockCode(TSCode=True)]
         print('Ready To Launch')
-
         TM.ImportTask(WorkLoad.StockUpdate, StockArg)
         TM.Start()
 
-        print(CacheList)
+    def UpdateCheck():
+        TM = MultitaskBear.TaskMatrix(2,32)
 
-    def NeedUpdate(ServerName, UserName):
-        TM = TaskMatrix(2,16)
-        CHNStockMarket = CHN.StockMarket(ServerName, UserName)
+        CHNStockMarket = CHN.StockMarket()
+        Redis = RedisBear.Redis('RedisLocal')
+        Redis.delete('B')
 
-        LTD = CHNStockMarket.LastTradeDay()
-
-        CacheList = TM.GetCacheList()
-
-        StockArg = [[ServerName, UserName, Item, LTD, CacheList] for Item in CHNStockMarket.AllStock()]
+        StockArg = [[Item] for Item in CHNStockMarket.GetStockCode(TSCode=True)]
         print('Ready To Launch')
-
-        TM.ImportTask(WorkLoad.NeedUpdate, StockArg)
+        TM.ImportTask(WorkLoad.UpdateCheck, StockArg)
         TM.Start()
 
-        print(CacheList)
+        print('----------------------------------')
+
+        Keys = Redis.hgetall('B')
+        Index = list(Keys)
+        Index.sort()
+        for Key in Index:
+            print(Key, ': ', Keys[Key])
             
+    def LogCheck(StockCode=None, Filter=None):
+        if StockCode:
+            pass
+        redis = RedisBear.Redis('RedisLocal')
+        Keys = redis.hgetall('A')
+        print(len(Keys))
+        for Key in Keys:
+            Result = Keys[Key]
+            if Filter:
+                if \
+                    Result != 'Success' and \
+                    Result != "Don't Need Update":
+                    print(Key, ':', Result)
+            else:
+                print(Keys, ':', Result)
+    
+    def StrategyMACD(End):
+        TM = MultitaskBear.TaskMatrix(6,4, LimitPerMinute=LimitPerMinute)
+
+        CHNStockMarket = CHN.StockMarket().Init()
+        RedisBear.Redis('RedisLocal').delete('D')
+
+        End = CHNStockMarket.GetTradeDay(End=End, Day=120)
+
+        StockArg = [[Item, End[0], End[-1]] for Item in CHNStockMarket.GetStockCode(TSCode=True, Filter=['SZ', 'SH'])]
+        print('Ready To Launch')
+        TM.ImportTask(WorkLoad.StrategyMACD, StockArg)
+        TM.Start()
+        
 
 class WorkLoad:
-    def StockUpdate(ServerName, UserName, StockCode, LastTradeDay, CacheList):
+    def Retry(Number):
+        pass
+
+    def StockUpdate(StockCode, LastTradeDay):
         ErrorCounter = 0
         while True:
             try:
-                CHN.Stock(ServerName, UserName, StockCode).Sync(LastTradeDay)
+                Ret = CHN.Stock(StockCode).Sync(LastTradeDay)
+                RedisBear.Redis('RedisLocal').hset('A', StockCode, str(Ret))
                 break
             except Exception as e:
                 ErrorCounter += 1
+                print(StockCode, ': Error(' + str(ErrorCounter) +')')
+                RedisBear.Redis('RedisLocal').hset('A', StockCode, 'Error(' + str(ErrorCounter) +')')
                 if ErrorCounter >= 10:
-                    print(e)
                     print('''ERROR HAPPEND: %s''' % (StockCode))
-                    CacheList.append(StockCode)
+                    RedisBear.Redis('RedisLocal').hset('A', StockCode, 'Error: ' + str(e))
+                    break
+        print(StockCode)
+        exit()
+
+    def UpdateCheck(StockCode):
+        ErrorCounter = 0
+        while True:
+            try:
+                RedisBear.Redis('RedisLocal').hset('B', StockCode, str(CHN.Stock(StockCode).GetLatestDay()['Date']))
+                break
+            except Exception as e:
+                ErrorCounter +=1
+                print(StockCode, ': Error(' + str(ErrorCounter) +')')
+                if ErrorCounter >= 20:
+                    RedisBear.Redis('RedisLocal').hset('B', StockCode, 'Error: ' + str(e))
                     break
 
-    def NeedUpdate(ServerName, UserName, StockCode, LastTradeDay, CacheList):
+    def StrategyMACD(Start, End):
         ErrorCounter = 0
         while True:
             try:
-                print(StockCode)
-                Stock = CHN.Stock(ServerName, UserName, StockCode)
-                if Stock.NeedFullDownload() or Stock.NeedUpdate(LastTradeDay)[0]:
-                    CacheList.append(StockCode)
+                Price = CHN.Stock(StockCode).GetRange(Start, End)
                 break
             except Exception as e:
-                ErrorCounter += 1
+                ErrorCounter +=1
+                print(StockCode, ': Error(' + str(ErrorCounter) +')')
                 if ErrorCounter >= 10:
-                    print(e)
-                    print('''ERROR HAPPEND: %s''' % (StockCode))
-                    CacheList.append('ERROR: ' + StockCode)
-                    break
+                    RedisBear.Redis('RedisLocal').hset('D', StockCode, 'Error: ' + str(e))

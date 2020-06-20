@@ -1,7 +1,7 @@
 import PyBear.GlobalBear as GlobalBear
 import pymongo
 
-#db.createUser({'user':'Debuger', 'pwd':'A11b22;;', 'roles':[{'role':'readWrite', 'db':'StockCHN'}], 'mechanisms':['SCRAM-SHA-1']});
+#db.createUser({'user':'su', 'pwd':'A11b22;;', 'roles':[{'role':'root', 'db':'admin'}], 'mechanisms':['SCRAM-SHA-1']});
 
 class MongoDB:
     def __init__(self, ServerName, DatabasesName, TableName=None):
