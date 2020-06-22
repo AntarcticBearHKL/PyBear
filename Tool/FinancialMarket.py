@@ -579,7 +579,7 @@ class Analyst:
         TM.Start()
 
         print('----------------------------------')
-        LogCheck('DailyUpdate')
+        Analyst.LogCheck('DailyUpdate')
 
     def UpdateCheck():
         TM = MultitaskBear.TaskMatrix(2,32)
@@ -594,26 +594,26 @@ class Analyst:
         TM.Start()
 
         print('----------------------------------')
-        LogCheck('UpdateCheck')
+        Analyst.LogCheck('UpdateCheck')
     
     def StrategyMACD(End=None):
+        StrategyName = str(End) + '_StrategyMACD_V1'
         TM = MultitaskBear.TaskMatrix(12,8)
 
         CHNStockMarket = CHN.StockMarket().Init()
         if not End:
             End = CHNStockMarket.LastTradeDay()
-        RedisBear.Redis('RedisLocal').delete(str(End) + '_StrategyMACD')
+        RedisBear.Redis('RedisLocal').delete(StrategyName)
 
         Date = CHNStockMarket.GetTradeDay(End=End, Day=120)
 
-        StockArg = [[Item, Date[0], Date[-1], str(End) + '_StrategyMACD'] for Item in CHNStockMarket.GetStockCode(TSCode=True, Filter=['SZ', 'SH'])]
-        #StockArg = [[Item, End[0], End[-1], str(End) + '_StrategyMACD'] for Item in ['000001.SZ']]
+        StockArg = [[Item, Date[0], Date[-1], StrategyName] for Item in CHNStockMarket.GetStockCode(TSCode=True, Filter=['SZ', 'SH'])]
         print('Ready To Launch')
         TM.ImportTask(WorkLoad.StrategyMACD, StockArg)
         TM.Start()
 
         print('----------------------------------')
-        Analyst.LogCheck(End + '_StrategyMACD')
+        Analyst.LogCheck(StrategyName)
 
 class WorkLoad:
     def DailyUpdate(StockCode, LastTradeDay):
@@ -626,7 +626,7 @@ class WorkLoad:
             except Exception as e:
                 ErrorCounter +=1
                 print(StockCode, ': Error(' + str(ErrorCounter) +')')
-                if ErrorCounter >= Number:
+                if ErrorCounter >= 10:
                     RedisBear.Redis('RedisLocal').hset('DailyUpdate', StockCode, 'Error: ' + str(e))
                     break
 
