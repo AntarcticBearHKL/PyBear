@@ -51,7 +51,7 @@ class MultThread:
                         break
                     
             WorkSpace[AvailableThread] = threading.Thread(target = Task[0], args = Task[1])
-            RedisBear.Redis('RedisLocal').hset('D', str(AvailableThread), ' '.join([str(Item) for Item in Task[1]]) + ChronusBear.Date().String(2))
+            RedisBear.Redis('RedisLocal').hset('Multitask', str(AvailableThread), ' '.join([str(Item) for Item in Task[1]]) + ChronusBear.Date().String(2))
             WorkSpace[AvailableThread].start() 
 
         for Item in WorkSpace:

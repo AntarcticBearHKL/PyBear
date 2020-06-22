@@ -360,27 +360,26 @@ class GLOBAL:
 
 class Quantification:
     def Profit(Data, Days):
-        return Data[-1] - Data[-1-Days]
+        pass
 
+    def MA(Data, TimePeriod=5):
+        return talib.MA(numpy.array(Data), timeperiod=TimePeriod)
 
-    def MA(Data, days=120, range=5):
-        return talib.MA(numpy.array(self.stockInfo.getOpen(days=days)), timeperiod=range) 
-
-    def EMA(Data, days=120, range=5):
-        return talib.EMA(numpy.array(self.stockInfo.getOpen(days=days)), timeperiod=range) 
+    def EMA(Data, TimePeriod=5):
+        return talib.EMA(numpy.array(Data), timeperiod=TimePeriod)
 
     def BOLL(Data, days=120, range=5):
         pass
 
-    def MACD(Data, fastperiod=12, slowperiod=26, signalperiod=9):
+    def MACD(Data, Fastperiod=12, Slowperiod=26, Signalperiod=9):
         DIF, DEA, MACD = talib.MACD(
         numpy.array(Data),
-        fastperiod=fastperiod, 
-        slowperiod=slowperiod, 
-        signalperiod=signalperiod)
+        fastperiod=Fastperiod, 
+        slowperiod=Slowperiod, 
+        signalperiod=Signalperiod)
         return DIF, DEA, MACD*2
 
-    def RSV(Close, High, Low):
+    def RSV(High, Low, Close):
         return talib.STOCH(
             numpy.array(High),
             numpy.array(Low),
@@ -391,10 +390,10 @@ class Quantification:
             slowd_period = 5,
             slowd_matype = 0,)
 
-    def RSI(Data, days=120, range=5):
-        return talib.RSI(numpy.array(self.stockInfo.getOpen(days=days)), 5)
+    def RSI(Data, TimePeriod=5):
+        return talib.RSI(numpy.array(Data), timeperiod=TimePeriod)
 
-    def GetCDLIndex(Open, High, Low, Close, Daily=True):
+    def CDLIndex(Open, High, Low, Close, Daily=True):
         Open = numpy.array(Open)
         High = numpy.array(High)
         Low = numpy.array(Low)
@@ -546,25 +545,48 @@ class Brokor:
         return Ret
 
 class Analyst:
+    def LogCheck(LogName, StockCode=None, Filter=None, nFilter=None):
+        redis = RedisBear.Redis('RedisLocal')
+        Keys = redis.hgetall(LogName)
+        Index = list(Keys)
+        Index.sort()
+
+        for Key in Index:
+            Result = Keys[Key]
+            if Filter:
+                if Result in Filter:
+                    print(Key, ':', Result)
+            elif nFilter:
+                if Result not in Filter:
+                    print(Key, ':', Result)
+            elif StockCode:
+                if Key in StockCode:
+                    print(Key, ':', Result)
+            else:
+                print(Key, ':', Result)
+                
     def DailyUpdate(LimitPerMinute=None):
         TM = MultitaskBear.TaskMatrix(2,32, LimitPerMinute=LimitPerMinute)
         #TM = MultitaskBear.TaskMatrix(1,1, LimitPerMinute=LimitPerMinute)
 
         CHNStockMarket = CHN.StockMarket().Init()
         LastTradeDay = CHNStockMarket.LastTradeDay()
-        RedisBear.Redis('RedisLocal').delete('A')
+        RedisBear.Redis('RedisLocal').delete('DailyUpdate')
 
         StockArg = [[Item, LastTradeDay] for Item in CHNStockMarket.GetStockCode(TSCode=True)]
         print('Ready To Launch')
-        TM.ImportTask(WorkLoad.StockUpdate, StockArg)
+        TM.ImportTask(WorkLoad.DailyUpdate, StockArg)
         TM.Start()
+
+        print('----------------------------------')
+        LogCheck('DailyUpdate')
 
     def UpdateCheck():
         TM = MultitaskBear.TaskMatrix(2,32)
 
         CHNStockMarket = CHN.StockMarket()
         Redis = RedisBear.Redis('RedisLocal')
-        Redis.delete('B')
+        Redis.delete('UpdateCheck')
 
         StockArg = [[Item] for Item in CHNStockMarket.GetStockCode(TSCode=True)]
         print('Ready To Launch')
@@ -572,86 +594,76 @@ class Analyst:
         TM.Start()
 
         print('----------------------------------')
-
-        Keys = Redis.hgetall('B')
-        Index = list(Keys)
-        Index.sort()
-        for Key in Index:
-            print(Key, ': ', Keys[Key])
-            
-    def LogCheck(StockCode=None, Filter=None):
-        if StockCode:
-            pass
-        redis = RedisBear.Redis('RedisLocal')
-        Keys = redis.hgetall('A')
-        print(len(Keys))
-        for Key in Keys:
-            Result = Keys[Key]
-            if Filter:
-                if \
-                    Result != 'Success' and \
-                    Result != "Don't Need Update":
-                    print(Key, ':', Result)
-            else:
-                print(Keys, ':', Result)
+        LogCheck('UpdateCheck')
     
-    def StrategyMACD(End):
-        TM = MultitaskBear.TaskMatrix(6,4, LimitPerMinute=LimitPerMinute)
+    def StrategyMACD(End=None):
+        TM = MultitaskBear.TaskMatrix(12,8)
 
         CHNStockMarket = CHN.StockMarket().Init()
-        RedisBear.Redis('RedisLocal').delete('D')
+        if not End:
+            End = CHNStockMarket.LastTradeDay()
+        RedisBear.Redis('RedisLocal').delete(str(End) + '_StrategyMACD')
 
-        End = CHNStockMarket.GetTradeDay(End=End, Day=120)
+        Date = CHNStockMarket.GetTradeDay(End=End, Day=120)
 
-        StockArg = [[Item, End[0], End[-1]] for Item in CHNStockMarket.GetStockCode(TSCode=True, Filter=['SZ', 'SH'])]
+        StockArg = [[Item, Date[0], Date[-1], str(End) + '_StrategyMACD'] for Item in CHNStockMarket.GetStockCode(TSCode=True, Filter=['SZ', 'SH'])]
+        #StockArg = [[Item, End[0], End[-1], str(End) + '_StrategyMACD'] for Item in ['000001.SZ']]
         print('Ready To Launch')
         TM.ImportTask(WorkLoad.StrategyMACD, StockArg)
         TM.Start()
-        
+
+        print('----------------------------------')
+        Analyst.LogCheck(End + '_StrategyMACD')
 
 class WorkLoad:
-    def Retry(Number):
-        pass
-
-    def StockUpdate(StockCode, LastTradeDay):
+    def DailyUpdate(StockCode, LastTradeDay):
         ErrorCounter = 0
         while True:
             try:
                 Ret = CHN.Stock(StockCode).Sync(LastTradeDay)
-                RedisBear.Redis('RedisLocal').hset('A', StockCode, str(Ret))
+                RedisBear.Redis('RedisLocal').hset('DailyUpdate', StockCode, str(Ret))
                 break
             except Exception as e:
-                ErrorCounter += 1
+                ErrorCounter +=1
                 print(StockCode, ': Error(' + str(ErrorCounter) +')')
-                RedisBear.Redis('RedisLocal').hset('A', StockCode, 'Error(' + str(ErrorCounter) +')')
-                if ErrorCounter >= 10:
-                    print('''ERROR HAPPEND: %s''' % (StockCode))
-                    RedisBear.Redis('RedisLocal').hset('A', StockCode, 'Error: ' + str(e))
+                if ErrorCounter >= Number:
+                    RedisBear.Redis('RedisLocal').hset('DailyUpdate', StockCode, 'Error: ' + str(e))
                     break
-        print(StockCode)
-        exit()
 
     def UpdateCheck(StockCode):
         ErrorCounter = 0
         while True:
             try:
-                RedisBear.Redis('RedisLocal').hset('B', StockCode, str(CHN.Stock(StockCode).GetLatestDay()['Date']))
+                RedisBear.Redis('RedisLocal').hset('UpdateCheck', StockCode, str(CHN.Stock(StockCode).GetLatestDay()['Date']))
                 break
             except Exception as e:
                 ErrorCounter +=1
                 print(StockCode, ': Error(' + str(ErrorCounter) +')')
-                if ErrorCounter >= 20:
-                    RedisBear.Redis('RedisLocal').hset('B', StockCode, 'Error: ' + str(e))
+                if ErrorCounter >= Number:
+                    RedisBear.Redis('RedisLocal').hset('UpdateCheck', StockCode, 'Error: ' + str(e))
                     break
 
-    def StrategyMACD(Start, End):
+    def StrategyMACD(StockCode, Start, End, DBName):
         ErrorCounter = 0
         while True:
-            try:
+            try:   
                 Price = CHN.Stock(StockCode).GetRange(Start, End)
+                OpenList = [Item['Open'] for Item in Price]
+                DIF, DEA, MACD = Quantification.MACD(OpenList)
+                if (DIF[-1]>0 and DEA[-1]>0 and MACD[-1]>0) and \
+                    (DIF[-2]<0 or DEA[-2]<0 or MACD[-2]<0) and \
+                    (DIF[-3]<0 or DEA[-3]<0 or MACD[-3]<0) and \
+                    MACD[-1]>MACD[-2] and MACD[-2]>MACD[-3]:
+                    ret = ''
+                    for i in [DIF[-1], DEA[-1], MACD[-1], DIF[-2], DEA[-2], MACD[-2], DIF[-3], DEA[-3], MACD[-3]]:
+                        ret+=str(i) + ' '
+                    RedisBear.Redis('RedisLocal').hset(DBName, str(StockCode), ret)
+
+                print(StockCode)
                 break
             except Exception as e:
                 ErrorCounter +=1
                 print(StockCode, ': Error(' + str(ErrorCounter) +')')
                 if ErrorCounter >= 10:
-                    RedisBear.Redis('RedisLocal').hset('D', StockCode, 'Error: ' + str(e))
+                    RedisBear.Redis('RedisLocal').hset(DBName, StockCode, 'Error: ' + str(e))
+                    break
