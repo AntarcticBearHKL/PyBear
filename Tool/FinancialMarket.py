@@ -368,8 +368,8 @@ class Quantification:
     def EMA(Data, TimePeriod=5):
         return talib.EMA(numpy.array(Data), timeperiod=TimePeriod)
 
-    def BOLL(Data, days=120, range=5):
-        pass
+    def BOLL(Data, TimePeriod=5):
+        return talib.BBANDS(numpy.array(Data), timeperiod=TimePeriod)             
 
     def MACD(Data, Fastperiod=12, Slowperiod=26, Signalperiod=9):
         DIF, DEA, MACD = talib.MACD(
@@ -597,12 +597,12 @@ class Analyst:
         Analyst.LogCheck('UpdateCheck')
     
     def StrategyMACD(End=None):
-        StrategyName = str(End) + '_StrategyMACD_V1'
         TM = MultitaskBear.TaskMatrix(12,8)
 
         CHNStockMarket = CHN.StockMarket().Init()
         if not End:
             End = CHNStockMarket.LastTradeDay()
+        StrategyName = str(End) + '_StrategyMACD_V1'
         RedisBear.Redis('RedisLocal').delete(StrategyName)
 
         Date = CHNStockMarket.GetTradeDay(End=End, Day=120)
@@ -649,21 +649,20 @@ class WorkLoad:
             try:   
                 Price = CHN.Stock(StockCode).GetRange(Start, End)
                 OpenList = [Item['Open'] for Item in Price]
+                Upper, Middle, Lower = Quantification.BOLL(OpenList)
                 DIF, DEA, MACD = Quantification.MACD(OpenList)
                 if (DIF[-1]>0 and DEA[-1]>0 and MACD[-1]>0) and \
                     (DIF[-2]<0 or DEA[-2]<0 or MACD[-2]<0) and \
                     (DIF[-3]<0 or DEA[-3]<0 or MACD[-3]<0) and \
-                    MACD[-1]>MACD[-2] and MACD[-2]>MACD[-3]:
-                    ret = ''
-                    for i in [DIF[-1], DEA[-1], MACD[-1], DIF[-2], DEA[-2], MACD[-2], DIF[-3], DEA[-3], MACD[-3]]:
-                        ret+=str(i) + ' '
-                    RedisBear.Redis('RedisLocal').hset(DBName, str(StockCode), ret)
+                    MACD[-1]>MACD[-2] and MACD[-2]>MACD[-3] and \
+                    Open[-1]>Middle[-1] and Open[-2]>Middle[-2] and Open[-3]>Middle[-3]:
+                    RedisBear.Redis('RedisLocal').hset(DBName, str(StockCode), 'choose')
 
                 print(StockCode)
                 break
             except Exception as e:
                 ErrorCounter +=1
                 print(StockCode, ': Error(' + str(ErrorCounter) +')')
-                if ErrorCounter >= 10:
+                if ErrorCounter >= 2:
                     RedisBear.Redis('RedisLocal').hset(DBName, StockCode, 'Error: ' + str(e))
                     break
