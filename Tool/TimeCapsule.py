@@ -4,39 +4,43 @@ import PyBear.Tool.Authentication as Authentication
 import PyBear.Library.Chronus as ChronusBear
 import PyBear.Library.Cipher as CipherBear
 
-def NewEvent(MongoServerName, RedisServerName, Username, Date, Label, Info, Append, CustomDate = None): 
+def NewEvent(Username, Label, Date, Content, Common, SubLabel): 
     Table = MongoDBBear.MongoDB(
-        MongoServerName,
+        'MongoDB',
         GlobalBear.TimeCapsuleDatabaseName, 
         Username)
     Table.Insert({
-        'Date': Date,
-        'UnionID': CipherBear.NumberIndex(),
         'Label': Label,
-        'Info': Info,
-        'Append': Append,
+        'UnionID': CipherBear.NumberIndex(),
+        'Date': str(Date),
+        'Content': Content,
+        'Common': Common,
+        'SubLabel': SubLabel,
     })
 
-def NewPeriod(ServerName, AuthenticationCode, Period, Label, Info, Append):
+def NewPeriod(ServerName, Period, Label, Info, Append):
     pass
 
-def GetPeriod(MongoServerName, RedisServerName, AuthenticationCode, Period, Label):
-    Result = Authentication.UserAuthentication(RedisServerName, AuthenticationCode)
-    if Result[0] != 'TimeCapsule':
-        return 'Authentication Failed'
+def GetPeriod(Username, Period, Label):
     Table = MongoDBBear.MongoDB(
-        MongoServerName,
+        'MongoDB',
         GlobalBear.TimeCapsuleDatabaseName, 
-        Result[1])
+        Username)
     Condition = {
         'Label': Label,
         '$and': [
-            {'Date': {'$gte' : Period[0].Timestamp()}},
-            {'Date': {'$lte' : Period[1].Timestamp()}},
+            {'Date': {'$gte' : Period[0]}},
+            {'Date': {'$lte' : Period[1]}},
         ]
     }
-    Ret = Table.Search(Condition)
-    return Ret
+    return Table.Search(Condition)
 
-def GetDay(ServerName, AuthenticationCode, Day):
-    pass
+def GetDay(Date):
+    Table = MongoDBBear.MongoDB(
+        'MongoDB',
+        GlobalBear.TimeCapsuleDatabaseName, 
+        Username)
+    Condition = {
+        'Date': Date,
+    }
+    return Table.Search(Condition)

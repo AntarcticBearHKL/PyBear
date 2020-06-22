@@ -88,7 +88,7 @@ AuthenticationDatabaseName = 'Authentication'
 #---------
 #WebDisk
 #---------
-DefaultWebDiskPort = 555
+WebDiskPort = 555
 
 #=========
 
@@ -106,7 +106,7 @@ TimeCapsuleDatabaseName = 'TimeCapsule'
 #---------
 #Balance:
 #---------
-DefaultBalancePort = 1314
+BalancePort = 1314
 
 #=========
 
@@ -115,7 +115,7 @@ DefaultBalancePort = 1314
 #----------
 #HomePage:
 #----------
-DefaultHomePagePort = 443
+HomePagePort = 443
 
 #==========
 
@@ -124,7 +124,7 @@ DefaultHomePagePort = 443
 #---------
 #NoteBook:
 #---------
-DefaultNoteBookPort = 520
+NoteBookPort = 520
 
 #=========
 
@@ -132,14 +132,14 @@ DefaultNoteBookPort = 520
 #------------
 #WechatMPBE:
 #------------
-DefaultWechatMPBEPort = 443
+WechatMPBEPort = 443
 
 #============
 
 #------------
 #BearSearch:
 #------------
-DefaultBearSearchPort = 233
+BearSearchPort = 233
 
 #============
 
