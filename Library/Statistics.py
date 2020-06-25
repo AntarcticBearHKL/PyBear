@@ -3,27 +3,27 @@ import scipy
 import numpy
 import math
 
-from PyBear.GlobalBear import *
+import PyBear.GlobalBear as GlobalBear
 
-def BMean(Input):
+def Mean(Input):
     return numpy.array(Input).mean()
 
-def BStd(Input, DDOF=1):
+def Std(Input, DDOF=1):
     return numpy.array(Input).std(ddof=DDOF)
 
-def BVar(Input, DDOF=1):
+def Var(Input, DDOF=1):
     return numpy.array(Input).std(ddof=DDOF) ** 2
 
 
-def BCov(InputA, InputB):
+def Cov(InputA, InputB):
     return numpy.cov(InputA, InputB)[0,1]
 
-def BCorr(InputA, InputB):
+def Corr(InputA, InputB):
     return numpy.corrcoef(InputA, InputB)[0,1]
 
 
-def BCovMAT(InputA, InputB):
+def CovMAT(InputA, InputB):
     return numpy.cov(InputA, InputB)
 
-def BCorrMAT(InputA, InputB):
+def CorrMAT(InputA, InputB):
     return numpy.corrcoef(InputA, InputB, InputA, InputA)
