@@ -2,8 +2,9 @@ import PyBear.GlobalBear as GlobalBear
 import PyBear.Library.Multitask as MultitaskBear
 import PyBear.Library.Data.Redis as RedisBear
 import PyBear.Tool.Financial.Market as MarketBear
+import PyBear.Tool.Financial.Analyst as AnalystBear
 
-class Module:
+class Module(AnalystBear.AnalystModule):
     def Run():
         LimitPerMinute = int(input('Update CHN Stock Limit Per Minute: '))
         TM = MultitaskBear.TaskMatrix(2,32, LimitPerMinute=LimitPerMinute)

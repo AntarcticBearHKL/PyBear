@@ -1,7 +1,23 @@
 import PyBear.GlobalBear as GlobalBear
 
 class Brokor:
-    def __init__(self, TimeLine, Data, LeftMargin=0, RightMargin=0):
+    def __init__(self, TimeLine):
+        self.ModuleList = []
+        self.LeftMarginList = []
+        self.RightMarginList = []
+        self.DataList = {}
+        self.StrategyList = []
+        self.FunctionList = []
+
+    def LoadModule(self, Module):
+        self.ModuleList.append(Module)
+
+    def InitEnv(self):
+        for Module in self.ModuleList:
+            Module.Module.Run()
+
+        for Strategy in StrategyList:
+                Strategy.Run()
         self.TimeLine = TimeLine
         self.Data = Data
 
@@ -27,29 +43,34 @@ class Brokor:
             MaxList.append(max(CounterList))
 
         self.StartPointer = max(MinList) + LeftMargin
-        self.EndPointer = min(MaxList) - RightMargin
+        self.EndPointer = min(Max nm List) - RightMargin
         self.DataStartPointer = max(MinList)
         self.DataEndPointer = min(MaxList)
         if self.StartPointer > self.EndPointer:
             raise BadBear('Broker Data Not Enough')
         self.Pointer = self.StartPointer - 1 
 
-    def __len__(self):
-        return self.EndPointer - self.StartPointer + 1
-    
-    def GetData(self, Shift):
-        if self.Pointer+Shift < self.DataStartPointer or self.Pointer+Shift > self.DataEndPointer:
-            raise GlobalBear.BadBear('Beyond The Reach')
-        Ret = {}
-        for Item in self.Data:
-            Ret[Item] = self.Data[Item][self.Pointer+Shift]
-        return Ret
 
-    def Start(self, Func):
+    def Run(self):
+        self.InitEnv()
         while True:
             os.system("cls")
             self.Pointer += 1
             if self.Pointer > self.EndPointer:
                 return
-            Func(self)
+            for Command in CommandList:
+                Command.Check()
             input('PRESS ENTER TO CONTINUE...')
+
+class BrokorModule():
+    def __init__(self):
+        pass
+
+    def Data(self):
+        pass
+
+    def Strategy(self):
+        pass
+
+    def Command(self):
+        pass
