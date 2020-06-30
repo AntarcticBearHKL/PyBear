@@ -30,7 +30,7 @@ def Workload(StockCode, Start, End, DBName):
             DIF, DEA, MACD = QuantificationBear.MACD(Close)
             if \
             (DIF[-2]<0 and DIF[-1]>0) and\
-            MACD[-1]>0:
+            DEA[-1]<0:
                 RedisBear.Redis('RedisLocal').hset(DBName, str(StockCode), str(StatisticsBear.Std(Close[-60:-1])))
 
             print(StockCode)
