@@ -10,11 +10,4 @@ class Analyst:
 
     def Run(self):
         for Module in self.ModuleList:
-            Module.Module.Run()
-
-class AnalystModule:
-    def __init__(self):
-        pass
-
-    def Run(self):
-        pass
+            Module.Run()

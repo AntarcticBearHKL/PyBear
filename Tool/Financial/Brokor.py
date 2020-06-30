@@ -1,25 +1,16 @@
+import numpy
+import os,sys
+
 import PyBear.GlobalBear as GlobalBear
 
 class Brokor:
-    def __init__(self, TimeLine):
-        self.ModuleList = []
-        self.LeftMarginList = []
-        self.RightMarginList = []
-        self.DataList = {}
-        self.StrategyList = []
-        self.FunctionList = []
-
-    def LoadModule(self, Module):
-        self.ModuleList.append(Module)
-
-    def InitEnv(self):
-        for Module in self.ModuleList:
-            Module.Module.Run()
-
-        for Strategy in StrategyList:
-                Strategy.Run()
+    def __init__(self, TimeLine, Data, LeftMargin=0, RightMargin=0):
+        os.system("cls")
         self.TimeLine = TimeLine
         self.Data = Data
+        self.LastCommand=None
+
+        self.CommandList = {}
 
         for Item in Data:
             if len(Data[Item]) != len(TimeLine):
@@ -42,35 +33,55 @@ class Brokor:
             MinList.append(min(CounterList))
             MaxList.append(max(CounterList))
 
-        self.StartPointer = max(MinList) + LeftMargin
-        self.EndPointer = min(Max nm List) - RightMargin
-        self.DataStartPointer = max(MinList)
-        self.DataEndPointer = min(MaxList)
-        if self.StartPointer > self.EndPointer:
-            raise BadBear('Broker Data Not Enough')
-        self.Pointer = self.StartPointer - 1 
+        self.PointerMargin = [max(MinList) + LeftMargin, min(MaxList) - RightMargin]
+        self.DataMargin = [max(MinList), min(MaxList)]
 
+        if self.PointerMargin[0] > self.PointerMargin[1]:
+            raise BadBear('Broker Data Not Enough')
+        self.Pointer = self.PointerMargin[0]
+
+    def LoadCommand(self, Package):
+        Package.Load(self)
+
+    def RunCommandBackground(self, Command):
+        CommandDict = {}
+        for Line in Command:
+            Line = Line.split(' ')
+            CommandDict[Line[0]] = Line[1:]
+        
+    def RunCommand(self, Command):
+        CommandRaw = Command.split(' ')
+        if CommandRaw[0].upper() in self.CommandList:
+            self.LastCommand = Command
+            self.CommandList[CommandRaw[0].upper()](CommandRaw[1:])
+        else:
+            print('UNKNOWN COMMAND')
+            input('PRESS BUTTON TO CONTINUE...')
 
     def Run(self):
-        self.InitEnv()
+        print('-------------------------------')
+        input('SYSTEM READY. PRESS BUTTON TO START...')
         while True:
             os.system("cls")
-            self.Pointer += 1
-            if self.Pointer > self.EndPointer:
+            print('TODAY IS:', self.TimeLine[self.Pointer])
+            if self.Pointer > self.PointerMargin[1]:
                 return
-            for Command in CommandList:
-                Command.Check()
-            input('PRESS ENTER TO CONTINUE...')
+            Command = input('Command: ')
+            if Command=='' and self.LastCommand:
+                self.RunCommand(self.LastCommand)
+            else:
+                self.RunCommand(Command)
 
-class BrokorModule():
-    def __init__(self):
-        pass
+class BrokorCommand():
+    def Init(self, Brokor):
+        self.Brokor = Brokor
+        print('-------------------------------')
+        try:
+            print('Loding Command: ', self.Name[0].upper())
+            for Name in self.Name:
+                self.Brokor.CommandList[Name.upper()] = self.CommandFunction
+        except Exception as e:
+            print('Loading Command Error')
 
-    def Data(self):
-        pass
-
-    def Strategy(self):
-        pass
-
-    def Command(self):
+    def CommandFunction(self, ParameterList):
         pass

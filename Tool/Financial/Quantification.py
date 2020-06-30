@@ -9,10 +9,10 @@ def MA(Data, TimePeriod=5):
 def EMA(Data, TimePeriod=5):
     return talib.EMA(numpy.array(Data), timeperiod=TimePeriod)
 
-def BOLL(Data, TimePeriod=5):
+def BOLL(Data, TimePeriod=20):
     return talib.BBANDS(numpy.array(Data), timeperiod=TimePeriod)             
 
-def MACD(Data, Fastperiod=12, Slowperiod=26, Signalperiod=9):
+def MACD(Data, Fastperiod=5, Slowperiod=22, Signalperiod=9):
     DIF, DEA, MACD = talib.MACD(
     numpy.array(Data),
     fastperiod=Fastperiod, 
@@ -20,7 +20,7 @@ def MACD(Data, Fastperiod=12, Slowperiod=26, Signalperiod=9):
     signalperiod=Signalperiod)
     return DIF, DEA, MACD*2
 
-def RSV(High, Low, Close):
+def KDJ(High, Low, Close):
     return talib.STOCH(
         numpy.array(High),
         numpy.array(Low),
