@@ -85,13 +85,6 @@ AuthenticationDatabaseName = 'Authentication'
 
 #================
 
-#---------
-#WebDisk
-#---------
-WebDiskPort = 555
-
-#=========
-
 
 #-------------
 #TimeCapsule:
@@ -103,15 +96,6 @@ TimeCapsuleDatabaseName = 'TimeCapsule'
 
 
 
-#---------
-#Balance:
-#---------
-BalancePort = 1314
-
-#=========
-
-
-
 #----------
 #HomePage:
 #----------
@@ -120,19 +104,10 @@ HomePagePort = 443
 #==========
 
 
-
-#---------
-#NoteBook:
-#---------
-NoteBookPort = 520
-
-#=========
-
-
 #------------
 #WechatMPBE:
 #------------
-WechatMPBEPort = 443
+WechatMPPort = 443
 
 #============
 
