@@ -30,12 +30,12 @@ class Config:
         while True:
             try:   
                 Price = MarketBear.CHN.Stock(StockCode).GetRange(Start, End)
-                Close = [Item['Close'] for Item in Price]
-                DIF, DEA, MACD = QuantificationBear.MACD(Close)
+                MID = [(Item['Close']+Item['Open'])/2 for Item in Price]
+                DIF, DEA, MACD = QuantificationBear.MACD(MID)
                 if \
                 (DIF[-2]<0 and DIF[-1]>0) and\
                 DEA[-1]<0:
-                    RedisBear.Redis('RedisLocal').hset(DBName, str(StockCode), str(StatisticsBear.Std(Close[-60:-1])))
+                    RedisBear.Redis('RedisLocal').hset(DBName, str(StockCode), str(StatisticsBear.Std(MID[-60:-1])))
 
                 print(StockCode)
                 break

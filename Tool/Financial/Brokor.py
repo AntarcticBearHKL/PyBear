@@ -71,17 +71,3 @@ class Brokor:
                 self.RunCommand(self.LastCommand)
             else:
                 self.RunCommand(Command)
-
-class BrokorCommand():
-    def Init(self, Brokor):
-        self.Brokor = Brokor
-        print('-------------------------------')
-        try:
-            print('Loding Command: ', self.Name[0].upper())
-            for Name in self.Name:
-                self.Brokor.CommandList[Name.upper()] = self.CommandFunction
-        except Exception as e:
-            print('Loading Command Error')
-
-    def CommandFunction(self, ParameterList):
-        pass
