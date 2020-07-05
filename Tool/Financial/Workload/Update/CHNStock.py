@@ -17,10 +17,10 @@ class Config:
 
         StockArg = [[Item, LastTradeDay] for Item in CHNStockMarket.GetStockCode(TSCode=True)]
         print('Ready To Launch')
-        TM.ImportTask(self.Workload, StockArg)
+        TM.ImportTask(self.ThreadFunction, StockArg)
         TM.Start()
 
-    def Workload(self, StockCode, LastTradeDay):
+    def ThreadFunction(self, StockCode, LastTradeDay):
         ErrorCounter = 0
         while True:
             try:

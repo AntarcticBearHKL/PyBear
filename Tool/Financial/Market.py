@@ -29,7 +29,7 @@ class CHN:
                 raise BadBear('Tushare Cannot Use Without Token')
             self.API = tushare.pro_api()
 
-        def Init(self):
+        def CheckUpdate(self):
             self.UpdateStockBasic()
             self.UpdateTradeDay()
             return self
@@ -300,18 +300,11 @@ class CHN:
             self.TickTable.Insert(Data)
             return 'Success'
 
-        def GetLatestDay(self):
-            LatestDay = self.TickTable.Search({},Sort=['Date', -1],Limit=1)
-            if len(LatestDay) != 0:
-                return LatestDay[0]
-            else:
-                raise GlobalBear.BadBear('Stock Does Not Exist')
-
-        def GetRange(self, Start, End):
+        def GetPrice(self, TimeRange):
             Ret = self.TickTable.Search({
                 '$and': [
-                    {'Date': {'$gte': Start}},
-                    {'Date': {'$lte': End}}]
+                    {'Date': {'$gte': TimeRange[0]}},
+                    {'Date': {'$lte': TimeRange[1]}}]
             })
             return Ret
    
