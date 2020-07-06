@@ -11,7 +11,7 @@ class Config:
         LimitPerMinute = int(self.LimitPerMinute/2)
         TM = MultitaskBear.TaskMatrix(2,32, LimitPerMinute=LimitPerMinute)
 
-        CHNStockMarket = MarketBear.CHN.StockMarket().Init()
+        CHNStockMarket = MarketBear.CHN.StockMarket().CheckUpdate()
         LastTradeDay = CHNStockMarket.LastTradeDay()
         RedisBear.Redis('RedisLocal').delete('DailyUpdate')
 

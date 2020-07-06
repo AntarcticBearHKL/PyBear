@@ -2,11 +2,11 @@ import PyBear.GlobalBear as GlobalBear
 import PyBear.Tool.Financial.Market as MarketBear
 
 def Execute(Brokor):
-    Brokor.RequireData([])
+    if not Brokor.RequireData(['StockCode']):
+        return
 
     TimeRange = Brokor.GetTimeRange()
-    Data = MarketBear.CHN.Stock(StockCode).GetPrice(TimeRange[0], TimeRange[1])
-    
+    Data = MarketBear.CHN.Stock(Brokor.GetData('StockCode')).GetPrice(TimeRange)
     OpenList = []
     HighList = []
     LowList = []
@@ -19,12 +19,13 @@ def Execute(Brokor):
         HighList.append(Item['High'])
         LowList.append(Item['Low'])
         CloseList.append(Item['Close'])
-        VolList.append(Item['Vol'])
+        VolList.append(Item['Volumn'])
         AmountList.append(Item['Amount'])
 
-    Brokor.ProvideData({'Open': OpenList})
-    Brokor.ProvideData({'High': HighList})
-    Brokor.ProvideData({'Low': LowList})
-    Brokor.ProvideData({'Close': CloseList})
-    Brokor.ProvideData({'Vol': VolList})
-    Brokor.ProvideData({'Amount': AmountList})
+    Brokor.ProvideData({
+        'Open': OpenList,
+        'High': HighList,
+        'Low': LowList,
+        'Close': CloseList,
+        'Vol': VolList,
+        'Amount': AmountList})

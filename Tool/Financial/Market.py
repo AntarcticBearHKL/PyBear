@@ -154,7 +154,7 @@ class CHN:
             return False
 
         def LastTradeDay(self):
-            if ChronusBear.Date().HourInt() <= 17:
+            if ChronusBear.Date().HourInt() <= 18:
                 TargetDay = ChronusBear.Date().Shift(Day=-1).String(-1)
             else:
                 TargetDay = ChronusBear.Date().String(-1)
@@ -308,6 +308,11 @@ class CHN:
             })
             return Ret
    
+        def GetTimeRange(self):
+            Ret = [
+                self.TickTable.Search({},Sort=['Date', 1],Limit=1)[0]['Date'],
+                self.TickTable.Search({},Sort=['Date', -1],Limit=1)[0]['Date']]
+            return Ret
 
     class Fund:
         def __init__(self):

@@ -12,7 +12,7 @@ class Config:
     def Run(self):
         TM = MultitaskBear.TaskMatrix(12,8)
 
-        CHNStockMarket = MarketBear.CHN.StockMarket().Init()
+        CHNStockMarket = MarketBear.CHN.StockMarket().CheckUpdate()
         if not self.EndDay:
             self.EndDay = CHNStockMarket.LastTradeDay()
         StrategyName = str(self.EndDay) + '_CoreStrategy'
@@ -29,7 +29,7 @@ class Config:
         ErrorCounter = 0
         while True:
             try:   
-                Price = MarketBear.CHN.Stock(StockCode).GetRange(Start, End)
+                Price = MarketBear.CHN.Stock(StockCode).GetPrice([Start, End])
                 MID = [(Item['Close']+Item['Open'])/2 for Item in Price]
                 DIF, DEA, MACD = QuantificationBear.MACD(MID)
                 if \
