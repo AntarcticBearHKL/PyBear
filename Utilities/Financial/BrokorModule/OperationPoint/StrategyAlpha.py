@@ -21,6 +21,7 @@ class Config:
             b.g('RSI', 0)>50,
         ])
         if C1:
-            b.Result['StrategyAlpha'].append(1)
+            ProfitP = (b.g('Close',0)-b.g('Close',-1))/b.g('Close',-1)
+            b.Result['StrategyAlpha'].append([ProfitP])
         else:
-            b.Result['StrategyAlpha'].append(0)
+            b.Result['StrategyAlpha'].append(None)

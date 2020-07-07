@@ -4,10 +4,8 @@ import os,sys
 import PyBear.GlobalBear as GlobalBear
 
 class Brokor:
-    def __init__(self, TimeLine):
-        self.TimeLine = TimeLine
-        self.DataLength = len(TimeLine)
-        self.DataRange = [0, self.DataLength-1]
+    def __init__(self):
+        self.TimeLine = None
         self.Pointer = 0
         self.ModuleList = []
         self.Result = {}
@@ -38,7 +36,14 @@ class Brokor:
     def GetEmptyList(self):
         return [None]*(self.DataRange[0]+1)
 
+    def SetTimeLine(self, TimeLine):
+        self.TimeLine = TimeLine
+        self.DataLength = len(TimeLine)
+        self.DataRange = [0, self.DataLength-1]
+
     def ProvideData(self, Data):
+        if not self.TimeLine:
+            return
         for Item in Data:
             if len(Data[Item]) == self.DataLength:
                 Counter = -1
@@ -50,8 +55,6 @@ class Brokor:
                 if Counter > self.DataRange[0]:
                     self.DataRange[0] = Counter
                 self.Data[Item] = Data[Item]
-            else:
-                print(str(Item), ': Data Not Enough')
 
     def GetTimeRange(self):
         return [self.TimeLine[0], self.TimeLine[-1]]
@@ -73,6 +76,7 @@ class Brokor:
             return True
         return False
 
-    def Run(self):
+    def Run(self, ResultName=None):
         for Module in self.ModuleList:
             Module.Run(self)
+        return self.Result[ResultName]

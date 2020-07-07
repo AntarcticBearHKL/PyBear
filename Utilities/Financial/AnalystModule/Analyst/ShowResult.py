@@ -7,5 +7,7 @@ class Config():
 
     def Run(self):
         Keys = RedisBear.Redis('RedisLocal').hgetall(self.LogName)
-        for Key in Keys:
+        Keylist = list(Keys)
+        Keylist.sort()
+        for Key in Keylist:
             print(Key, ': ', Keys[Key])

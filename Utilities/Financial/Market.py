@@ -205,6 +205,9 @@ class CHN:
             else:
                 raise BadBear('--------GetTradeDay Para Error---------')
 
+        def GetTradeRange(self, Start=None, End=None, Day=None):
+            Ret = self.GetTradeDay(Start=Start, End=End, Day=Day)
+            return [Ret[0], Ret[-1]]
 
     class FundMarket:
         def __init__(self):
