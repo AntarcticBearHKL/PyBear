@@ -25,10 +25,10 @@ def KDJ(High, Low, Close):
         numpy.array(High),
         numpy.array(Low),
         numpy.array(Close),
-        fastk_period = 1,
-        slowk_period = 1,
+        fastk_period = 22,
+        slowk_period = 3,
         slowk_matype = 0,
-        slowd_period = 5,
+        slowd_period = 3,
         slowd_matype = 0,)
 
 def RSI(Data, TimePeriod=5):
