@@ -26,5 +26,5 @@ class Brokor:
     def GetTimeRange(self):
         return [self.TimeLine[0], self.TimeLine[-1]]
 
-    def Assign(self, Strategy):
+    def LoadModule(self, Strategy):
         Strategy.Execute(self)
