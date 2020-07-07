@@ -190,9 +190,13 @@ class CHN:
                 Ret.reverse()
                 return [Item['Date'] for Item in Ret]
             elif Day:
+                if ChronusBear.Date().HourInt() <= 18:
+                    TargetDay = ChronusBear.Date().Shift(Day=-1).String(-1)
+                else:
+                    TargetDay = ChronusBear.Date().String(-1)
                 Ret = TradeDayTable.Search({
                     '$and': [
-                        { 'Date': {'$lte': int(ChronusBear.Date().String(-1))}   },
+                        { 'Date': {'$lte': int(TargetDay)} },
                     ],
                     'IsOpen': 1,
                 }, Sort=['Date', -1], Limit=Day)

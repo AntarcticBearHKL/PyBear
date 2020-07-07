@@ -1,7 +1,7 @@
 import PyBear.GlobalBear as GlobalBear
 import PyBear.Library.Multitask as MultitaskBear
 import PyBear.Library.Data.Redis as RedisBear
-import PyBear.Tool.Financial.Market as MarketBear
+import PyBear.Utilities.Financial.Market as MarketBear
 
 class Config:
     def __init__(self, LimitPerMinute=700):

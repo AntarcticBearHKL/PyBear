@@ -1,8 +1,8 @@
 import PyBear.GlobalBear as GlobalBear
 import PyBear.Library.Multitask as MultitaskBear
 import PyBear.Library.Data.Redis as RedisBear
-import PyBear.Tool.Financial.Market as MarketBear
-import PyBear.Tool.Financial.Quantification as QuantificationBear
+import PyBear.Utilities.Financial.Market as MarketBear
+import PyBear.Utilities.Financial.Quantification as QuantificationBear
 import PyBear.Library.Statistics as StatisticsBear
 
 class Config:
