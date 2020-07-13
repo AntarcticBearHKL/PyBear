@@ -154,7 +154,7 @@ class CHN:
             return False
 
         def LastTradeDay(self):
-            if ChronusBear.Date().HourInt() <= 18:
+            if ChronusBear.Date().HourInt() <= 17:
                 TargetDay = ChronusBear.Date().Shift(Day=-1).String(-1)
             else:
                 TargetDay = ChronusBear.Date().String(-1)
@@ -190,7 +190,7 @@ class CHN:
                 Ret.reverse()
                 return [Item['Date'] for Item in Ret]
             elif Day:
-                if ChronusBear.Date().HourInt() <= 18:
+                if ChronusBear.Date().HourInt() <= 17:
                     TargetDay = ChronusBear.Date().Shift(Day=-1).String(-1)
                 else:
                     TargetDay = ChronusBear.Date().String(-1)

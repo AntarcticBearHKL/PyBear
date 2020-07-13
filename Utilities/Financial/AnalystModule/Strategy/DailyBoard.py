@@ -1,5 +1,4 @@
 import PyBear.GlobalBear as GlobalBear
-
 import PyBear.Library.Multitask as MultitaskBear
 import PyBear.Library.Data.Redis as RedisBear
 import PyBear.Library.Chronus as ChronusBear
@@ -49,10 +48,3 @@ class Config:
                 if ErrorCounter >= 5:
                     RedisBear.Redis('RedisLocal').hset(DBName, StockCode, 'Error: ' + str(e))
                     break
-
-    def Portfolio(self):
-        Keys = RedisBear.Redis('RedisLocal').hgetall(self.StrategyName)
-        Keylist = list(Keys)
-        Keylist.sort()
-        for Key in Keylist:
-            print(Key, ': ', Keys[Key])

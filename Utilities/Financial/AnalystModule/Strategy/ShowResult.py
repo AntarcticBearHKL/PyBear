@@ -11,3 +11,9 @@ class Config():
         Keylist.sort()
         for Key in Keylist:
             print(Key, ': ', Keys[Key])
+    
+    def Workload(self):
+        pass
+
+    def Portfolio(self):
+        pass
