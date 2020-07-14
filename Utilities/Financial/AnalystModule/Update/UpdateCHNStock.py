@@ -34,3 +34,6 @@ class Config:
                 if ErrorCounter >= 10:
                     RedisBear.Redis('RedisLocal').hset('DailyUpdate', StockCode, 'Error: ' + str(e))
                     break
+
+    def Portfolio(self):
+        pass

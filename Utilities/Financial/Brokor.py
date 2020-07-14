@@ -72,9 +72,11 @@ class Brokor:
                 break
     
     def Judge(self, JudgeList):
-        if not JudgeList.count(False):
-            return True
+        for JudgeItem in JudgeList:
+            if JudgeItem.count(False) == 0:
+                return True
         return False
+
 
     def Run(self, ResultName=None):
         for Module in self.ModuleList:

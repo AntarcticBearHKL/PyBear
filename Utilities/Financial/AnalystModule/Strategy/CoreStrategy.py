@@ -15,14 +15,15 @@ import PyBear.Utilities.Financial.BrokorModule.OperationPoint.StrategyAlpha as S
 
 class Config:
     def __init__(self):
-        self.StrategyName = ChronusBear.Date().String(-1) + '_CoreStrategy'
+        self.StrategyName = 'CoreStrategy_'
 
     def Run(self):
+        self.StrategyName += input('Enter Strategy Result Name:')
         TM = MultitaskBear.TaskMatrix(12,8)
 
         RedisBear.Redis('RedisLocal').delete(self.StrategyName)
 
-        StockArg = [[Item, self.StrategyName] for Item in MarketBear.CHN.StockMarket().CheckUpdate().GetStockCode(TSCode=True, Filter=['SZ', 'SH', 'ZX'])]
+        StockArg = [[Item, self.StrategyName] for Item in MarketBear.CHN.StockMarket().CheckUpdate().GetStockCode(TSCode=True, Filter=['SZ', 'SH', 'ZX', 'CY'])]
         print('Ready To Launch')
         TM.ImportTask(self.Workload, StockArg)
         TM.Start()

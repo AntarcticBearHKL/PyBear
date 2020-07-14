@@ -9,19 +9,31 @@ class Config:
         Brokor.Traversal(self.TraversalFunction, LeftMargin=2)
         
     def TraversalFunction(self, b):
-        C1 = b.j([
-            b.g('DIF', -1)<0,
-            b.g('DIF', 0)>0,
-            b.g('DEA', 0)<0,
-            b.g('DEA', 0)<b.g('DIF', 0),
-            b.g('DEA', -1)<b.g('DIF', -1),
-            b.g('MACD', 0)>0,
-            b.g('Close', 0)<b.g('BOLLUpper', 0),
-            b.g('KDJ', 0)>50,
-            b.g('RSI', 0)>50,
+        ConditionA = b.j([
+            [
+                b.g('DIF', -1) < 0,
+                b.g('DIF', 0) > 0,
+                b.g('DEA', 0) < 0,
+                b.g('DEA', 0) < b.g('DIF', 0),
+                b.g('DEA', -1) < b.g('DIF', -1),
+                b.g('KDJ', 0) > 80,
+                b.g('RSI', 0) > 70,
+            ],
         ])
-        if C1:
-            ProfitP = (b.g('Close',0)-b.g('Close',-1))/b.g('Close',-1)
-            b.Result['StrategyAlpha'].append([ProfitP])
+        ConditionB = b.j([
+            [
+                b.g('DIF', 0) > 0,
+                b.g('DEA', 0) > 0,
+                b.g('DIF', 0) > b.g('DEA', 0),
+                b.g('KDJ', 0) > 80,
+                b.g('RSI', 0) > 67,
+                b.g('RSI', -1) < 65,
+                b.g('MACD', -1) < b.g('MACD', 0),
+            ],
+        ])
+        if ConditionA:
+            b.Result['StrategyAlpha'].append([1])
+        if ConditionB:
+            b.Result['StrategyAlpha'].append([2])
         else:
             b.Result['StrategyAlpha'].append(None)

@@ -280,6 +280,7 @@ class CHN:
                 if LastTradeDay > int(ChronusBear.Date(UpdateTime[0]['Date']).String(-1)):
                     return self.Update(Start=ChronusBear.Date(UpdateTime[0]['Date']).Shift(Day=1).String(-1), End=LastTradeDay)
                 else:
+                    print(self.TSCode, ": Don't Need Update")
                     return "Don't Need Update"
             else:
                 return self.Update(Start=999, End=LastTradeDay)
@@ -289,6 +290,7 @@ class CHN:
                 Start = '20000101'
             Tick = tushare.pro_bar(ts_code = self.TSCode, adj='qfq', start_date=str(Start), end_date=str(End))
             if len(Tick) == 0:
+                print(self.TSCode, ': Stock Is Dead')
                 return 'Stock Is Dead'
 
             Data = []
@@ -305,6 +307,7 @@ class CHN:
                 })
             Data.reverse()
             self.TickTable.Insert(Data)
+            print(self.TSCode, ': Updated')
             return 'Success'
 
         def GetPrice(self, TimeRange):
