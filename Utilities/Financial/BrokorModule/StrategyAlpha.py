@@ -5,18 +5,17 @@ import PyBear.GlobalBear as GlobalBear
 
 class Config:
     def Run(self, Brokor):
-        Brokor.Result['StrategyAlpha'] = Brokor.GetEmptyList()
-        Brokor.Traversal(self.TraversalFunction, LeftMargin=2)
+        LeftMargin = 1
+        Brokor.Data['StrategyAlpha'] = [None] * LeftMargin
+        Brokor.Traversal(self.TraversalFunction, LeftMargin=LeftMargin)
         
     def TraversalFunction(self, b):
         ConditionA = b.j([
             [
                 b.g('DIF', -1) < 0,
                 b.g('DIF', 0) > 0,
+                b.g('DEA', -1) < 0,
                 b.g('DEA', 0) < 0,
-                b.g('DEA', 0) < b.g('DIF', 0),
-                b.g('DEA', -1) < b.g('DIF', -1),
-                b.g('KDJ', 0) > 80,
                 b.g('RSI', 0) > 70,
             ],
         ])
@@ -32,8 +31,8 @@ class Config:
             ],
         ])
         if ConditionA:
-            b.Result['StrategyAlpha'].append([1])
+            b.Data['StrategyAlpha'].append(1)
         if ConditionB:
-            b.Result['StrategyAlpha'].append([2])
+            b.Data['StrategyAlpha'].append(2)
         else:
-            b.Result['StrategyAlpha'].append(None)
+            b.Data['StrategyAlpha'].append(None)

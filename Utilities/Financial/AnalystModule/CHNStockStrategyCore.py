@@ -3,6 +3,7 @@ import PyBear.GlobalBear as GlobalBear
 import PyBear.Library.Multitask as MultitaskBear
 import PyBear.Library.Data.Redis as RedisBear
 import PyBear.Library.Chronus as ChronusBear
+import PyBear.Library.Cipher as CipherBear
 import PyBear.Utilities.Financial.Market as MarketBear    
 import PyBear.Utilities.Financial.Brokor as BrokorBear
 
@@ -15,7 +16,7 @@ import PyBear.Utilities.Financial.BrokorModule.OperationPoint.StrategyAlpha as S
 
 class Config:
     def __init__(self):
-        self.StrategyName = 'CoreStrategy_'
+        self.StrategyName = 'CoreStrategy_' + str(CipherBear.NumberIndex) + '_'
 
     def Run(self):
         self.StrategyName += input('Enter Strategy Result Name:')
@@ -39,7 +40,8 @@ class Config:
                 Brokor.LoadModule(KDJ.Config())
                 Brokor.LoadModule(RSI.Config())
                 Brokor.LoadModule(StrategyAlpha.Config())
-                Ret = Brokor.Run('StrategyAlpha')
+                Brokor.Run()
+                
                 if Ret[-1]!=None:
                     RedisBear.Redis('RedisLocal').hset(DBName, str(StockCode), str(Ret[-1]))
                 print(StockCode)

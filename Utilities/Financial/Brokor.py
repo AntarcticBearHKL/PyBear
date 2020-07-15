@@ -8,14 +8,14 @@ class Brokor:
         self.TimeLine = None
         self.Pointer = 0
         self.ModuleList = []
-        self.Result = {}
 
         self.Data = {}
-        self.OperationPoint = {}
+        self.Result = {}
         
         self.g = self.GetData
         self.t = self.GetDate
         self.j = self.Judge
+        self.r = self.Result
     
     def RequireData(self, DataName):
         for Name in DataName:
@@ -78,7 +78,11 @@ class Brokor:
         return False
 
 
-    def Run(self, ResultName=None):
+    def Run(self):
         for Module in self.ModuleList:
             Module.Run(self)
-        return self.Result[ResultName]
+
+
+class BrokorModule:
+    def TraversalFunction():
+        pass
