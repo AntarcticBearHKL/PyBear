@@ -81,8 +81,16 @@ class Brokor:
     def Run(self):
         for Module in self.ModuleList:
             Module.Run(self)
+            self.Traversal(Module.TraversalFunction, LeftMargin=Module.LeftMargin, RightMargin=Module.RightMargin)
 
 
 class BrokorModule:
-    def TraversalFunction():
+    def __init__(self):
+        self.LeftMargin = 0
+        self.RightMargin = 0
+
+    def Run(self):
+        pass
+
+    def TraversalFunction(self, b):
         pass

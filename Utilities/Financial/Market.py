@@ -30,8 +30,11 @@ class CHN:
             self.API = tushare.pro_api()
 
         def Update(self):
+            print("CHECK TRADE DAY UPDATE...")
             self.UpdateTradeDay()
+            print("CHECK STOCK BASIC UPDATE...")
             self.UpdateStockBasic()
+            print("CHECK INDEX BASIC UPDATE...")
             self.UpdateIndexBasic()
             return self
 
@@ -65,7 +68,7 @@ class CHN:
 
         def UpdateIndexBasic(self):
             IndexBasicInfoTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'IndexBasic')
-            UpdateTime = StockBasicInfoTable.Search({
+            UpdateTime = IndexBasicInfoTable.Search({
                 'UpdateTime': {'$exists': 'true'}
             })
             if len(UpdateTime) !=0 and (ChronusBear.Date() // ChronusBear.Date(UpdateTime[0]['UpdateTime']))[2] < 10:
@@ -77,15 +80,11 @@ class CHN:
             Data = [{
                 'UpdateTime': ChronusBear.Date().String(0),
             }]
-            print(IndexBasicInfo)
-            return
             for Item in IndexBasicInfo.itertuples():
                 Data.append({
-                    'Code': int(Item.symbol),
                     'TSCode': Item.ts_code,
                     'Name': Item.name,
-                    'Area': Item.area,
-                    'Industry': Item.industry,
+                    'Category': Item.category,
                 })
             
             IndexBasicInfoTable.Delete({})
@@ -120,7 +119,7 @@ class CHN:
             print('TRADE DAY UPDATE FINISH...')
 
 
-        def GetStockCode(self, TSCode=None, Filter=[]):
+        def GetStockCode(self, Filter=[]):
             StockBasicInfoTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'StockBasic')
             Condition = []
             if 'SZ' in Filter:
@@ -163,13 +162,25 @@ class CHN:
                 Condition = {}
             Ret = StockBasicInfoTable.Search({
                 '$and': [
-                    {'Code': {'$exists': 'true'}},
+                    {'TSCode': {'$exists': 'true'}},
                     Condition
                 ]
             })
-            if TSCode:
-                return [Item['TSCode'] for Item in Ret]
-            return [Item['Code'] for Item in Ret]
+            return [Item['TSCode'] for Item in Ret]
+
+        def GetIndexCode(self):
+            IndexBasicInfoTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'IndexBasic')
+            IndexList = IndexBasicInfoTable.Search({
+                'TSCode': {'$exists': 'true'},
+            })
+            Ret = []
+            for Index in IndexList:
+                try:
+                    int(Index['TSCode'][0])
+                    Ret.append(Index['TSCode'])
+                except:
+                    pass
+            return Ret
 
 
         def IsTradeDay(self, TestedDay):
@@ -301,7 +312,7 @@ class CHN:
                     return self.Update(Start=ChronusBear.Date(UpdateTime[0]['Date']).Shift(Day=1).String(-1), End=LastTradeDay)
                 else:
                     print(self.TSCode, ": Don't Need Update")
-                    return "Don't Need Update"
+                    return
             else:
                 return self.Update(Start=999, End=LastTradeDay)
 
@@ -311,7 +322,69 @@ class CHN:
             Tick = tushare.pro_bar(ts_code = self.TSCode, adj='qfq', start_date=str(Start), end_date=str(End))
             if len(Tick) == 0:
                 print(self.TSCode, ': Stock Is Dead')
-                return 'Stock Is Dead'
+                return
+
+            Data = []
+            for Item in Tick.itertuples():
+                Data.append({
+                    'TSCode': Item.ts_code,
+                    'Date': int(Item.trade_date),
+                    'Open': Item.open,
+                    'High': Item.high,
+                    'Low': Item.low,
+                    'Close': Item.close,
+                    'Volumn': Item.vol,
+                    'Amount': Item.amount,
+                })
+            Data.reverse()
+            self.TickTable.Insert(Data)
+            print(self.TSCode, ': Updated Success')
+
+        def GetPrice(self, TimeRange):
+            Ret = self.TickTable.Search({
+                '$and': [
+                    {'Date': {'$gte': TimeRange[0]}},
+                    {'Date': {'$lte': TimeRange[1]}}]
+            })
+            return Ret
+   
+        def GetTimeRange(self):
+            Ret = [
+                self.TickTable.Search({},Sort=['Date', 1],Limit=1)[0]['Date'],
+                self.TickTable.Search({},Sort=['Date', -1],Limit=1)[0]['Date']]
+            return Ret
+
+    class Index:
+        def __init__(self, TSCode):
+            try:
+                tushare.set_token(GlobalBear.TushareToken)
+            except:
+                raise BadBear('Tushare Cannot Use Without Token')
+            self.API = tushare.pro_api()
+            self.TSCode = TSCode
+             
+            self.TickTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'Price_Index_'+TSCode[0:6])
+
+
+        def Sync(self, LastTradeDay):
+            LastTradeDay = int(LastTradeDay)
+            UpdateTime = self.TickTable.Search({},Sort=['Date', -1],Limit=1)
+            if len(UpdateTime) != 0:
+                if LastTradeDay > int(ChronusBear.Date(UpdateTime[0]['Date']).String(-1)):
+                    return self.Update(Start=ChronusBear.Date(UpdateTime[0]['Date']).Shift(Day=1).String(-1), End=LastTradeDay)
+                else:
+                    print(self.TSCode, ": Don't Need Update")
+                    return
+            else:
+                return self.Update(Start=999, End=LastTradeDay)
+
+        def Update(self, Start, End):
+            if Start == 999:
+                Start = '20000101'
+            Tick = self.API.index_daily(ts_code = self.TSCode, adj='qfq', start_date=str(Start), end_date=str(End))
+            if len(Tick) == 0:
+                print(self.TSCode, ': Index Is Dead')
+                return
 
             Data = []
             for Item in Tick.itertuples():
@@ -328,7 +401,6 @@ class CHN:
             Data.reverse()
             self.TickTable.Insert(Data)
             print(self.TSCode, ': Updated')
-            return 'Success'
 
         def GetPrice(self, TimeRange):
             Ret = self.TickTable.Search({
@@ -343,6 +415,7 @@ class CHN:
                 self.TickTable.Search({},Sort=['Date', 1],Limit=1)[0]['Date'],
                 self.TickTable.Search({},Sort=['Date', -1],Limit=1)[0]['Date']]
             return Ret
+
 
     class Fund:
         def __init__(self):

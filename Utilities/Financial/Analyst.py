@@ -15,3 +15,11 @@ class Analyst:
             self.PortfolioList.append(Module.Portfolio)
         for Portfolio in self.PortfolioList:
             Portfolio()
+
+
+class AnalystModule:
+    def Run(self):
+        pass
+    
+    def Portfolio(self):
+        pass

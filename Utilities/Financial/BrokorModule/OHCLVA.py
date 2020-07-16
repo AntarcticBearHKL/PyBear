@@ -1,7 +1,8 @@
 import PyBear.GlobalBear as GlobalBear
 import PyBear.Utilities.Financial.Market as MarketBear
+import PyBear.Utilities.Financial.Brokor as BrokorBear
 
-class Config:
+class Config(BrokorBear.BrokorModule):
     def __init__(self, StockCode, Day=120):
         self.StockCode = StockCode
         self.Day = Day

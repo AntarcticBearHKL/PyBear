@@ -6,15 +6,16 @@ import PyBear.Library.Chronus as ChronusBear
 import PyBear.Library.Cipher as CipherBear
 import PyBear.Utilities.Financial.Market as MarketBear    
 import PyBear.Utilities.Financial.Brokor as BrokorBear
+import PyBear.Utilities.Financial.Analyst as AnalystBear
 
-import PyBear.Utilities.Financial.BrokorModule.Data.OHCLVA as OHCLVA
-import PyBear.Utilities.Financial.BrokorModule.Quantification.MACD as MACD
-import PyBear.Utilities.Financial.BrokorModule.Quantification.BOLL as BOLL
-import PyBear.Utilities.Financial.BrokorModule.Quantification.KDJ as KDJ
-import PyBear.Utilities.Financial.BrokorModule.Quantification.RSI as RSI
-import PyBear.Utilities.Financial.BrokorModule.OperationPoint.StrategyAlpha as StrategyAlpha
+import PyBear.Utilities.Financial.BrokorModule.OHCLVA as OHCLVA
+import PyBear.Utilities.Financial.BrokorModule.MACD as MACD
+import PyBear.Utilities.Financial.BrokorModule.BOLL as BOLL
+import PyBear.Utilities.Financial.BrokorModule.KDJ as KDJ
+import PyBear.Utilities.Financial.BrokorModule.RSI as RSI
+import PyBear.Utilities.Financial.BrokorModule.StrategyAlpha as StrategyAlpha
 
-class Config:
+class Config(AnalystBear.AnalystModule):
     def __init__(self):
         self.StrategyName = 'CoreStrategy_' + str(CipherBear.NumberIndex) + '_'
 

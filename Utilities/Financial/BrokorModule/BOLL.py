@@ -2,8 +2,9 @@ import talib
 import numpy
 
 import PyBear.GlobalBear as GlobalBear
+import PyBear.Utilities.Financial.Brokor as BrokorBear
 
-class Config:
+class Config(BrokorBear.BrokorModule):
     def Run(self, Brokor):
         Brokor.RequireData(['Open', 'Close'])
         Open = numpy.array(Brokor.GetData('Open'))

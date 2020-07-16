@@ -1,7 +1,8 @@
 import PyBear.GlobalBear as GlobalBear
 import PyBear.Library.Data.Redis as RedisBear
+import PyBear.Utilities.Financial.Analyst as AnalystBear
 
-class Config():
+class Config(AnalystBear.AnalystModule):
     def __init__(self, LogName):
         self.LogName = LogName
 
@@ -11,9 +12,3 @@ class Config():
         Keylist.sort()
         for Key in Keylist:
             print(Key, ': ', Keys[Key])
-    
-    def Workload(self):
-        pass
-
-    def Portfolio(self):
-        pass

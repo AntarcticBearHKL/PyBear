@@ -2,12 +2,12 @@ import talib
 import numpy
 
 import PyBear.GlobalBear as GlobalBear
+import PyBear.Utilities.Financial.Brokor as BrokorBear
 
-class Config:
+class Config(BrokorBear.BrokorModule):
     def Run(self, Brokor):
-        LeftMargin = 1
-        Brokor.Data['StrategyAlpha'] = [None] * LeftMargin
-        Brokor.Traversal(self.TraversalFunction, LeftMargin=LeftMargin)
+        self.LeftMargin = 1
+        Brokor.Data['StrategyAlpha'] = [None] * self.LeftMargin
         
     def TraversalFunction(self, b):
         ConditionA = b.j([
