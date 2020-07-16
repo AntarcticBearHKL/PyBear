@@ -13,7 +13,7 @@ class Brokor:
         self.Result = {}
         
         self.g = self.GetData
-        self.t = self.GetDate
+        self.d = self.GetDate
         self.j = self.Judge
         self.r = self.Result
     
@@ -30,7 +30,7 @@ class Brokor:
         else:
             return self.Data[DataName][self.Pointer+Shift]
     
-    def GetDate(self, Shift):
+    def GetDate(self, Shift=0):
         return self.TimeLine[self.Pointer+Shift]
     
     def GetEmptyList(self):

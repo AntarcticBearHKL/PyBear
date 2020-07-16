@@ -8,6 +8,7 @@ class Config(BrokorBear.BrokorModule):
     def Run(self, Brokor):
         self.LeftMargin = 1
         Brokor.Data['StrategyAlpha'] = [None] * self.LeftMargin
+        Brokor.Result['StrategyAlpha'] = []
         
     def TraversalFunction(self, b):
         ConditionA = b.j([
@@ -32,7 +33,9 @@ class Config(BrokorBear.BrokorModule):
         ])
         if ConditionA:
             b.Data['StrategyAlpha'].append(1)
+            b.r['StrategyAlpha'].append(b.d())
         if ConditionB:
             b.Data['StrategyAlpha'].append(2)
+            b.r['StrategyAlpha'].append(b.d())
         else:
             b.Data['StrategyAlpha'].append(None)

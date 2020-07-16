@@ -4,11 +4,12 @@ import PyBear.Utilities.Financial.Brokor as BrokorBear
 
 class Config(BrokorBear.BrokorModule):
     def __init__(self, StockCode, Day=120):
+        super().__init__()
         self.StockCode = StockCode
         self.Day = Day
 
     def Run(self, Brokor):
-        TimeRange = MarketBear.CHN.StockMarket().GetTradeRange(Day=self.Day)
+        TimeRange = MarketBear.CHN.StockMarket().GetTradeDayRange(Day=self.Day)
         Data = MarketBear.CHN.Stock(self.StockCode).GetPrice(TimeRange)
         TimeLine = []
         OpenList = []

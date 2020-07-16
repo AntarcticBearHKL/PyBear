@@ -17,16 +17,15 @@ import PyBear.Utilities.Financial.BrokorModule.StrategyAlpha as StrategyAlpha
 
 class Config(AnalystBear.AnalystModule):
     def __init__(self):
-        self.StrategyName = 'CoreStrategy_' + str(CipherBear.NumberIndex) + '_'
+        self.StrategyName = 'CoreStrategy_' + input('Enter Strategy Result Name:') + '_' + str(CipherBear.NumberIndex())
 
     def Run(self):
-        self.StrategyName += input('Enter Strategy Result Name:')
         TM = MultitaskBear.TaskMatrix(12,8)
 
         RedisBear.Redis('RedisLocal').delete(self.StrategyName)
 
-        StockArg = [[Item, self.StrategyName] for Item in MarketBear.CHN.StockMarket().CheckUpdate().GetStockCode(TSCode=True, Filter=['SZ', 'SH', 'ZX', 'CY'])]
-        print('Ready To Launch')
+        StockArg = [[Item, self.StrategyName] for Item in MarketBear.CHN.StockMarket().Update().GetStockCode(Filter=['SZ', 'SH', 'ZX', 'CY'])]
+        print('READY TO LAUNCH...')
         TM.ImportTask(self.Workload, StockArg)
         TM.Start()
 
@@ -42,7 +41,8 @@ class Config(AnalystBear.AnalystModule):
                 Brokor.LoadModule(RSI.Config())
                 Brokor.LoadModule(StrategyAlpha.Config())
                 Brokor.Run()
-                
+                RedisBear.Redis('RedisLocal').hset(DBName, str(StockCode), (' '.join(Brokor.Result['StrategyAlpha'])))
+                break
                 if Ret[-1]!=None:
                     RedisBear.Redis('RedisLocal').hset(DBName, str(StockCode), str(Ret[-1]))
                 print(StockCode)

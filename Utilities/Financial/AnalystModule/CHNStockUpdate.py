@@ -19,12 +19,12 @@ class Config(AnalystBear.AnalystModule):
 
         StockArg = [[Item, LastTradeDay] for Item in CHNStockMarket.GetStockCode()]
         IndexArg = [[Item, LastTradeDay] for Item in CHNStockMarket.GetIndexCode()]
-        print('Ready To Launch')
-        #TM.ImportTask(self.ThreadFunctionA, StockArg)
-        TM.ImportTask(self.ThreadFunctionB, IndexArg)
+        print('READY TO LAUNCH...')
+        TM.ImportTask(self.UpdateStock, StockArg)
+        TM.ImportTask(self.UpdateIndex, IndexArg)
         TM.Start()
 
-    def ThreadFunctionA(self, StockCode, LastTradeDay):
+    def UpdateStock(self, StockCode, LastTradeDay):
         ErrorCounter = 0
         while True:
             try:
@@ -38,7 +38,7 @@ class Config(AnalystBear.AnalystModule):
                     RedisBear.Redis('RedisLocal').hset('CHNStockAndIndexUpdate', StockCode, 'Error: ' + str(e))
                     break
     
-    def ThreadFunctionB(self, IndexCode, LastTradeDay):
+    def UpdateIndex(self, IndexCode, LastTradeDay):
         ErrorCounter = 0
         while True:
             try:
