@@ -29,9 +29,10 @@ class CHN:
                 raise BadBear('Tushare Cannot Use Without Token')
             self.API = tushare.pro_api()
 
-        def CheckUpdate(self):
-            self.UpdateStockBasic()
+        def Update(self):
             self.UpdateTradeDay()
+            self.UpdateStockBasic()
+            self.UpdateIndexBasic()
             return self
 
         def UpdateStockBasic(self):
@@ -40,17 +41,16 @@ class CHN:
                 'UpdateTime': {'$exists': 'true'}
             })
             if len(UpdateTime) !=0 and (ChronusBear.Date() // ChronusBear.Date(UpdateTime[0]['UpdateTime']))[2] < 10:
-                print('Update StockBasic Finish(N)')
                 return
 
 
-            print('Update StockBasic Start')
-            BasicInfo = self.API.stock_basic()
+            print('STOCK BASIC UPDATE START...')
+            StockBasicInfo = self.API.stock_basic()
 
             Data = [{
                 'UpdateTime': ChronusBear.Date().String(0),
             }]
-            for Item in BasicInfo.itertuples():
+            for Item in StockBasicInfo.itertuples():
                 Data.append({
                     'Code': int(Item.symbol),
                     'TSCode': Item.ts_code,
@@ -61,7 +61,36 @@ class CHN:
             
             StockBasicInfoTable.Delete({})
             StockBasicInfoTable.Insert(Data)
-            print('Update StockBasic Finish')
+            print('STOCK BASIC UPDATE FINISH...')
+
+        def UpdateIndexBasic(self):
+            IndexBasicInfoTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'IndexBasic')
+            UpdateTime = StockBasicInfoTable.Search({
+                'UpdateTime': {'$exists': 'true'}
+            })
+            if len(UpdateTime) !=0 and (ChronusBear.Date() // ChronusBear.Date(UpdateTime[0]['UpdateTime']))[2] < 10:
+                return
+
+            print('INDEX BASIC UPDATE START...')
+            IndexBasicInfo = self.API.index_basic()
+
+            Data = [{
+                'UpdateTime': ChronusBear.Date().String(0),
+            }]
+            print(IndexBasicInfo)
+            return
+            for Item in IndexBasicInfo.itertuples():
+                Data.append({
+                    'Code': int(Item.symbol),
+                    'TSCode': Item.ts_code,
+                    'Name': Item.name,
+                    'Area': Item.area,
+                    'Industry': Item.industry,
+                })
+            
+            IndexBasicInfoTable.Delete({})
+            IndexBasicInfoTable.Insert(Data)
+            print('INDEX BASIC UPDATE FINISH...')
 
         def UpdateTradeDay(self):
             TradeDayTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'TradeDay')
@@ -69,10 +98,9 @@ class CHN:
                 'UpdateTime': {'$exists': 'true'}
             })
             if len(UpdateTime) !=0 and (ChronusBear.Date() // ChronusBear.Date(UpdateTime[0]['UpdateTime']))[2] < 10:
-                print('Update TradeDay Finish(N)')
                 return
 
-            print('Update TradeDay Start')
+            print('TRADE DAY UPDATE START...')
             EndDate = ChronusBear.Date()
             EndDate.SetTime(Month=12, Day=999)
             TradeDay = self.API.trade_cal(exchange='', start_date='20000101', end_date=EndDate.String(-1))
@@ -89,7 +117,7 @@ class CHN:
             
             TradeDayTable.Delete({})
             TradeDayTable.Insert(Data)
-            print('Update TradeDay Finish')
+            print('TRADE DAY UPDATE FINISH...')
 
 
         def GetStockCode(self, TSCode=None, Filter=[]):
@@ -153,14 +181,6 @@ class CHN:
                 return True
             return False
 
-        def LastTradeDay(self):
-            if ChronusBear.Date().HourInt() <= 17:
-                TargetDay = ChronusBear.Date().Shift(Day=-1).String(-1)
-            else:
-                TargetDay = ChronusBear.Date().String(-1)
-            
-            return self.GetTradeDay(End=TargetDay, Day=1)[0] 
-
         def GetTradeDay(self, Start=None, End=None, Day=None):
             TradeDayTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'TradeDay')
             if Start and End:  
@@ -205,7 +225,7 @@ class CHN:
             else:
                 raise BadBear('--------GetTradeDay Para Error---------')
 
-        def GetTradeRange(self, Start=None, End=None, Day=None):
+        def GetTradeDayRange(self, Start=None, End=None, Day=None):
             Ret = self.GetTradeDay(Start=Start, End=End, Day=Day)
             return [Ret[0], Ret[-1]]
 
