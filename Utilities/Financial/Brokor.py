@@ -40,7 +40,10 @@ class Brokor:
         self.TimeLine = TimeLine
         self.DataLength = len(TimeLine)
         self.DataRange = [0, self.DataLength-1]
-
+    
+    def SetTime(self, Date):
+        self.Pointer = self.TimeLine.index(Date)
+            
     def ProvideData(self, Data):
         if not self.TimeLine:
             return

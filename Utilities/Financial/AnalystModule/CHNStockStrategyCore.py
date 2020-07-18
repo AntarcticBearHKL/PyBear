@@ -41,7 +41,8 @@ class Config(AnalystBear.AnalystModule):
                 Brokor.LoadModule(RSI.Config())
                 Brokor.LoadModule(StrategyAlpha.Config())
                 Brokor.Run()
-                RedisBear.Redis('RedisLocal').hset(DBName, str(StockCode), (' '.join(Brokor.Result['StrategyAlpha'])))
+                Result = ' '.join([str(Item) for Item in Brokor.Result['StrategyAlpha']])
+                RedisBear.Redis('RedisLocal').hset(DBName, str(StockCode), Result)
                 break
                 if Ret[-1]!=None:
                     RedisBear.Redis('RedisLocal').hset(DBName, str(StockCode), str(Ret[-1]))
