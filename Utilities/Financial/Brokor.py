@@ -8,9 +8,12 @@ class Brokor:
         self.TimeLine = None
         self.Pointer = 0
         self.ModuleList = []
+        self.StrategyList = []
 
         self.Data = {}
         self.Result = {}
+        self.Recommended = False
+        self.RecommendON = False
         
         self.g = self.GetData
         self.d = self.GetDate
@@ -65,6 +68,9 @@ class Brokor:
     def LoadModule(self, Module):
         self.ModuleList.append(Module)
 
+    def LoadStrategy(self, Strategy):
+        self.StrategyList.append(Strategy)
+
     def Traversal(self, Function, LeftMargin=0, RightMargin=0):
         self.Pointer = self.DataRange[0]
         self.PointerMargin = [self.DataRange[0]+LeftMargin, self.DataRange[1]-RightMargin]
@@ -80,11 +86,20 @@ class Brokor:
                 return True
         return False
 
+    def Recommend(self):
+        if self.RecommendON:
+            self.Recommended = True
 
     def Run(self):
         for Module in self.ModuleList:
             Module.Run(self)
             self.Traversal(Module.TraversalFunction, LeftMargin=Module.LeftMargin, RightMargin=Module.RightMargin)
+        
+        self.RecommendOn = True
+        
+        for Strategy in self.StrategyList:
+            Strategy.Run(self)
+            self.Traversal(Strategy.TraversalFunction, LeftMargin=Strategy.LeftMargin, RightMargin=Strategy.RightMargin)
 
 
 class BrokorModule:

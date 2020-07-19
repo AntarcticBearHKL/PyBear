@@ -21,6 +21,6 @@ class Config(BrokorBear.BrokorModule):
         ])
         if ConditionA:
             b.Data['StrategyAlpha'].append(1)
-            b.r['StrategyAlpha'].append(True)
+            b.Recommend()
         else:
             b.Data['StrategyAlpha'].append(None)

@@ -42,7 +42,7 @@ class Config(AnalystBear.AnalystModule):
                 Brokor.LoadModule(StrategyAlpha.Config())
                 Brokor.Run()
 
-                if Brokor.Result['StrategyAlpha'][-1]:
+                if Brokor.Recommended:
                     RedisBear.Redis('RedisLocal').hset(DBName, str(StockCode), 'Success')
                 print(StockCode)
                 break
