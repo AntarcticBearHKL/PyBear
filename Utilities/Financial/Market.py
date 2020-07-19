@@ -338,7 +338,7 @@ class CHN:
                 })
             Data.reverse()
             self.TickTable.Insert(Data)
-            print(self.TSCode, ': Updated Success')
+            print(self.TSCode, ': UPDATE ', str(len(Data)), ' Data')
 
         def GetPrice(self, TimeRange):
             Ret = self.TickTable.Search({
@@ -400,7 +400,7 @@ class CHN:
                 })
             Data.reverse()
             self.TickTable.Insert(Data)
-            print(self.TSCode, ': Updated')
+            print(self.TSCode, ': UPDATE ', str(len(Data)), ' Data')
 
         def GetPrice(self, TimeRange):
             Ret = self.TickTable.Search({

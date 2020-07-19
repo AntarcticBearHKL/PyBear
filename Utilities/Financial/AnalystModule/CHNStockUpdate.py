@@ -15,7 +15,7 @@ class Config(AnalystBear.AnalystModule):
         CHNStockMarket = MarketBear.CHN.StockMarket().Update()
         LastTradeDay = CHNStockMarket.GetTradeDay(Day=1)[0]
 
-        RedisBear.Redis('RedisLocal').delete('CHNStockAndIndexUpdate')
+        RedisBear.Redis('RedisLocal').delete('CHNStockUpdate')
 
         StockArg = [[Item, LastTradeDay] for Item in CHNStockMarket.GetStockCode()]
         IndexArg = [[Item, LastTradeDay] for Item in CHNStockMarket.GetIndexCode()]
@@ -29,13 +29,13 @@ class Config(AnalystBear.AnalystModule):
         while True:
             try:
                 MarketBear.CHN.Stock(StockCode).Sync(LastTradeDay)
-                RedisBear.Redis('RedisLocal').hset('CHNStockAndIndexUpdate', StockCode, 'Finish')
+                RedisBear.Redis('RedisLocal').hset('CHNStockUpdate', StockCode, 'Finish')
                 break
             except Exception as e:
                 ErrorCounter +=1
                 print(StockCode, ': Error(' + str(ErrorCounter) +')')
                 if ErrorCounter >= 10:
-                    RedisBear.Redis('RedisLocal').hset('CHNStockAndIndexUpdate', StockCode, 'Error: ' + str(e))
+                    RedisBear.Redis('RedisLocal').hset('CHNStockUpdate', StockCode, 'Error: ' + str(e))
                     break
     
     def UpdateIndex(self, IndexCode, LastTradeDay):
@@ -43,11 +43,11 @@ class Config(AnalystBear.AnalystModule):
         while True:
             try:
                 Ret = MarketBear.CHN.Index(IndexCode).Sync(LastTradeDay)
-                RedisBear.Redis('RedisLocal').hset('CHNStockAndIndexUpdate', IndexCode, 'Finish')
+                RedisBear.Redis('RedisLocal').hset('CHNStockUpdate', IndexCode, 'Finish')
                 break
             except Exception as e:
                 ErrorCounter +=1
                 print(IndexCode, ': Error(' + str(ErrorCounter) +')')
                 if ErrorCounter >= 10:
-                    RedisBear.Redis('RedisLocal').hset('CHNStockAndIndexUpdate', IndexCode, 'Error: ' + str(e))
+                    RedisBear.Redis('RedisLocal').hset('CHNStockUpdate', IndexCode, 'Error: ' + str(e))
                     break

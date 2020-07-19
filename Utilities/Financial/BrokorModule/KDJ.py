@@ -12,11 +12,11 @@ class Config(BrokorBear.BrokorModule):
             numpy.array(Brokor.GetData('Low')),
             numpy.array(Brokor.GetData('Close')),
             fastk_period = 22,
-            slowk_period = 3,
+            slowk_period = 5,
             slowk_matype = 0,
-            slowd_period = 3,
+            slowd_period = 5,
             slowd_matype = 0,)
-        J = 3*K - 2*D
+        J = K - D + 50
 
         Brokor.ProvideData({
             'KDJF': K,
