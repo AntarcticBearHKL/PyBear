@@ -2,7 +2,7 @@ import PyBear.GlobalBear as GlobalBear
 import PyBear.Utilities.Financial.Market as MarketBear
 import PyBear.Utilities.Financial.Brokor as BrokorBear
 
-class Config(BrokorBear.BrokorModule):
+class Config(BrokorBear.BrokorProcedure):
     def __init__(self, StockCode, Day=120):
         super().__init__()
         self.StockCode = StockCode

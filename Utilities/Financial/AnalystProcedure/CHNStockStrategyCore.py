@@ -8,14 +8,14 @@ import PyBear.Utilities.Financial.Market as MarketBear
 import PyBear.Utilities.Financial.Brokor as BrokorBear
 import PyBear.Utilities.Financial.Analyst as AnalystBear
 
-import PyBear.Utilities.Financial.BrokorModule.OHCLVA as OHCLVA
-import PyBear.Utilities.Financial.BrokorModule.MACD as MACD
-import PyBear.Utilities.Financial.BrokorModule.BOLL as BOLL
-import PyBear.Utilities.Financial.BrokorModule.KDJ as KDJ
-import PyBear.Utilities.Financial.BrokorModule.RSI as RSI
-import PyBear.Utilities.Financial.BrokorModule.StrategyAlpha as StrategyAlpha
+import PyBear.Utilities.Financial.BrokorProcedure.OHCLVA as OHCLVA
+import PyBear.Utilities.Financial.BrokorProcedure.MACD as MACD
+import PyBear.Utilities.Financial.BrokorProcedure.BOLL as BOLL
+import PyBear.Utilities.Financial.BrokorProcedure.KDJ as KDJ
+import PyBear.Utilities.Financial.BrokorProcedure.RSI as RSI
+import PyBear.Utilities.Financial.BrokorProcedure.StrategyAlpha as StrategyAlpha
 
-class Config(AnalystBear.AnalystModule):
+class Config(AnalystBear.AnalystProcedure):
     def __init__(self):
         self.StrategyName = 'CoreStrategy_' + input('Enter Strategy Result Name:') + '_' + str(CipherBear.NumberIndex())
 

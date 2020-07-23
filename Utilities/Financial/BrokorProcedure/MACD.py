@@ -4,7 +4,7 @@ import numpy
 import PyBear.GlobalBear as GlobalBear
 import PyBear.Utilities.Financial.Brokor as BrokorBear
 
-class Config(BrokorBear.BrokorModule):
+class Config(BrokorBear.BrokorProcedure):
     def Run(self, Brokor):
         Brokor.RequireData(['Close'])
         DIF, DEA, MACD = talib.MACD(

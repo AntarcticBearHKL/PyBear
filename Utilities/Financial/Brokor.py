@@ -7,8 +7,8 @@ class Brokor:
     def __init__(self):
         self.TimeLine = None
         self.Pointer = 0
+
         self.ModuleList = []
-        self.StrategyList = []
 
         self.Data = {}
         self.Result = {}
@@ -20,6 +20,7 @@ class Brokor:
         self.j = self.Judge
         self.r = self.Result
     
+
     def RequireData(self, DataName):
         for Name in DataName:
             if Name not in self.Data:
@@ -33,20 +34,6 @@ class Brokor:
         else:
             return self.Data[DataName][self.Pointer+Shift]
     
-    def GetDate(self, Shift=0):
-        return self.TimeLine[self.Pointer+Shift]
-    
-    def GetEmptyList(self):
-        return [None]*(self.DataRange[0]+1)
-
-    def SetTimeLine(self, TimeLine):
-        self.TimeLine = TimeLine
-        self.DataLength = len(TimeLine)
-        self.DataRange = [0, self.DataLength-1]
-    
-    def SetTime(self, Date):
-        self.Pointer = self.TimeLine.index(Date)
-            
     def ProvideData(self, Data):
         if not self.TimeLine:
             return
@@ -62,14 +49,30 @@ class Brokor:
                     self.DataRange[0] = Counter
                 self.Data[Item] = Data[Item]
 
+    
+    def GetDate(self, Shift=0):
+        return self.TimeLine[self.Pointer+Shift]
+    
+
+    def GetEmptyList(self):
+        return [None]*(self.DataRange[0]+1)
+
+
+    def SetTimeLine(self, TimeLine):
+        self.TimeLine = TimeLine
+        self.DataLength = len(TimeLine)
+        self.DataRange = [0, self.DataLength-1]
+    
+    def SetTime(self, Date):
+        self.Pointer = self.TimeLine.index(Date)
+            
+
     def GetTimeRange(self):
         return [self.TimeLine[0], self.TimeLine[-1]]
 
-    def LoadModule(self, Module):
+    def Process(self, Module):
         self.ModuleList.append(Module)
 
-    def LoadStrategy(self, Strategy):
-        self.StrategyList.append(Strategy)
 
     def Traversal(self, Function, LeftMargin=0, RightMargin=0):
         self.Pointer = self.DataRange[0]
@@ -94,15 +97,9 @@ class Brokor:
         for Module in self.ModuleList:
             Module.Run(self)
             self.Traversal(Module.TraversalFunction, LeftMargin=Module.LeftMargin, RightMargin=Module.RightMargin)
-        
-        self.RecommendOn = True
-        
-        for Strategy in self.StrategyList:
-            Strategy.Run(self)
-            self.Traversal(Strategy.TraversalFunction, LeftMargin=Strategy.LeftMargin, RightMargin=Strategy.RightMargin)
 
 
-class BrokorModule:
+class BrokorProcedure:
     def __init__(self):
         self.LeftMargin = 0
         self.RightMargin = 0

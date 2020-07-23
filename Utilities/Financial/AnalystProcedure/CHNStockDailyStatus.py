@@ -6,6 +6,6 @@ import PyBear.Utilities.Financial.Market as MarketBear
 import PyBear.Utilities.Financial.Brokor as BrokorBear
 import PyBear.Utilities.Financial.Analyst as AnalystBear
 
-class Config(AnalystBear.AnalystModule):
+class Config(AnalystBear.AnalystProcedure):
     def __init__(self):
         pass

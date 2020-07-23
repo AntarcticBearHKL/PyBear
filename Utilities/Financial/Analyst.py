@@ -17,7 +17,7 @@ class Analyst:
             Portfolio()
 
 
-class AnalystModule:
+class AnalystProcedure:
     def Run(self):
         pass
     

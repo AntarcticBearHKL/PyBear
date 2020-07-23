@@ -4,7 +4,7 @@ import numpy
 import PyBear.GlobalBear as GlobalBear
 import PyBear.Utilities.Financial.Brokor as BrokorBear
 
-class Config(BrokorBear.BrokorModule):
+class Config(BrokorBear.BrokorProcedure):
     def Run(self, Brokor):
         self.LeftMargin = 1
         Brokor.Data['StrategyAlpha'] = [None] * self.LeftMargin
