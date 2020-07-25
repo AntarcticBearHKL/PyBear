@@ -4,8 +4,7 @@ import PyBear.Utilities.Financial.Brokor as BrokorBear
 
 class Config(BrokorBear.BrokorProcedure):
     def Run(self):
-        print('ajjjjjjjjjjjjjjjjjjjjjjjjjjjjj')
-        TimeRange = MarketBear.CHN.StockMarket().GetTradeDayRange(Day=self.GetConfig('Day', '120'))
+        TimeRange = MarketBear.CHN.StockMarket().GetTradeDayRange(Day=int(self.GetConfig('Day', '120')))
         Data = MarketBear.CHN.Stock(self.GetConfig('StockCode')).GetPrice(TimeRange)
         TimeLine = []
         OpenList = []

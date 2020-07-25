@@ -56,6 +56,7 @@ class Brokor:
     
     def SetTimeLine(self, TimeLine):
         self.TimeLine = TimeLine
+        self.DataLength = len(TimeLine)
         self.DataRange = [0, self.DataLength-1]
 
     def GetTime(self, Shift=0):
@@ -99,11 +100,16 @@ class Brokor:
 
     def Run(self):
         for Module in self.ModuleList:
+            Module.Brokor = self
+            Module.Run()
+            self.Traversal(Module.TraversalFunction, LeftMargin=Module.LeftMargin, RightMargin=Module.RightMargin)
+            return
             try:
                 Module.Brokor = self
-                Module.Run(self)
+                Module.Run()
                 self.Traversal(Module.TraversalFunction, LeftMargin=Module.LeftMargin, RightMargin=Module.RightMargin)
             except Exception as e:
+                print(e)
                 self.Result['Error']= True
                 self.Result['ErrorIn']= Module
                 self.Result['ErrorLog']= str(e)
@@ -111,20 +117,20 @@ class Brokor:
     
     def PrintData(self):
         for Counter in range(len(self.TimeLine)):
-            Ret = [self.TimeLine[Counter], ]
+            Ret = {}
             for Item in self.Data:
-                Ret.append(Item[Counter])
-            print(Ret)
+                Ret[Item] = self.Data[Item][Counter]
+            print(self.TimeLine[Counter], ': ', Ret)
 
 
 class BrokorProcedure:
-    def __init__(self, Config):
+    def __init__(self, Config={}):
         self.LeftMargin = 0
         self.RightMargin = 0
         self.Config = Config
 
     def GetConfig(self, Name, Default=None):
-        if Name in Config:
+        if Name in self.Config:
             return self.Config[Name]
         if Default != None:
             return Default
