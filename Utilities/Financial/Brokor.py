@@ -13,7 +13,7 @@ class Brokor:
 
         self.Data = {}
         self.Result = {
-            'Recommended': []
+            'Recommended': [],
             'Error': False,
             'ErrorIn': None,
             'ErrorLog': '',
@@ -56,7 +56,6 @@ class Brokor:
     
     def SetTimeLine(self, TimeLine):
         self.TimeLine = TimeLine
-        self.DataLength = len(TimeLine)
         self.DataRange = [0, self.DataLength-1]
 
     def GetTime(self, Shift=0):
@@ -91,7 +90,7 @@ class Brokor:
         return False
 
     def Recommend(self, Reason):
-        self.Result['Recommended']= Reason
+        self.Result['Recommended'].append(Reason)
 
 
     def Process(self, Module):
@@ -101,12 +100,21 @@ class Brokor:
     def Run(self):
         for Module in self.ModuleList:
             try:
+                Module.Brokor = self
                 Module.Run(self)
                 self.Traversal(Module.TraversalFunction, LeftMargin=Module.LeftMargin, RightMargin=Module.RightMargin)
             except Exception as e:
                 self.Result['Error']= True
                 self.Result['ErrorIn']= Module
                 self.Result['ErrorLog']= str(e)
+
+    
+    def PrintData(self):
+        for Counter in range(len(self.TimeLine)):
+            Ret = [self.TimeLine[Counter], ]
+            for Item in self.Data:
+                Ret.append(Item[Counter])
+            print(Ret)
 
 
 class BrokorProcedure:
@@ -115,10 +123,16 @@ class BrokorProcedure:
         self.RightMargin = 0
         self.Config = Config
 
-    def GetConfig(self, Name):
+    def GetConfig(self, Name, Default=None):
         if Name in Config:
             return self.Config[Name]
-        return False
+        if Default != None:
+            return Default
+        raise GlobalBear.BadBear('No Config '+Name)
+
+    def Output(self, Name, Data):
+        if Name in self.Config['Output']:
+            self.Brokor.ProvideData({self.Config['Output'][Name]: Data})
 
     def Run(self):
         pass

@@ -3,14 +3,10 @@ import PyBear.Utilities.Financial.Market as MarketBear
 import PyBear.Utilities.Financial.Brokor as BrokorBear
 
 class Config(BrokorBear.BrokorProcedure):
-    def __init__(self, StockCode, Day=120):
-        super().__init__()
-        self.StockCode = StockCode
-        self.Day = Day
-
-    def Run(self, Brokor):
-        TimeRange = MarketBear.CHN.StockMarket().GetTradeDayRange(Day=self.Day)
-        Data = MarketBear.CHN.Stock(self.StockCode).GetPrice(TimeRange)
+    def Run(self):
+        print('ajjjjjjjjjjjjjjjjjjjjjjjjjjjjj')
+        TimeRange = MarketBear.CHN.StockMarket().GetTradeDayRange(Day=self.GetConfig('Day', '120'))
+        Data = MarketBear.CHN.Stock(self.GetConfig('StockCode')).GetPrice(TimeRange)
         TimeLine = []
         OpenList = []
         HighList = []
@@ -28,12 +24,11 @@ class Config(BrokorBear.BrokorProcedure):
             VolList.append(Item['Volumn'])
             AmountList.append(Item['Amount'])
 
-        Brokor.SetTimeLine(TimeLine)
+        self.Brokor.SetTimeLine(TimeLine)
 
-        Brokor.ProvideData({
-            'Open': OpenList,
-            'High': HighList,
-            'Low': LowList,
-            'Close': CloseList,
-            'Vol': VolList,
-            'Amount': AmountList})
+        self.Output('Open', OpenList)
+        self.Output('High', HighList)
+        self.Output('Low', LowList)
+        self.Output('Close', CloseList)
+        self.Output('Vol', VolList)
+        self.Output('Amount', AmountList)
