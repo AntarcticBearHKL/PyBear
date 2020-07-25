@@ -1,5 +1,6 @@
 import numpy
 import os,sys
+import json
 
 import PyBear.GlobalBear as GlobalBear
 
@@ -11,12 +12,15 @@ class Brokor:
         self.ModuleList = []
 
         self.Data = {}
-        self.Result = {}
-        self.Recommended = False
-        self.RecommendON = False
+        self.Result = {
+            'Recommended': []
+            'Error': False,
+            'ErrorIn': None,
+            'ErrorLog': '',
+        }
         
-        self.g = self.GetData
-        self.d = self.GetDate
+        self.d = self.GetData
+        self.t = self.GetTime
         self.j = self.Judge
         self.r = self.Result
     
@@ -50,30 +54,26 @@ class Brokor:
                 self.Data[Item] = Data[Item]
 
     
-    def GetDate(self, Shift=0):
-        return self.TimeLine[self.Pointer+Shift]
-    
-
-    def GetEmptyList(self):
-        return [None]*(self.DataRange[0]+1)
-
-
     def SetTimeLine(self, TimeLine):
         self.TimeLine = TimeLine
         self.DataLength = len(TimeLine)
         self.DataRange = [0, self.DataLength-1]
-    
-    def SetTime(self, Date):
-        self.Pointer = self.TimeLine.index(Date)
-            
+
+    def GetTime(self, Shift=0):
+        return self.TimeLine[self.Pointer+Shift]
 
     def GetTimeRange(self):
         return [self.TimeLine[0], self.TimeLine[-1]]
 
-    def Process(self, Module):
-        self.ModuleList.append(Module)
+    
+    def SetPointer(self, Date):
+        self.Pointer = self.TimeLine.index(Date)
 
 
+    def GetEmptyList(self):
+        return [None]*(self.DataRange[0]+1)
+
+    
     def Traversal(self, Function, LeftMargin=0, RightMargin=0):
         self.Pointer = self.DataRange[0]
         self.PointerMargin = [self.DataRange[0]+LeftMargin, self.DataRange[1]-RightMargin]
@@ -82,27 +82,43 @@ class Brokor:
             self.Pointer += 1
             if ExitCode or self.Pointer > self.PointerMargin[1]:
                 break
-    
+
+
     def Judge(self, JudgeList):
         for JudgeItem in JudgeList:
             if JudgeItem.count(False) == 0:
                 return True
         return False
 
-    def Recommend(self):
-        if self.RecommendON:
-            self.Recommended = True
+    def Recommend(self, Reason):
+        self.Result['Recommended']= Reason
+
+
+    def Process(self, Module):
+        self.ModuleList.append(Module)
+
 
     def Run(self):
         for Module in self.ModuleList:
-            Module.Run(self)
-            self.Traversal(Module.TraversalFunction, LeftMargin=Module.LeftMargin, RightMargin=Module.RightMargin)
+            try:
+                Module.Run(self)
+                self.Traversal(Module.TraversalFunction, LeftMargin=Module.LeftMargin, RightMargin=Module.RightMargin)
+            except Exception as e:
+                self.Result['Error']= True
+                self.Result['ErrorIn']= Module
+                self.Result['ErrorLog']= str(e)
 
 
 class BrokorProcedure:
-    def __init__(self):
+    def __init__(self, Config):
         self.LeftMargin = 0
         self.RightMargin = 0
+        self.Config = Config
+
+    def GetConfig(self, Name):
+        if Name in Config:
+            return self.Config[Name]
+        return False
 
     def Run(self):
         pass
