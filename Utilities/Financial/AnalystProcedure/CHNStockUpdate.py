@@ -13,7 +13,7 @@ class Config(AnalystBear.AnalystProcedure):
         TM = MultitaskBear.TaskMatrix(2,32, LimitPerMinute=LimitPerMinute)
 
         CHNStockMarket = MarketBear.CHN.StockMarket().Update()
-        LastTradeDay = CHNStockMarket.GetTradeDay(Day=1)[0]
+        LastTradeDay = CHNStockMarket.LatestTradeDay()
 
         RedisBear.Redis('RedisLocal').delete('CHNStockUpdate')
 

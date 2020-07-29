@@ -192,53 +192,17 @@ class CHN:
                 return True
             return False
 
-        def GetTradeDay(self, Start=None, End=None, Day=None):
+        def LatestTradeDay(self):
             TradeDayTable = MongoDBBear.MongoDB('MongoDB', 'StockCHN', 'TradeDay')
-            if Start and End:  
-                Ret = TradeDayTable.Search({
-                    '$and': [
-                        { 'Date': {'$gte': int(Start)} },
-                        { 'Date': {'$lte': int(End)}   },
-                    ],
-                    'IsOpen': 1,
-                }, Sort=['Date', 1])
-                return [Item['Date'] for Item in Ret]
-            elif Start and Day:
-                Ret = TradeDayTable.Search({
-                    '$and': [
-                        { 'Date': {'$gte': int(Start)} },
-                    ],
-                    'IsOpen': 1,
-                }, Sort=['Date', 1], Limit=Day)
-                return [Item['Date'] for Item in Ret]
-            elif End and Day:
-                Ret = TradeDayTable.Search({
-                    '$and': [
-                        { 'Date': {'$lte': int(End)}   },
-                    ],
-                    'IsOpen': 1,
-                }, Sort=['Date', -1], Limit=Day)
-                Ret.reverse()
-                return [Item['Date'] for Item in Ret]
-            elif Day:
-                if ChronusBear.Date().HourInt() <= 17:
-                    TargetDay = ChronusBear.Date().Shift(Day=-1).String(-1)
-                else:
-                    TargetDay = ChronusBear.Date().String(-1)
-                Ret = TradeDayTable.Search({
-                    '$and': [
-                        { 'Date': {'$lte': int(TargetDay)} },
-                    ],
-                    'IsOpen': 1,
-                }, Sort=['Date', -1], Limit=Day)
-                Ret.reverse()
-                return [Item['Date'] for Item in Ret]
+            if ChronusBear.Date().HourInt() <= 17:
+                TargetDay = ChronusBear.Date().Shift(Day=-1).String(-1)
             else:
-                raise BadBear('--------GetTradeDay Para Error---------')
+                TargetDay = ChronusBear.Date().String(-1)
+            Ret = TradeDayTable.Search({
+                'Date' : {'$lte': int(TargetDay)},
+            }, Sort=['Date', -1], Limit=1)
+            return Ret[0]['Date']
 
-        def GetTradeDayRange(self, Start=None, End=None, Day=None):
-            Ret = self.GetTradeDay(Start=Start, End=End, Day=Day)
-            return [Ret[0], Ret[-1]]
 
     class FundMarket:
         def __init__(self):
@@ -340,19 +304,37 @@ class CHN:
             self.TickTable.Insert(Data)
             print(self.TSCode, ': UPDATE ', str(len(Data)), ' Data')
 
-        def GetPrice(self, TimeRange):
-            Ret = self.TickTable.Search({
-                '$and': [
-                    {'Date': {'$gte': TimeRange[0]}},
-                    {'Date': {'$lte': TimeRange[1]}}]
-            })
-            return Ret
+        def GetPrice(self, Start=None, End=None, Day=None):
+            if Start and End:  
+                Ret = self.TickTable.Search({
+                    '$and': [
+                        { 'Date': {'$gte': int(Start)} },
+                        { 'Date': {'$lte': int(End)}   },
+                    ],
+                }, Sort=['Date', 1])
+                return Ret
+            elif Start and Day:
+                Ret = self.TickTable.Search({
+                    'Date': {'$gte': int(Start)},
+                }, Sort=['Date', 1], Limit=int(Day))
+                return Ret
+            elif End and Day:
+                Ret = self.TickTable.Search({
+                    'Date': {'$lte': int(End)}
+                }, Sort=['Date', -1], Limit=int(Day))
+                Ret.reverse()
+                return Ret
+            elif Day:
+                if ChronusBear.Date().HourInt() <= 17:
+                    TargetDay = ChronusBear.Date().Shift(Day=-1).String(-1)
+                else:
+                    TargetDay = ChronusBear.Date().String(-1)
+                Ret = self.TickTable.Search({}, Sort=['Date', -1], Limit=int(Day))
+                Ret.reverse()
+                return Ret
+            else:
+                raise GlobalBear.BadBear('GetPrice Parameter Error')
    
-        def GetTimeRange(self):
-            Ret = [
-                self.TickTable.Search({},Sort=['Date', 1],Limit=1)[0]['Date'],
-                self.TickTable.Search({},Sort=['Date', -1],Limit=1)[0]['Date']]
-            return Ret
 
     class Index:
         def __init__(self, TSCode):

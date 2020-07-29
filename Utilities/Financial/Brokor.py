@@ -158,7 +158,6 @@ class BrokorProcedure:
         if Name in self.Config['Output']:
             self.Brokor.ProvideData({Name: Data})
 
-
     def Run(self):
         pass
 
