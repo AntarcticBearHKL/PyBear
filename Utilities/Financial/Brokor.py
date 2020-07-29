@@ -154,6 +154,11 @@ class BrokorProcedure:
         else:
             raise GlobalBear.BadBear('No Data '+Name)
 
+    def CheckInput(self, Name):
+        if self.Brokor.RequireData([Name]):
+            return True
+        return False
+
     def Output(self, Name, Data):
         if Name in self.Config['Output']:
             self.Brokor.ProvideData({Name: Data})

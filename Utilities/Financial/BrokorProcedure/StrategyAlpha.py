@@ -5,12 +5,13 @@ import PyBear.GlobalBear as GlobalBear
 import PyBear.Utilities.Financial.Brokor as BrokorBear
 
 class Config(BrokorBear.BrokorProcedure):
-    def Run(self, Brokor):
+    def Run(self):
         self.LeftMargin = 1
-        Brokor.NewEmptyList('StrategyAlpha', self.LeftMargin)
-        Brokor.NewResult('StrategyAlpha')
+        #self.Brokor.NewEmptyList('StrategyAlpha', self.LeftMargin)
+        self.Brokor.NewResult('StrategyAlpha')
         
     def TraversalFunction(self, b):
+        return
         ConditionA = b.j([
             [
                 b.g('KDJF', -1) < b.g('KDJS', -1),

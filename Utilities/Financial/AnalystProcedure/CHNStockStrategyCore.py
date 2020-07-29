@@ -34,12 +34,23 @@ class Config(AnalystBear.AnalystProcedure):
         while True:
             try:
                 Brokor = BrokorBear.Brokor()
-                Brokor.LoadModule(OHCLVA.Config(StockCode=StockCode))
-                Brokor.LoadModule(MACD.Config())
-                Brokor.LoadModule(BOLL.Config())
-                Brokor.LoadModule(KDJ.Config())
-                Brokor.LoadModule(RSI.Config())
-                Brokor.LoadModule(StrategyAlpha.Config())
+                Brokor.Process(OHCLVA.Config({
+                    'Input': [],
+                    'Output': ['Close'],
+                    'StockCode': '000001.SZ',
+                    'Day': '500'
+                }))
+                Brokor.Process(MACD.Config({
+                    'Input': ['Close'],
+                    'Output': ['MACD'],
+                    'Fast': '22',
+                    'Slow': '120',
+                    'Signal': '9'
+                }))
+                Brokor.Process(StrategyAlpha.Config({
+                    'Input': ['MACDX', 'MACDVX'],
+                    'Output': [],
+                }))
                 Brokor.Run()
 
                 if Brokor.Recommended:

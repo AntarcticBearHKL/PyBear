@@ -28,44 +28,48 @@ class Config(BrokorBear.BrokorProcedure):
         self.Output('MACDV', MACDV)
 
         self.LeftMargin = 2
-        self.Brokor.NewEmptyList('MACDX', self.LeftMargin)
-        self.Brokor.NewEmptyList('MACDVX', self.LeftMargin)
+        if self.CheckInput('MACD'):
+            self.Brokor.NewEmptyList('MACDX', self.LeftMargin)
+        if self.CheckInput('MACDV'):
+            self.Brokor.NewEmptyList('MACDVX', self.LeftMargin)
 
     def TraversalFunction(self, b):
-        ConditionA = b.j([
-            [
-                b.d('MACD', -2) < 0,
-                b.d('MACD', -1) > 0,
-            ],
-        ])
-        ConditionB = b.j([
-            [
-                b.d('MACD', -2) > 0,
-                b.d('MACD', -1) < 0,
-            ],
-        ])
-        if ConditionA:
-            b.Data['MACDX'].append(1)
-        elif ConditionB:
-            b.Data['MACDX'].append(-1)
-        else:
-            b.Data['MACDX'].append(0)
+        if self.CheckInput('MACD'):
+            ConditionA = b.j([
+                [
+                    b.d('MACD', -2) < 0,
+                    b.d('MACD', -1) > 0,
+                ],
+            ])
+            ConditionB = b.j([
+                [
+                    b.d('MACD', -2) > 0,
+                    b.d('MACD', -1) < 0,
+                ],
+            ])
+            if ConditionA:
+                b.Data['MACDX'].append(1)
+            elif ConditionB:
+                b.Data['MACDX'].append(-1)
+            else:
+                b.Data['MACDX'].append(0)
 
-        ConditionA = b.j([
-            [
-                b.d('MACDV', -2) < 0,
-                b.d('MACDV', -1) > 0,
-            ],
-        ])
-        ConditionB = b.j([
-            [
-                b.d('MACDV', -2) > 0,
-                b.d('MACDV', -1) < 0,
-            ],
-        ])
-        if ConditionA:
-            b.Data['MACDVX'].append(1)
-        elif ConditionB:
-            b.Data['MACDVX'].append(-1)
-        else:
-            b.Data['MACDVX'].append(0)
+        if self.CheckInput('MACDV'):
+            ConditionA = b.j([
+                [
+                    b.d('MACDV', -2) < 0,
+                    b.d('MACDV', -1) > 0,
+                ],
+            ])
+            ConditionB = b.j([
+                [
+                    b.d('MACDV', -2) > 0,
+                    b.d('MACDV', -1) < 0,
+                ],
+            ])
+            if ConditionA:
+                b.Data['MACDVX'].append(1)
+            elif ConditionB:
+                b.Data['MACDVX'].append(-1)
+            else:
+                b.Data['MACDVX'].append(0)
