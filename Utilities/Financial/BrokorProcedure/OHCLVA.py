@@ -4,8 +4,11 @@ import PyBear.Utilities.Financial.Brokor as BrokorBear
 
 class Config(BrokorBear.BrokorProcedure):
     def Run(self):
-        TimeRange = MarketBear.CHN.StockMarket().GetTradeDayRange(Day=int(self.GetConfig('Day', '120')))
+        TimeRange = MarketBear.CHN.StockMarket().GetTradeDayRange(Day=self.GetConfigInt('Day', '120'))
         Data = MarketBear.CHN.Stock(self.GetConfig('StockCode')).GetPrice(TimeRange)
+        print(self.GetConfigInt('Day', '120'))
+        if len(Data) != self.GetConfigInt('Day', '120'):
+            raise GlobalBear.BadBear('Not Enough Trade Day')
         TimeLine = []
         OpenList = []
         HighList = []

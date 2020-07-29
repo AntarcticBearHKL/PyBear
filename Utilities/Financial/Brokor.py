@@ -78,8 +78,8 @@ class Brokor:
 
     
     def Traversal(self, Function, LeftMargin=0, RightMargin=0):
-        self.Pointer = self.DataRange[0]
-        self.PointerMargin = [self.DataRange[0]+LeftMargin, self.DataRange[1]-RightMargin]
+        self.Pointer = self.DataRange[0] + LeftMargin + 1
+        self.PointerMargin = [self.DataRange[0]+LeftMargin+1, self.DataRange[1]-RightMargin]
         while True:
             ExitCode = Function(self)
             self.Pointer += 1
@@ -106,7 +106,7 @@ class Brokor:
             Module.Brokor = self
             Module.Run()
             self.Traversal(Module.TraversalFunction, LeftMargin=Module.LeftMargin, RightMargin=Module.RightMargin)
-            return
+            continue
             try:
                 Module.Brokor = self
                 Module.Run()
@@ -149,7 +149,10 @@ class BrokorProcedure:
 
 
     def Input(self, Name):
-        pass
+        if self.Brokor.RequireData([Name]):
+            return self.Brokor.GetData(Name)
+        else:
+            raise GlobalBear.BadBear('No Data '+Name)
 
     def Output(self, Name, Data):
         if Name in self.Config['Output']:
