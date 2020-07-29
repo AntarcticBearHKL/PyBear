@@ -7,8 +7,8 @@ import PyBear.Utilities.Financial.Brokor as BrokorBear
 class Config(BrokorBear.BrokorProcedure):
     def Run(self, Brokor):
         self.LeftMargin = 1
-        Brokor.Data['StrategyAlpha'] = [None] * self.LeftMargin
-        Brokor.Result['StrategyAlpha'] = []
+        Brokor.NewEmptyList('StrategyAlpha', self.LeftMargin)
+        Brokor.NewResult('StrategyAlpha')
         
     def TraversalFunction(self, b):
         ConditionA = b.j([

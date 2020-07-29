@@ -70,8 +70,11 @@ class Brokor:
         self.Pointer = self.TimeLine.index(Date)
 
 
-    def GetEmptyList(self):
-        return [None]*(self.DataRange[0]+1)
+    def NewEmptyList(self, Name, Margin):
+        self.Data[Name] = [None] * (self.DataRange[0] + 1 + Margin)
+
+    def NewResult(self, Name):
+        self.Result[Name] = []
 
     
     def Traversal(self, Function, LeftMargin=0, RightMargin=0):
@@ -129,6 +132,7 @@ class BrokorProcedure:
         self.RightMargin = 0
         self.Config = Config
 
+
     def GetConfig(self, Name, Default=None):
         if Name in self.Config:
             return self.Config[Name]
@@ -136,9 +140,21 @@ class BrokorProcedure:
             return Default
         raise GlobalBear.BadBear('No Config '+Name)
 
+    def GetConfigInt(self, Name, Default=None):
+        if Name in self.Config:
+            return int(self.Config[Name])
+        if Default != None:
+            return int(Default)
+        raise GlobalBear.BadBear('No Config '+Name)
+
+
+    def Input(self, Name):
+        pass
+
     def Output(self, Name, Data):
         if Name in self.Config['Output']:
-            self.Brokor.ProvideData({self.Config['Output'][Name]: Data})
+            self.Brokor.ProvideData({Name: Data})
+
 
     def Run(self):
         pass
