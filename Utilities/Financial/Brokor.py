@@ -13,11 +13,11 @@ class Brokor:
 
         self.Data = {}
         self.Result = {
-            'Recommended': [],
             'Error': False,
             'ErrorIn': None,
             'ErrorLog': '',
         }
+        self.Recommended = False
         
         self.d = self.GetData
         self.t = self.GetTime
@@ -93,8 +93,8 @@ class Brokor:
                 return True
         return False
 
-    def Recommend(self, Reason):
-        self.Result['Recommended'].append(Reason)
+    def Recommend(self):
+        self.Recommended = True
 
 
     def Process(self, Module):
@@ -118,11 +118,17 @@ class Brokor:
                 self.Result['ErrorLog']= str(e)
 
     
-    def PrintData(self):
+    def PrintData(self, Filter=None):
+        if Filter:
+            pass
         for Counter in range(len(self.TimeLine)):
             Ret = {}
             for Item in self.Data:
-                Ret[Item] = self.Data[Item][Counter]
+                if Filter:
+                    if Item in Filter:
+                        Ret[Item] = self.Data[Item][Counter]
+                else:
+                    Ret[Item] = self.Data[Item][Counter]
             print(self.TimeLine[Counter], ': ', Ret)
 
 
@@ -160,8 +166,7 @@ class BrokorProcedure:
         return False
 
     def Output(self, Name, Data):
-        if Name in self.Config['Output']:
-            self.Brokor.ProvideData({Name: Data})
+        self.Brokor.ProvideData({Name: Data})
 
     def Run(self):
         pass

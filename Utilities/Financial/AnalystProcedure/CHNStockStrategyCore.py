@@ -13,7 +13,8 @@ import PyBear.Utilities.Financial.BrokorProcedure.MACD as MACD
 import PyBear.Utilities.Financial.BrokorProcedure.BOLL as BOLL
 import PyBear.Utilities.Financial.BrokorProcedure.KDJ as KDJ
 import PyBear.Utilities.Financial.BrokorProcedure.RSI as RSI
-import PyBear.Utilities.Financial.BrokorProcedure.StrategyAlpha as StrategyAlpha
+import PyBear.Utilities.Financial.BrokorProcedure.StrategyMACD as StrategyMACD
+import PyBear.Utilities.Financial.BrokorProcedure.Recommander as Recommander
 
 class Config(AnalystBear.AnalystProcedure):
     def __init__(self):
@@ -35,34 +36,32 @@ class Config(AnalystBear.AnalystProcedure):
             try:
                 Brokor = BrokorBear.Brokor()
                 Brokor.Process(OHCLVA.Config({
-                    'Input': [],
-                    'Output': ['Close'],
-                    'StockCode': '000001.SZ',
-                    'Day': '500'
+                    'StockCode': StockCode,
+                    'Day': '250'
                 }))
                 Brokor.Process(MACD.Config({
-                    'Input': ['Close'],
-                    'Output': ['MACD'],
                     'Fast': '22',
                     'Slow': '120',
                     'Signal': '9'
                 }))
-                Brokor.Process(StrategyAlpha.Config({
-                    'Input': ['MACDX', 'MACDVX'],
-                    'Output': [],
+                Brokor.Process(StrategyMACD.Config({}))
+                Brokor.Process(Recommander.Config({
+                    'Target': 'StrategyMACD'
                 }))
                 Brokor.Run()
 
                 if Brokor.Recommended:
+                    print(StockCode, 'Success')
                     RedisBear.Redis('RedisLocal').hset(DBName, str(StockCode), 'Success')
-                print(StockCode)
+                else:
+                    print(StockCode, 'Failed')
                 break
             except Exception as e:
-                ErrorCounter +=1
+                '''ErrorCounter +=1
                 print(StockCode, ': Error(' + str(ErrorCounter) +')')
-                if ErrorCounter >= 5:
-                    RedisBear.Redis('RedisLocal').hset(DBName, StockCode, 'Error: ' + str(e))
-                    break
+                if ErrorCounter >= 2:'''
+                RedisBear.Redis('RedisLocal').hset(DBName, StockCode, 'Error: ' + str(e))
+                break
 
     def Portfolio(self):
         Keys = RedisBear.Redis('RedisLocal').hgetall(self.StrategyName)
