@@ -51,7 +51,7 @@ class Config(BrokorBear.BrokorProcedure):
             b.Data['MACDMX'].append(1)
         elif ConditionB:
             b.Data['MACDMX'].append(2)
-        elif ConditionB:
+        elif ConditionC:
             b.Data['MACDMX'].append(-1)
         else:
             b.Data['MACDMX'].append(0)

@@ -325,10 +325,15 @@ class CHN:
                 Ret.reverse()
                 return Ret
             elif Day:
+                if Day<0:
+                    Ret = self.TickTable.Search({})
+                    return Ret
+
                 if ChronusBear.Date().HourInt() <= 17:
                     TargetDay = ChronusBear.Date().Shift(Day=-1).String(-1)
                 else:
                     TargetDay = ChronusBear.Date().String(-1)
+                    
                 Ret = self.TickTable.Search({}, Sort=['Date', -1], Limit=int(Day))
                 Ret.reverse()
                 return Ret
