@@ -15,7 +15,7 @@ class Config(BrokorBear.BrokorProcedure):
 
         MACDM = talib.MA(
             numpy.array(MACD),
-            timeperiod=5,
+            timeperiod=10,
         )
 
         MACDM = (MACD - MACDM) * 10

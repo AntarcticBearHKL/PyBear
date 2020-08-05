@@ -16,13 +16,11 @@ class Config(BrokorBear.BrokorProcedure):
                 b.d('DIF', 0) > 0,
                 b.d('DEA', 0) > 0,
                 b.d('MACDMX', 0) == 1,
+                ((b.d('Close', 0)-b.d('Close', -1))/b.d('Close', -1)) < 0.04
             ],
         ])
         ConditionB = b.j([
             [
-                b.d('DIF', -1) > b.d('DEA', -1),
-                b.d('DIF', -1) > 0,
-                b.d('DEA', -1) > 0,
                 b.d('MACDMX', -1) == 1,
             ],
         ])
