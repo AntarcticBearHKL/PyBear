@@ -28,7 +28,7 @@ class Result:
 
 def CatchResult(Input=None):
     if type(Input) != Result:
-        return True
+        assert 0
     print(Input.Explaination)
     return Input.Code
 

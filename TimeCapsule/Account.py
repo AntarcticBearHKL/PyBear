@@ -8,23 +8,33 @@ class Account(Core.Core):
         Core.Core.__init__(self)
         self.Name = 'Account'
         self.Code = {
+            '6001': self.FN6001, # 汇总账
+            '6002': self.FN6002, # 对账
+            '6006': self.FN6006, # 记录
+
             '6101': self.FN6101, # 开立新账
             '6102': self.FN6102, # 记借方
             '6103': self.FN6103, # 记贷方
-            '6106': self.FN6606, # 记账登记
-            '6107': self.FN6607, # 登记记账
 
-            '6601': self.FN6601, # 记账登记
-            '6602': self.FN6602, # 记借方
-            '6603': self.FN6603, # 记贷方
-            '6606': self.FN6606, # 记账
+            '6201': self.FN6201, # 记账登记
+            '6202': self.FN6202, # 记借方
+            '6203': self.FN6203, # 记贷方
 
-            '6701': self.FN6701, # 查询现金余额
-            '6721': self.FN6721, # 查询当日损益
-            '6725': self.FN6725, # 查询时段损益数据
-
-            '6999': self.FN6999, # 汇总账
+            '6601': self.FN6601, # 查询现金余额
+            '6621': self.FN6606, # 查询当日损益
+            '6625': self.FN6621, # 查询时段损益数据
         }
+
+
+    def FN6001(self):
+        print('Success')
+
+    def FN6002(self):
+        print('Success')
+
+    def FN6006(self):
+        print('Success')
+
 
     def FN6101(self):
         Code, Type, Name = self.GetParameter([4, 1, 'Name'])
@@ -101,11 +111,7 @@ class Account(Core.Core):
         })
 
 
-    def FN6106(self):
-        print('Success')
-
-
-    def FN6602(self):
+    def FN6201(self):
         Code, Amount, Label = self.GetParameter([4, -2, 'Label'])
 
         BalanceSheet = Mongo.MongoDB('ConsoleServer', 'TimeCapsule', 'BalanceSheet')
@@ -132,7 +138,7 @@ class Account(Core.Core):
             'Remark': str(Remark),
         })
 
-    def FN6603(self):
+    def FN6202(self):
         Code, Amount, Label= self.GetParameter([4, -2, 'Label'])
 
         BalanceSheet = Mongo.MongoDB('ConsoleServer', 'TimeCapsule', 'BalanceSheet')
@@ -159,18 +165,17 @@ class Account(Core.Core):
             'Remark': str(Remark),
         })
 
-
-    def FN6701(self):
+    def FN6203(self):
         print('Success')
 
 
-    def FN6721(self):
-        print('Success')
- 
-    def FN6725(self):
+    def FN6601(self):
         print('Success')
 
-    def FN6999(self):
+    def FN6606(self):
+        print('Success')
+
+    def FN6621(self):
         print('Success')
 
 Core.NewModule(Account())
