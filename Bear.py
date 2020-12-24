@@ -1,6 +1,23 @@
 #------------------------
 #GlobalFunction:
 #------------------------
+
+class Result:
+    def __init__(self, Code, Explaination = None):
+        self.Code = Code
+        self.Explaination = Explaination
+
+def CatchResult(Input=None, Restrict = True):
+    if type(Input) != Result:
+        if Restrict:
+            assert 0
+        else:
+            return Input
+    if Input.Explaination:
+        print(Input.Explaination)
+    return Input.Code
+
+
 class BadBear(Exception):
     def __init__(self, Explain):
         self.Explain = Explain
@@ -21,16 +38,6 @@ def CatchBadBear(Fn, *args, **kwargs):
                 return Error.Except()
     return Ret
 
-class Result:
-    def __init__(self, Code, Explaination):
-        self.Code = Code
-        self.Explaination = Explaination
-
-def CatchResult(Input=None):
-    if type(Input) != Result:
-        assert 0
-    print(Input.Explaination)
-    return Input.Code
 
 ServerList = {}
 class NewServer:
@@ -51,6 +58,7 @@ def GenerateServerCode(Key, IP, Port, Username, Password):
     Ret += Cipher.AESEncrypt(Username, Key)
     Ret += Cipher.AESEncrypt(Password, Key)
     return Ret
+
 
 LocationList = {}
 class NewLocation:

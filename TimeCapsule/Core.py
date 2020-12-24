@@ -1,6 +1,10 @@
 import PyBear.Bear as Bear
 import PyBear.System.Chronus as Cr
 
+Para_Money = -1
+Para_Date = -2
+Para_String = -3
+
 ModuleList = {}
 def NewModule(Module):
     ModuleList[Module.Name] = [list(Module.Code), Module]
@@ -18,7 +22,7 @@ def Cast(Input):
         if Code in ModuleList[Item][0]:
             return ModuleList[Item][1].Run(Code, Input)
         else:
-            return Bear.Result(-1, 'Code Not Exist')
+            return Bear.Result(0, 'Code Not Exist')
 
 class Core:
     def __init__(self):
@@ -28,24 +32,21 @@ class Core:
     
     def Run(self, Code, Input):
         self.Input = Input
-        self.Code[str(Code)]()
+        return self.Code[str(Code)]()
 
-    def GetParameter(self, NumberList, InputCheck = None):
+    def GetParameter(self, ParameterList, InputCheck = None):
         Ret = []
         if len(self.Input) <= 0:
             raise Bear.BadBear('Input Error')
 
-        for Num in NumberList:
-            if len(self.Input) <= 0:
-                raise Bear.BadBear('Input Error')
-
-            if Num > 0: #标准读取
-                Ret.append(self.ParaDefault(Num))
-            elif Num == -1: # 日期输入
+        for Parameter in ParameterList:
+            if Parameter > 0: #标准读取
+                Ret.append(self.ParaDefault(Parameter))
+            elif Parameter == Para_Date: # 日期输入
                 Ret.append(self.ParaDate())
-            elif Num ==-2: # 金额输入
+            elif Parameter == Para_Money: # 金额输入
                 Ret.append(self.ParaMoney())
-            elif Num ==-3: # 字符输入
+            elif Parameter == Para_String: # 字符输入
                 Ret.append(self.ParaString())
         
         return Ret
@@ -64,14 +65,17 @@ class Core:
             if Counter == 14:
                 break
 
-        if Counter == 14:
+        if Counter == 0:
+            Para = 0
+            self.Input = self.Input[1:]
+        elif Counter == 14:
             Para = int(self.Input[:14])
             self.Input = self.Input[14:]
         else:
             Para = int(self.Input[:Counter])
             self.Input = self.Input[Counter+1:]
 
-        if Para == 0 :
+        if Para == 0:
             return Cr.Date().String(-2)
         elif 0 < Para < 10:
             return Cr.Date().Shift(Day=Para).String(-2)

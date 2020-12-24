@@ -111,4 +111,9 @@ if Bear.TestUnit:
     })
 
 
-#db.createUser({'user':'su', 'pwd':'A11b22;;', 'roles':[{'role':'root', 'db':'admin'}], 'mechanisms':['SCRAM-SHA-1']});
+#db.createUser({
+# 'user':'Debuger', 
+# 'pwd':'A11b22;;', 
+# 'roles':[{'role':'readWrite', 'db':'TimeCapsule'}], 
+# 'mechanisms':['SCRAM-SHA-1']
+# });
