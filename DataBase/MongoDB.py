@@ -16,15 +16,20 @@ class MongoDB:
             mechanism='SCRAM-SHA-1')
         
 
-    def UseTable(self, TableName):
+    def SetTable(self, TableName):
         self.TableName = TableName
 
 
     def ListTable(self):
         return self.Connection[self.DatabasesName].list_collection_names()
 
-    def DeleteTable(self, TableName):
-        self.Connection[self.DatabasesName][TableName].drop()
+    def DeleteTable(self, TableName=None):
+        if TableName:
+            self.Connection[self.DatabasesName][TableName].drop()
+        elif self.TableName:
+            self.Connection[self.DatabasesName][self.TableName].drop()
+        else:
+            print("Unknown Error")
 
 
 

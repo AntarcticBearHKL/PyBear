@@ -9,7 +9,6 @@ ModuleList = {}
 def NewModule(Module):
     ModuleList[Module.Name] = [list(Module.Code), Module]
 
-@Bear.CatchBadBear
 def Cast(Input):
     Input = str(Input)
     if len(Input)<4:
@@ -22,7 +21,7 @@ def Cast(Input):
         if Code in ModuleList[Item][0]:
             return ModuleList[Item][1].Run(Code, Input)
         else:
-            return Bear.Result(0, 'Code Not Exist')
+            return Bear.Result(None, 'Code Not Exist')
 
 class Core:
     def __init__(self):
@@ -30,6 +29,7 @@ class Core:
         self.Code = {}
         self.Input = None
     
+    @Bear.CatchBadBear
     def Run(self, Code, Input):
         self.Input = Input
         return self.Code[str(Code)]()
@@ -37,7 +37,7 @@ class Core:
     def GetParameter(self, ParameterList, InputCheck = None):
         Ret = []
         if len(self.Input) <= 0:
-            raise Bear.BadBear('Input Error')
+            raise Bear.BadBear(lambda: print('Parameter Error: Parameter is None'))
 
         for Parameter in ParameterList:
             if Parameter > 0: #标准读取
@@ -48,13 +48,14 @@ class Core:
                 Ret.append(self.ParaMoney())
             elif Parameter == Para_String: # 字符输入
                 Ret.append(self.ParaString())
-        
+        if len(Ret) == 1:
+            return Ret[0]
         return Ret
 
     def ParaDefault(self, Num):
         Ret = self.Input[:Num]
         if Ret.count('.'):
-            raise Bear.BadBear('Input Error')
+            raise Bear.BadBear(lambda: print('Parameter Error: Default'))
         self.Input = self.Input[Num:]
         return Ret
 
@@ -86,7 +87,7 @@ class Core:
         elif len(str(Para)) == 14:
             return Cr.Date(str(Para)).String(-2)
         else:
-            raise Bear.BadBear('Input Error')
+            raise Bear.BadBear(lambda: print('Parameter Error: Date'))
 
     def ParaMoney(self):
         Counter = 0

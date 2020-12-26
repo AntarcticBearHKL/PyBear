@@ -9,16 +9,14 @@ class Account(Core.Core):
         self.Name = 'Account'
         self.Code = {
             '6001': self.FN6001, # 汇总账
-            '6002': self.FN6002, # 对账
-            '6006': self.FN6006, # 记录
+            '6002': self.FN6002, # 轧差对账
+            '6006': self.FN6006, # 流水
+            '6060': self.FN6060, # 余额查询
 
-            '6101': self.FN6101, # 开立新账
+            '6101': self.FN6101, # 开立账户
             '6102': self.FN6102, # 记借方
             '6103': self.FN6103, # 记贷方
-
-            '6201': self.FN6201, # 记账登记
-            '6202': self.FN6202, # 记借方
-            '6203': self.FN6203, # 记贷方
+            '6105': self.FN6105, # 销记账户
 
             '6601': self.FN6601, # 查询现金余额
             '6621': self.FN6606, # 查询当日损益
@@ -28,37 +26,52 @@ class Account(Core.Core):
             '6906': self.FN6906, # 标签信息显示
         }
 
-
     def FN6001(self):
         DB = Mongo.MongoDB('ConsoleServer', 'TimeCapsule', 'BalanceSheet')
-        print("\n资产账户：")
-        Debit = DB.Search({'Type':'1'})
+        Ret = {'资产账户':[], '负债账户':[], '权益账户':[]}
+        Debit = DB.Search({'Type':'1'}, Sort=['Code', 1])
         for Line in Debit:
-            print(Line['Code'], '\t', Line['Name'21], '\t¥', Line['Amount'])
+            Ret['资产账户'].append([Line['Code'], Line['Name'], Line['Amount']])
 
-        print("\n负债账户：")
-        Debit = DB.Search({'Type':'2'})
+        Debit = DB.Search({'Type':'2'}, Sort=['Code', 1])
         for Line in Debit:
-            print(Line['Code'], '\t', Line['Name'], '\t¥', Line['Amount'])
+            Ret['负债账户'].append([Line['Code'], Line['Name'], Line['Amount']])
 
-        print("\n权益账户：")
-        Debit = DB.Search({'Type':'3'})
+        Debit = DB.Search({'Type':'3'}, Sort=['Code', 1])
         for Line in Debit:
-            print(Line['Code'], '\t', Line['Name'], '\t¥', Line['Amount'])
-        print("\n")
-        return Bear.Result(1)
+            Ret['权益账户'].append([Line['Code'], Line['Name'], Line['Amount']])
+        return Ret
 
     def FN6002(self):
-        print('Success')
+        DB = Mongo.MongoDB('ConsoleServer', 'TimeCapsule', 'BalanceSheet').Search({})
+        DebitAmount = 0
+        CreditAmount = 0
+
+        for Item in DB:
+            if Item['Type'] == '1':
+                DebitAmount += Item['Amount']
+            else:
+                CreditAmount += Item['Amount']
+        print("借方：\t", DebitAmount)
+        print("借方：\t", CreditAmount)
+        Difference = round(DebitAmount - CreditAmount, 2)
+        if Difference >= 0:
+            Difference = '+ ' + str(Difference)
+        else:
+            Difference = '- ' + str(Difference)
+        print("差额：\t", Difference)
 
     def FN6006(self):
         print('Success')
 
+    def FN6060(self):
+        print('Success')
+
 
     def FN6101(self):
-        Code, Type, Name = self.GetParameter([4, 1, Core.Para_String])
-        #Code: 账户类型/分账序号/账目序号
+        Type, Code, Name = self.GetParameter([1, 4, Core.Para_String])
         #Type: 1资产 2负债 3权益
+        #Code: 账户类型/分账序号/账目序号
         #Name: 账户名称
 
         DB = Mongo.MongoDB('ConsoleServer', 'TimeCapsule', 'BalanceSheet')
@@ -149,63 +162,69 @@ class Account(Core.Core):
 
         return Bear.Result(1, 'Credit Record Success')
 
+    def FN6105(self):
+        Code = self.GetParameter([4])
+        #Code: 账户类型/分账序号/账目序号
+        BalanceSheet  = Mongo.MongoDB('ConsoleServer', 'TimeCapsule', 'BalanceSheet')
 
-    def FN6201(self):
-        Code, Amount, Label = self.GetParameter([4, -2, 'Label'])
+        if BalanceSheet.Search({'Code': Code}, Count= True) == 0:
+            return Bear.Result(-1, 'Account Not Exist')
 
-        BalanceSheet = Mongo.MongoDB('ConsoleServer', 'TimeCapsule', 'BalanceSheet')
+        DeletedAccountIndex = BalanceSheet.Search({'Code': Code})[0]
+        if DeletedAccountIndex['Type'] == '1':
+            if not BalanceSheet.Search({'Code': '6999'}, Count= True):
+                BalanceSheet.Insert({
+                    'Code': '6999',
+                    'Name': '待处理资产账户',
+                    'Type': '1',
+                    'Amount': float(0.00),
+                })  
+            WaitingAccountIndex = BalanceSheet.Search({'Code': '6999'})[0]
+            WaitingAccount = Mongo.MongoDB('ConsoleServer', 'TimeCapsule', 'Account6999')
 
-        AccountInfo = BalanceSheet.Search({'Code': str(Code)})
-        if len(AccountInfo) == 0:
-            return Bear.Result(-1, 'Account Does Not Exist')
-        
-        Amount = float(Amount)
-        if AccountInfo[0]['Type'] != 1:
-            Amount = -Amount
+            Mongo.MongoDB('ConsoleServer', 'TimeCapsule', 'Account'+Code).DeleteTable()
+            BalanceSheet.Delete({'Code': Code})
+        elif DeletedAccountIndex['Type'] == '2':
+            if not BalanceSheet.Search({'Code': '8999'}, Count= True):
+                BalanceSheet.Insert({
+                    'Code': '8999',
+                    'Name': '待处理负债账户',
+                    'Type': '2',
+                    'Amount': float(0.00),
+                })
+            WaitingAccountIndex = BalanceSheet.Search({'Code': '8999'})[0]
+            WaitingAccount = Mongo.MongoDB('ConsoleServer', 'TimeCapsule', 'Account8999')
 
-        Date = Cr.Date().String(-2)
-        Period = 1
-        Remark = '借记'
+            Mongo.MongoDB('ConsoleServer', 'TimeCapsule', 'Account'+Code).DeleteTable()
+            BalanceSheet.Delete({'Code': Code})
+        else:
+            if not BalanceSheet.Search({'Code': '9999'}, Count= True):
+                BalanceSheet.Insert({
+                    'Code': '9999',
+                    'Name': '待处理权益账户',
+                    'Type': '3',
+                    'Amount': float(0.00),
+                })
+            WaitingAccountIndex = BalanceSheet.Search({'Code': '9999'})[0]
+            WaitingAccount = Mongo.MongoDB('ConsoleServer', 'TimeCapsule', 'Account*999')
 
-        Account = Mongo.MongoDB('ConsoleServer', 'TimeCapsule', 'Account'+Code)
-        Account.Insert({
-            'Date': str(Date),
-            'DateInt': int(Date[:-3]),
-            'Amount': float(Amount),
-            'Label': str(Label),
-            'Period': int(Period),
-            'Remark': str(Remark),
+            Mongo.MongoDB('ConsoleServer', 'TimeCapsule', 'Account'+Code).DeleteTable()
+            BalanceSheet.Delete({'Code': Code})
+
+        WaitingAccount.Insert({
+            'StartDate': str(Cr.Date().String(-2)),
+            'StartDateInt': int(Cr.Date().String(-2)[:-3]),
+            'EndDate': str(Cr.Date().String(-2)),
+            'EndDateInt': int(Cr.Date().String(-2)[:-3]),
+            'Amount': float(DeletedAccountIndex['Amount']),
+            'Label': str(9999),
+            'Remark': '账户'+Code+'销记待处理',
+        })
+        BalanceSheet.Change({'Code': WaitingAccountIndex['Code']},{
+            '$set': {'Amount': WaitingAccountIndex['Amount'] + DeletedAccountIndex['Amount']}
         })
 
-    def FN6202(self):
-        Code, Amount, Label= self.GetParameter([4, -2, 'Label'])
-
-        BalanceSheet = Mongo.MongoDB('ConsoleServer', 'TimeCapsule', 'BalanceSheet')
-
-        AccountInfo = BalanceSheet.Search({'Code': str(Code)})
-        if len(AccountInfo) == 0:
-            return Bear.Result(-1, 'Account Does Not Exist')
-        
-        Amount = float(Amount)
-        if AccountInfo[0]['Type'] == 1:
-            Amount = -Amount
-
-        Date = Cr.Date().String(-2)
-        Period = 1
-        Remark = '贷记'
-
-        Account = Mongo.MongoDB('ConsoleServer', 'TimeCapsule', 'Account'+Code)
-        Account.Insert({
-            'Date': str(Date),
-            'DateInt': int(Date[:-3]),
-            'Amount': float(Amount),
-            'Label': str(Label),
-            'Period': int(Period),
-            'Remark': str(Remark),
-        })
-
-    def FN6203(self):
-        print('Success')
+        return Bear.Result(1, 'Account Delete Success')
 
 
     def FN6601(self):

@@ -1,41 +1,31 @@
 #------------------------
 #GlobalFunction:
 #------------------------
-
-class Result:
-    def __init__(self, Code, Explaination = None):
-        self.Code = Code
-        self.Explaination = Explaination
-
-def CatchResult(Input=None, Restrict = True):
-    if type(Input) != Result:
-        if Restrict:
-            assert 0
-        else:
-            return Input
-    if Input.Explaination:
-        print(Input.Explaination)
-    return Input.Code
-
+def Result(Code, Message):
+    print(Message)
+    return Code
 
 class BadBear(Exception):
-    def __init__(self, Explain):
-        self.Explain = Explain
+    def __init__(self, SolveFunction):
+        self.SolveFunction = SolveFunction
     
-    def Except(self):
-        if callable(self.Explain):
-            return Result(-1, self.Explain())
-        return Result(-1, self.Explain)
+    def Solve(self):
+        return self.SolveFunction()
 
 def CatchBadBear(Fn, *args, **kwargs):
-    def Ret(*args, **kwargs):
+    def Ret(*args, **kwargs): 
         if Debug:
-            return Fn(*args, **kwargs)
-        else:    
             try:
                 return Fn(*args, **kwargs)
             except BadBear as Error:
-                return Error.Except()
+                return Error.Solve()
+        else:
+            try:
+                return Fn(*args, **kwargs)
+            except BadBear as Error:
+                return Error.Solve()    
+            except Exception as OtherError:
+                print(OtherError)
     return Ret
 
 
@@ -75,7 +65,7 @@ def Location(LocationName):
 #GlobalConfig:
 #------------------------
 TestUnit = False
-Debug = True
+Debug = False
 
 import time
 import datetime
