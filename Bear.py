@@ -14,6 +14,7 @@ class BadBear(Exception):
 
 def CatchBadBear(Fn, *args, **kwargs):
     def Ret(*args, **kwargs): 
+        return Fn(*args, **kwargs)
         if Debug:
             try:
                 return Fn(*args, **kwargs)

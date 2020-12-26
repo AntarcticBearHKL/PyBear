@@ -29,6 +29,15 @@ class Date:
                 self.TimeShift = TimeShift 
             else:
                 self.TimeShift = Bear.LocalTimeZoneShift 
+        elif len(str(Load)) == 14:
+            Load = str(Load)
+            self.Time = datetime.datetime(
+                int(Load[0:4]), int(Load[4:6]), int(Load[6:8]), 
+                int(Load[8:10]), int(Load[10:12]), int(Load[12:14]))
+            if type(TimeShift) == int:
+                self.TimeShift = TimeShift 
+            else:
+                self.TimeShift = Bear.LocalTimeZoneShift 
         else:
             self.Time = datetime.datetime.now()
             self.TimeShift = Bear.LocalTimeZoneShift
@@ -90,8 +99,8 @@ class Date:
         NYear = self.YearInt() + Year
 
         NMonth = self.MonthInt() + Month
-        NYear += NMonth // 12
-        NMonth = NMonth % 12
+        NYear += (NMonth - 1) // 12
+        NMonth = ((NMonth - 1) % 12) + 1
 
         Base = datetime.datetime(
             NYear, NMonth, self.DayInt(), 
@@ -149,12 +158,12 @@ class Date:
 
     def __floordiv__(self, Rhs): #[Y,M,D,h,m,s] (//)
         Ret = []
-        Ret.appEnd(self.YearInt()- Rhs.YearInt())
-        Ret.appEnd(self.MonthInt()- Rhs.MonthInt())
-        Ret.appEnd(self.DayInt()- Rhs.DayInt())
-        Ret.appEnd(self.HourInt()- Rhs.HourInt())
-        Ret.appEnd(self.MinuteInt()- Rhs.MinuteInt())
-        Ret.appEnd(self.SecondInt()- Rhs.SecondInt())
+        Ret.append(self.YearInt()- Rhs.YearInt())
+        Ret.append(self.MonthInt()- Rhs.MonthInt())
+        Ret.append(self.DayInt()- Rhs.DayInt())
+        Ret.append(self.HourInt()- Rhs.HourInt())
+        Ret.append(self.MinuteInt()- Rhs.MinuteInt())
+        Ret.append(self.SecondInt()- Rhs.SecondInt())
         return Ret
 
     def __sub__(self, Rhs): # How Much Second (-)
@@ -162,9 +171,9 @@ class Date:
         TimeList = self // Rhs
         YearStart = Rhs.YearInt()
         MonthStart = Rhs.MonthInt()
-        MonthDays = calEndar.mdays
+        MonthDays = calendar.mdays
         for Item in range(TimeList[0]):
-            YearDays = 366 if calEndar.isleap(int(str(YearStart))) else 365
+            YearDays = 366 if calendar.isleap(int(str(YearStart))) else 365
             Ret += YearDays * 86400
             YearStart += 1
         for Item in range(abs(TimeList[1])):
@@ -385,9 +394,9 @@ def GetInterval_Day(Start, End):
         MonthDays = CalEnder.getDayNum(int(month[0:4]), int(month[4:6]))
         while True:
             if Startd<10:
-                ret.appEnd(str(month) + '0' + str(Startd))
+                ret.append(str(month) + '0' + str(Startd))
             else:
-                ret.appEnd(str(month)+str(Startd))
+                ret.append(str(month)+str(Startd))
             Startd += 1
             if (str(month) == (Endy + Endm)) and Startd > Endd:
                 break
@@ -405,9 +414,9 @@ def GetInterval_Month(Start, End):
     for year in CalEnder.getBetweenYear(Start, End):
         while True:
             if Startm<10:
-                ret.appEnd(str(year) + '0' + str(Startm))
+                ret.append(str(year) + '0' + str(Startm))
             else:
-                ret.appEnd(str(year)+str(Startm))
+                ret.append(str(year)+str(Startm))
             Startm += 1
             if Startm > 12:
                 Startm = 1
@@ -421,7 +430,7 @@ def GetInterval_Year(Start, End):
     Endy = Date(End).YearInt()
     ret = []
     while True:
-        ret.appEnd(Starty)
+        ret.append(Starty)
         Starty += 1
         if Starty > Endy:
             break

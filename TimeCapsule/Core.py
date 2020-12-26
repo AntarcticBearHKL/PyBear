@@ -104,6 +104,11 @@ class Core:
         Ret = self.Input[:Counter]
         self.Input = self.Input[Counter+1:]
         return str(Ret)
-                
+
+def GetInterval(Start, End):
+        Start = Cr.Date(str(Start//1000000))
+        End = Cr.Date(str(End//1000000))
+        return int((End-Start)/86400)
+
 
 import PyBear.TimeCapsule.Account as Account
