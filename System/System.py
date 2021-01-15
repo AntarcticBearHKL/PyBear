@@ -2,6 +2,10 @@ import PyBear.Bear as Bear
 
 from pip._internal.utils.misc import get_installed_distributions 
 from subprocess import call
+import os
+
+def ClearScreen():
+    os.system('cls')
 
 def InitEnvironment():
     import platform

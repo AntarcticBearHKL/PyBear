@@ -3,9 +3,17 @@ import threading
 import os,sys
 import time
 
-import PyBear.GlobalBear as GlobalBear
-import PyBear.Library.Chronus as ChronusBear
-import PyBear.Library.Data.Redis as RedisBear
+import PyBear.Bear as GlobalBear
+import PyBear.System.Chronus as ChronusBear
+import PyBear.Database.Redis as RedisBear
+
+class SimpleThread:
+    def __init__(self, Function, Argc):
+        self.Function = Function
+        self.Argc = Argc
+    
+    def Start(self):
+        threading.Thread(target = self.Function, args = self.Argc).start()
 
 class MultThread:
     def __init__(self, ParallelNumber, LimitPerMinute = None):
@@ -51,7 +59,7 @@ class MultThread:
                         break
                     
             WorkSpace[AvailableThread] = threading.Thread(target = Task[0], args = Task[1])
-            RedisBear.Redis('RedisLocal').hset('Multitask', str(AvailableThread), ' '.join([str(Item) for Item in Task[1]]) + ChronusBear.Date().String(2))
+            #RedisBear.Redis('RedisLocal').hset('Multitask', str(AvailableThread), ' '.join([str(Item) for Item in Task[1]]) + ChronusBear.Date().String(2))
             WorkSpace[AvailableThread].start() 
 
         for Item in WorkSpace:

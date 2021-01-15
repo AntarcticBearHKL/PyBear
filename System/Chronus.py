@@ -7,7 +7,8 @@ import PyBear.Bear as Bear
 class Date:
     def __init__(self, Load=None, TimeShift=None):
         if type(Load) == Date:
-            self = Load  
+            self.Time = Load.Time
+            self.TimeShift = Load.TimeShift
         elif type(Load) == datetime.datetime:
             self.Time = Load
             if type(TimeShift) == int:
@@ -38,9 +39,14 @@ class Date:
                 self.TimeShift = TimeShift 
             else:
                 self.TimeShift = Bear.LocalTimeZoneShift 
+        elif len(str(Load)) == 24:
+            Load = str(Load)
+            self.Time = datetime.datetime.fromisoformat(Load[:-5])
+            self.TimeShift = 0
         else:
             self.Time = datetime.datetime.now()
             self.TimeShift = Bear.LocalTimeZoneShift
+        self.TimeZoneRectification(Shift=Bear.LocalTimeZoneShift)
 
     def String(self, Style=999, Raw=False):
         if Style == 1:
@@ -57,6 +63,9 @@ class Date:
         if Raw:
            return self.Time.strftime(Style)
         return self.Time.strftime(Style) + '(' + str(self.TimeShift) + ')'
+
+    def ISOString(self):
+        return Date(self).TimeZoneRectification().Time.isoformat().split('.')[0]+'.000Z'
 
     def SetTime(self, Year=None, Month=None, Day=None, Hour=None, Minute=None, Second=None):
         if Year:
@@ -111,8 +120,14 @@ class Date:
         self.Time = Base + TimePlus
         return self
 
-    def ShiftRectification(self):
-        return self.Shift(Year=self.Shift)
+    def TimeZoneRectification(self, Shift=None):
+        if not Shift:
+            Shift = 0
+        TimeShiftDelta = Shift - self.TimeShift
+        self.Shift(Hour=TimeShiftDelta)
+        self.TimeShift = Shift
+        return self
+
 
     def Year(self):
         return str(self.Time.date().year)
