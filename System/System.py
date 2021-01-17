@@ -12,23 +12,23 @@ def InitEnvironment():
     if platform.system() == "Windows":
         pass
     elif platform.system() == "Linux":
-        '''
-        call("apt install curl")
-        call("curl http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz")
-        call("tar -xzvf ta-lib-0.4.0-src.tar.gz")
-        call("cd ta-lib")
-        call("./configure --prefix=/usr")
-        call("make")
-        call("make install")
-        call("cd ..")
-        call("rm ta-lib-0.4.0-src.tar.gz")
-        call("rm ta-lib")
-        '''
+        os.system("apt install curl")
+        os.system("curl http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz")
+        os.system("tar -xzvf ta-lib-0.4.0-src.tar.gz")
+        os.system("cd ta-lib")
+        os.system("./configure --prefix=/usr")
+        os.system("make")
+        os.system("make install")
+        os.system("cd ..")
+        os.system("rm ta-lib-0.4.0-src.tar.gz")
+        os.system("rm ta-lib")
 
     for Module in Bear.BearModule:
         print(Module)
-        call("pip3 install " + Module, shell=True)
+        os.system('python.exe -m pip install --upgrade pip')
+        os.system("pip3 install " + Module, shell=True)
 
 def UpgradeEnvironment():
     for dist in get_installed_distributions():
-        call("pip3 install --upgrade " + dist.project_name, shell=True)
+        os.system('python.exe -m pip install --upgrade pip')
+        os.system("pip3 install --upgrade " + dist.project_name)
