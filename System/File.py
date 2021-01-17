@@ -1,6 +1,6 @@
 import sys,os
 
-from PyBear.GlobalBear import *
+import PyBear.Bear as Bear
 
 def WriteU(Path, content):
     if not os.path.exists(os.path.dirname(Path)):
