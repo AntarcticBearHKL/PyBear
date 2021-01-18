@@ -100,6 +100,7 @@ TushareToken = '85eca8e96158d3127814bcde6bf4c000326799ae66b54030d51ccde5'
 #------------------------
 a = 'tensorflow'
 BearModule = [
+    'TA-lib',
     'scikit-learn',
     'statsmodels',
     'pymysql',
