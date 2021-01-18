@@ -5,7 +5,7 @@ import time
 
 import PyBear.Bear as GlobalBear
 import PyBear.System.Chronus as ChronusBear
-import PyBear.Database.Redis as RedisBear
+import PyBear.DataBase.Redis as RedisBear
 
 class SimpleThread:
     def __init__(self, Function, Argc):
