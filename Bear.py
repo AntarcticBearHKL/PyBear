@@ -98,8 +98,8 @@ TushareToken = '85eca8e96158d3127814bcde6bf4c000326799ae66b54030d51ccde5'
 #------------------------
 #GlobalConfig:
 #------------------------
+a = 'tensorflow'
 BearModule = [
-    'tensorflow',
     'scikit-learn',
     'statsmodels',
     'pymysql',
