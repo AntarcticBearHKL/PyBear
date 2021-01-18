@@ -12,9 +12,7 @@ def InitEnvironment():
     if platform.system() == "Windows":
         pass
     elif platform.system() == "Linux":
-        os.system("apt install curl")
-        os.system("curl -o talib.tar.gz http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz")
-        os.system("tar -xvf talib.tar.gz")
+        os.system("tar -xvf /Bear/Shell/talib.tar.gz")
         os.system("cd ta-lib")
         os.system("./configure --prefix=/usr")
         os.system("make")
@@ -32,6 +30,3 @@ def UpgradeEnvironment():
     for dist in get_installed_distributions():
         os.system('python -m pip install --upgrade pip')
         os.system("pip3 install --upgrade " + dist.project_name)
-
-import PyBear.System.System as S
-S.InitEnvironment()
