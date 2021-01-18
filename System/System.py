@@ -30,6 +30,5 @@ def UpgradeEnvironment():
         print('Upgrade: ', dist.project_name)
         os.system("pip3 install --upgrade " + dist.project_name)
 
-exit()
 import PyBear.System.System as S
 S.InitEnvironment()
