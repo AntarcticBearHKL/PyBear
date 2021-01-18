@@ -30,3 +30,7 @@ def UpgradeEnvironment():
     for dist in get_installed_distributions():
         os.system('python -m pip install --upgrade pip')
         os.system("pip3 install --upgrade " + dist.project_name)
+
+exit()
+import PyBear.System.System as S
+S.InitEnvironment()
