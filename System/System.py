@@ -12,14 +12,12 @@ def InitEnvironment():
     if platform.system() == "Windows":
         pass
     elif platform.system() == "Linux":
-        os.system("tar -xvf /Bear/Shell/talib.tar.gz")
-        os.system("cd ta-lib")
+        os.system("tar -xvf /Bear/Shell/Linux/talib.tar.gz -C ~/")
+        os.system("cd ~/ta-lib")
         os.system("./configure --prefix=/usr")
         os.system("make")
         os.system("make install")
-        os.system("cd ..")
-        os.system("rm talib.tar.gz")
-        os.system("rm -rf ta-lib")
+        os.system("rm -rf ~/ta-lib")
     
     os.system('pip3 install --upgrade pip')
     for Module in Bear.BearModule:
