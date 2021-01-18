@@ -26,7 +26,7 @@ def InitEnvironment():
     for Module in Bear.BearModule:
         print(Module)
         os.system('python.exe -m pip install --upgrade pip')
-        os.system("pip3 install " + Module, shell=True)
+        os.system("pip3 install " + Module)
 
 def UpgradeEnvironment():
     for dist in get_installed_distributions():
