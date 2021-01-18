@@ -20,15 +20,16 @@ def InitEnvironment():
         os.system("cd ..")
         os.system("rm talib.tar.gz")
         os.system("rm -rf ta-lib")
-
+    
+    os.system('pip3 install --upgrade pip')
     for Module in Bear.BearModule:
-        print(Module)
-        os.system('python -m pip install --upgrade pip')
+        print('Installing: ', Module)
         os.system("pip3 install " + Module)
 
 def UpgradeEnvironment():
+    os.system('pip3 install --upgrade pip')
     for dist in get_installed_distributions():
-        os.system('python -m pip install --upgrade pip')
+        print('Upgrade: ', dist.project_name)
         os.system("pip3 install --upgrade " + dist.project_name)
 
 exit()
