@@ -12,7 +12,7 @@ def InitEnvironment():
     if platform.system() == "Windows":
         pass
     elif platform.system() == "Linux":
-        os.system("tar -xvf /Bear/Shell/Linux/talib.tar.gz -C ~/")
+        os.system("tar -xvf /Bear/File/Talib/talib.tar.gz -C ~/")
         os.system("~/ta-lib/configure --prefix=/usr")
         os.system("cd ~/ta-lib")
         os.system("make")
